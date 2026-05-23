@@ -822,13 +822,13 @@ function RoadmapPage() {
       const uid = session?.user?.id ?? null;
       setUserId(uid);
 
-      const { data: countsData } = await supabase
-        .from("roadmap_votes")
-        .select("item_slug");
+      const { data: countsData } = await (supabase as any)
+        .from("roadmap_vote_counts")
+        .select("item_slug, vote_count");
       if (!active) return;
       const counts: Record<string, number> = {};
-      (countsData ?? []).forEach((r: { item_slug: string }) => {
-        counts[r.item_slug] = (counts[r.item_slug] ?? 0) + 1;
+      (countsData ?? []).forEach((r: any) => {
+        counts[r.item_slug] = r.vote_count ?? 0;
       });
       setVoteCounts(counts);
 
