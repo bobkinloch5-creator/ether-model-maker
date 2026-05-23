@@ -131,7 +131,8 @@ function GeneratePage() {
   const [previewMode, setPreviewMode] = useState<"3d" | "info">("3d");
   const [isRotating, setIsRotating] = useState(false);
   const [showPromptGen, setShowPromptGen] = useState(false);
-  const [quality, setQuality] = useState<"draft" | "standard" | "high" | "ultra">("standard");
+  const [quality, setQuality] = useState<"fast" | "balanced" | "hd">("fast");
+  const [bakeTexture, setBakeTexture] = useState<boolean>(false);
   const [imageDataUrl, setImageDataUrl] = useState<string>("");
   // Publish-to-community state
   const [publishOpen, setPublishOpen] = useState(false);
@@ -151,7 +152,7 @@ function GeneratePage() {
       "text-to-texture": 14000,
       "ai-image": 8000,
     };
-    const qMult: Record<string, number> = { draft: 0.6, standard: 1, high: 1.6, ultra: 2.4 };
+    const qMult: Record<string, number> = { fast: 0.6, balanced: 1, hd: 1.8 };
     const b = base[selectedType as string] ?? 18000;
     const m = qMult[quality] ?? 1;
     return Math.round(b * m);
@@ -380,10 +381,11 @@ function GeneratePage() {
           // Build an ordered list of backends to try: user's choice first, then
           // TripoSR (known reliable), then every other preset.
           const tried = new Set<string>();
-          const attempts: Array<{ spaceUrl: string; apiName: string; extraArgs: unknown[]; label: string }> = [];
-          const pushAttempt = (spaceUrl: string, apiName: string, extraArgs: unknown[], label: string) => {
+          const attempts: Array<{ spaceUrl?: string; apiName?: string; extraArgs: unknown[]; label: string }> = [];
+          const pushAttempt = (spaceUrl: string | undefined, apiName: string | undefined, extraArgs: unknown[], label: string) => {
             const key = `${spaceUrl}::${apiName}`;
-            if (tried.has(key) || !spaceUrl || !apiName) return;
+            if (spaceUrl?.startsWith("demo://") || apiName === "/demo") return;
+            if (tried.has(key)) return;
             tried.add(key);
             attempts.push({ spaceUrl, apiName, extraArgs, label });
           };
@@ -396,14 +398,26 @@ function GeneratePage() {
           }
 
           // Fast health-check: skip dead Spaces in <4s instead of waiting 60s+.
-          const isHealthy = async (spaceUrl: string): Promise<boolean> => {
-            try {
-              const ctl = new AbortController();
-              const t = setTimeout(() => ctl.abort(), 4000);
-              const r = await fetch(`${spaceUrl.replace(/\/$/, "")}/gradio_api/info`, { signal: ctl.signal });
-              clearTimeout(t);
-              return r.ok;
-            } catch { return false; }
+          const isHealthy = async (spaceUrl?: string): Promise<boolean> => {
+            if (!spaceUrl) return false;
+            const base = spaceUrl.replace(/\/$/, "");
+            // Bypass health check fetch for local or ngrok urls to avoid CORS/interstitial issues
+            if (base.includes("localhost") || base.includes("127.0.0.1") || base.includes("ngrok")) {
+              console.log(`Bypassing client-side health check fetch for local/ngrok backend: ${base}`);
+              return true;
+            }
+            // Try both Gradio prefixes: 4.30+ uses /gradio_api/info, older
+            // (e.g. 4.8) uses /info. Either responding 2xx means alive.
+            for (const path of ["/gradio_api/info", "/info"]) {
+              try {
+                const ctl = new AbortController();
+                const t = setTimeout(() => ctl.abort(), 4000);
+                const r = await fetch(`${base}${path}`, { signal: ctl.signal });
+                clearTimeout(t);
+                if (r.ok) return true;
+              } catch { /* try next */ }
+            }
+            return false;
           };
 
           setHfStatus("queued");
@@ -430,27 +444,89 @@ function GeneratePage() {
             }
             setHfMessage(`Generating with ${a.label}…`);
             setHfStatus("running");
-            setHfProgress(30);
+            setHfProgress(15);
 
-            const { generateHF3D } = await import("@/lib/hf3d.functions");
-            const res = await generateHF3D({
+            // Start the async job, then poll until complete/error. Each poll
+            // reads ~6s of the Gradio SSE stream — well under any Worker
+            // request timeout — so long-running 3D jobs don't time out.
+            const startRes = await startHF3DJob({
               data: {
                 kind: selectedType,
                 prompt: composedPrompt,
                 imageDataUrl: inputImage || undefined,
-                spaceUrl: a.spaceUrl,
-                apiName: a.apiName,
+                spaceUrl: a.spaceUrl || undefined,
+                apiName: a.apiName || undefined,
                 extraArgs: a.extraArgs,
+                quality,
+                bakeTexture,
               },
             });
 
-            if (res.ok && res.modelUrl) {
-              finalUrl = res.modelUrl;
+            if (!startRes.ok) {
+              lastErr = startRes.error || "Failed to start job";
+              console.warn(`Backend ${a.label} failed to start:`, lastErr);
+              continue;
+            }
+            // Synchronous fast path — startHF3DJob now runs the full pipeline
+            // and returns modelUrl directly. Skip the poll loop in that case.
+            if ("modelUrl" in startRes && startRes.modelUrl) {
+              finalUrl = startRes.modelUrl;
+              setHfStatus("complete");
+              setHfProgress(100);
+              break;
+            }
+
+
+            // Poll loop — bounded at ~5 minutes total per backend.
+            const pollDeadline = Date.now() + 5 * 60_000;
+            let pollErr: string | null = null;
+            let modelOut: string | null = null;
+            let pollEventId = startRes.eventId;
+            let pollApiName = startRes.apiName;
+            let pollSessionHash = "sessionHash" in startRes ? startRes.sessionHash : undefined;
+            let pollStartedAt = startRes.startedAt;
+            while (Date.now() < pollDeadline) {
+              const pr = await pollHF3DJob({
+                data: {
+                  eventId: pollEventId,
+                  spaceUrl: startRes.spaceUrl,
+                  apiName: pollApiName,
+                  startedAt: pollStartedAt,
+                  sessionHash: pollSessionHash,
+                },
+              });
+              if (!pr.ok) {
+                pollErr = "Polling failed";
+                break;
+              }
+              if (typeof pr.progress === "number") setHfProgress(pr.progress);
+              if (pr.message) setHfMessage(pr.message);
+              setHfStatus(pr.status);
+              if ("eventId" in pr && "apiName" in pr && pr.eventId && pr.apiName) {
+                pollEventId = pr.eventId;
+                pollApiName = pr.apiName;
+                pollSessionHash = "sessionHash" in pr ? pr.sessionHash : undefined;
+                pollStartedAt = Date.now();
+              }
+              if (pr.status === "complete" && pr.modelUrl) {
+                modelOut = pr.modelUrl;
+                break;
+              }
+              if (pr.status === "error") {
+                pollErr = pr.error || pr.message || "Generation error";
+                break;
+              }
+              // Brief gap before next poll; the poll itself blocks for SSE.
+              await new Promise((r) => setTimeout(r, 800));
+            }
+
+            if (modelOut) {
+              finalUrl = modelOut;
               setHfStatus("complete");
               setHfProgress(100);
               break;
             } else {
-              lastErr = res.error || "Generation failed";
+              lastErr = pollErr || "Generation timed out";
               console.warn(`Backend ${a.label} failed:`, lastErr);
             }
           }
@@ -463,13 +539,13 @@ function GeneratePage() {
             hfError = lastErr || "All 3D backends are unavailable";
             setHfStatus("error");
             setHfMessage(hfError);
-            console.warn("All HF Spaces failed, using procedural:", hfError);
+            console.error("All HF Spaces failed:", hfError);
           }
         } catch (e: any) {
           hfError = e?.message || String(e);
           setHfStatus("error");
           setHfMessage(hfError);
-          console.warn("3D generation unavailable, falling back to procedural:", e);
+          console.error("3D generation failed:", e);
         }
       }
 
@@ -496,7 +572,17 @@ function GeneratePage() {
         effective_texture_resolution: effectiveTexRes,
       };
 
-      if (generationMethod !== "procedural" || selectedType === "text-to-image" || selectedType === "retexture") {
+      if (selectedType === "image-to-3d" && generationMethod !== "hf3d") {
+        // Real 3D generation failed — surface the error, do not charge, do not
+        // create a generation row, do not show a procedural placeholder.
+        setCurrentGen(null);
+        const reason = hfError || "3D generation service is unavailable. Please try again.";
+        setError(reason);
+        toast.error("3D generation failed", {
+          description: reason.slice(0, 220),
+          duration: 10000,
+        });
+      } else {
         if (!gen) {
           gen = await createGeneration(
             user.id,
@@ -533,29 +619,6 @@ function GeneratePage() {
           }
         });
         await refreshProfile();
-      } else {
-        setCurrentGen({
-          ...tempGenerationBase,
-          status: "completed",
-          credits_used: 0,
-          result_data: {
-            model_url: modelUrl,
-            image_url: imageUrl,
-            generation_method: generationMethod,
-            source_image_data_url: selectedType === "image-to-3d" ? imageDataUrl || null : null,
-            settings,
-            fallback_reason: hfError,
-          }
-        });
-      }
-      const fallback = generationMethod === "procedural";
-      if (fallback && selectedType === "image-to-3d") {
-        toast.error("3D service unavailable — showing procedural placeholder", {
-          description: hfError ? `Reason: ${hfError.slice(0, 220)}` : "Try again in ~60s (the AI 3D model service may be waking up).",
-          duration: 10000,
-        });
-        setError(`Live 3D generation is temporarily unavailable, so you're seeing a prompt-matched procedural preview instead. No credits were deducted.${hfError ? ` Reason: ${hfError}` : ""}`);
-      } else {
         toast.success("Generation complete!", { description: `Used ${generationMethod}` });
       }
     } catch (err: any) {
@@ -1084,11 +1147,16 @@ function GeneratePage() {
               />
             )}
 
-            {/* Model Quality Selection */}
+            {/* Mesh Quality (Low Power Mode = Fast). Drives mc_resolution on the local 3D server. */}
             <div className="mt-2 px-1 flex items-center justify-between border-t border-white/5 pt-2 mb-1">
-              <span className="text-xs text-muted-foreground font-semibold">Mesh Quality:</span>
+              <span className="text-xs text-muted-foreground font-semibold">
+                Mesh Quality:
+                <span className="ml-1 text-[10px] text-muted-foreground/70 font-normal normal-case">
+                  Fast = low-power (mc 96) · Balanced (128) · HD (256)
+                </span>
+              </span>
               <div className="flex bg-black/40 p-0.5 rounded-lg border border-white/5">
-                {(["draft", "standard", "high", "ultra"] as const).map((q) => (
+                {(["fast", "balanced", "hd"] as const).map((q) => (
                   <button
                     key={q}
                     type="button"
@@ -1104,6 +1172,29 @@ function GeneratePage() {
                 ))}
               </div>
             </div>
+
+            {/* Bake texture toggle — off by default to keep generation light. */}
+            {selectedType === "image-to-3d" && (
+              <div className="px-1 flex items-center justify-between mb-1">
+                <span className="text-xs text-muted-foreground font-semibold">
+                  Bake texture
+                  <span className="ml-1 text-[10px] text-muted-foreground/70 font-normal normal-case">
+                    Off = untextured mesh (fastest). On = bake at {quality === "hd" ? 1024 : 512}px.
+                  </span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setBakeTexture((v) => !v)}
+                  className={`px-3 py-1 text-[10px] font-bold rounded-md uppercase tracking-wider border transition-all ${
+                    bakeTexture
+                      ? "bg-primary text-white border-primary/40 shadow-lg shadow-primary/20"
+                      : "bg-black/40 text-muted-foreground border-white/5 hover:text-foreground"
+                  }`}
+                >
+                  {bakeTexture ? "On" : "Off"}
+                </button>
+              </div>
+            )}
             
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-2 py-1 mt-2">
               <div className="flex items-center gap-2 flex-wrap">
@@ -1668,22 +1759,14 @@ function GeneratePage() {
                 </div>
                 <div className="flex flex-col items-center justify-center gap-2 mt-4">
                   <h3 className="font-display text-xl font-semibold">
-                    {isProceduralPreview ? "Preview ready!" : "Generation complete!"}
+                    Generation complete!
                   </h3>
-                  {isProceduralPreview ? (
-                    <span className="inline-flex items-center rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-amber-400 border border-amber-500/20">
-                      Procedural Preview Fallback (Free)
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-400 border border-emerald-500/20">
-                      Live Generated 3D Asset (Charged)
-                    </span>
-                  )}
+                  <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-400 border border-emerald-500/20">
+                    Live Generated 3D Asset (Charged)
+                  </span>
                 </div>
                 <p className="mt-2 text-sm text-muted-foreground text-center">
-                  {isProceduralPreview
-                    ? "The live 3D service is unavailable right now, so this is a prompt-matched procedural preview. No credits were deducted."
-                    : `Your 3D asset has been generated. ${cost} credits were deducted.`}
+                  Your 3D asset has been generated. {cost} credits were deducted.
                 </p>
 
                 {/* 3D/2D Preview Area */}

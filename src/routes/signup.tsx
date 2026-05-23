@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { getDeviceFingerprint } from "@/lib/fingerprint";
-import { checkSignupAllowed, recordSignupFingerprint } from "@/lib/account-guard.functions";
+import { checkSignupAllowed } from "@/lib/account-guard.functions";
 import {
   Sparkles,
   Mail,
@@ -143,16 +143,14 @@ function SignupPage() {
       setError(result.error);
       setLoading(false);
     } else {
-      // Best-effort: record the fingerprint for the new account.
-      // Only works if the session is already active (auto-confirm flow);
-      // otherwise we record on first sign-in below via the auth-context hook.
-      if (fingerprint) {
-        try { await recordSignupFingerprint({ data: { fingerprint } }); } catch {}
-      }
+      // Fingerprint is recorded by auth-context on the first SIGNED_IN event,
+      // once a session (and bearer token) actually exists. Calling it here
+      // would 401 in the email-confirmation flow.
       setSuccess(true);
       setLoading(false);
     }
   };
+
 
   const handleGoogleSignIn = async () => {
     setError("");

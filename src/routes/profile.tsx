@@ -369,22 +369,26 @@ function ProfilePage() {
             </div>
           </section>
 
-          {/* ===== 3D Backend ===== */}
-          <section className="glass rounded-2xl p-6 animate-slide-up animate-delay-100">
-            <h2 className="flex items-center gap-2 font-display text-lg font-semibold mb-1">
-              <Box className="h-5 w-5" />
-              3D Backend
-            </h2>
-            <p className="text-sm text-muted-foreground mb-4">
-              Choose which Hugging Face Space generates your meshes (TripoSR, TRELLIS, Hunyuan3D, or your own).
-            </p>
-            <Link
-              to="/settings/backend"
-              className="inline-flex items-center gap-2 rounded-xl border border-border bg-background/50 px-4 py-2 text-sm font-medium hover:bg-background"
-            >
-              Open backend settings →
-            </Link>
-          </section>
+          {/* ===== 3D Backend (owner-only) ===== */}
+          {profile?.is_owner && (
+            <section className="glass rounded-2xl p-6 animate-slide-up animate-delay-100">
+              <h2 className="flex items-center gap-2 font-display text-lg font-semibold mb-1">
+                <Box className="h-5 w-5" />
+                3D Backend
+              </h2>
+              <p className="text-sm text-muted-foreground mb-4">
+                Choose which Hugging Face Space generates your meshes (TripoSR, TRELLIS, Hunyuan3D, or your own).
+              </p>
+              <Link
+                to="/settings/backend"
+                className="inline-flex items-center gap-2 rounded-xl border border-border bg-background/50 px-4 py-2 text-sm font-medium hover:bg-background"
+              >
+                Open backend settings →
+              </Link>
+            </section>
+          )}
+
+
 
 
           {/* ===== Theme ===== */}

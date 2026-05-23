@@ -247,6 +247,61 @@ function ServersPanel({ isOwner }: { isOwner: boolean }) {
   );
 }
 
+function LocalServerPanel() {
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<{ ok: boolean; msg: string } | null>(null);
+
+  const runTest = useCallback(async () => {
+    setBusy(true);
+    setResult(null);
+    try {
+      const { testLocal3DServer } = await import("@/lib/local-3d.functions");
+      const res = await testLocal3DServer();
+      if (res.ok) {
+        setResult({ ok: true, msg: `${res.message}${res.version ? ` (Gradio ${res.version})` : ""}` });
+        toast.success("Local 3D server online");
+      } else {
+        setResult({ ok: false, msg: res.error });
+        toast.error("Local 3D server check failed", { description: res.error.slice(0, 220) });
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setResult({ ok: false, msg });
+      toast.error("Local 3D server check failed", { description: msg.slice(0, 220) });
+    } finally {
+      setBusy(false);
+    }
+  }, []);
+
+  return (
+    <div className="mb-6 space-y-3 rounded-2xl border border-border bg-card/50 p-6 backdrop-blur">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-semibold">Local 3D server (ngrok)</h2>
+          <p className="text-xs text-muted-foreground">
+            Pings <code>LOCAL_3D_API_URL/config</code> to verify your local Gradio Image-to-3D server is reachable.
+          </p>
+        </div>
+        <Button onClick={runTest} size="sm" disabled={busy} className="gap-2">
+          {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+          Test Local 3D Server
+        </Button>
+      </div>
+      {result && (
+        <div
+          className={`rounded-lg border p-3 text-sm ${
+            result.ok
+              ? "border-green-500/40 bg-green-500/10 text-green-200"
+              : "border-amber-500/40 bg-amber-500/10 text-amber-200"
+          }`}
+        >
+          {result.msg}
+        </div>
+      )}
+    </div>
+  );
+}
+
 
 export const Route = createFileRoute("/settings/backend")({
   head: () => ({
@@ -369,6 +424,10 @@ function BackendSettingsPage() {
         </p>
 
         <ServersPanel isOwner={isOwner} />
+
+        <LocalServerPanel />
+
+
 
 
 

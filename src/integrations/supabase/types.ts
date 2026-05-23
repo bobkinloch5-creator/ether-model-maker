@@ -518,7 +518,7 @@ export type Database = {
       }
       referrals: {
         Row: {
-          code_used: string
+          code_used: string | null
           created_at: string
           id: string
           referred_bonus: number
@@ -527,7 +527,7 @@ export type Database = {
           referrer_id: string
         }
         Insert: {
-          code_used: string
+          code_used?: string | null
           created_at?: string
           id?: string
           referred_bonus?: number
@@ -536,7 +536,7 @@ export type Database = {
           referrer_id: string
         }
         Update: {
-          code_used?: string
+          code_used?: string | null
           created_at?: string
           id?: string
           referred_bonus?: number
@@ -690,7 +690,13 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      roadmap_vote_counts: {
+        Row: {
+          item_slug: string | null
+          vote_count: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       accept_team_invite: { Args: { _invite_id: string }; Returns: string }

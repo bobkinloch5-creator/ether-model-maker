@@ -2,8 +2,10 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 import { createHash } from "crypto";
 import { z } from "zod";
+import { createClient } from "@supabase/supabase-js";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Database } from "@/integrations/supabase/types";
+
 
 // Owner/admin emails that bypass the one-account-per-device rule.
 // Sourced from ADMIN_EMAILS env (comma-separated) so privileged identities
@@ -79,27 +81,48 @@ export const checkSignupAllowed = createServerFn({ method: "POST" })
     return { blocked: false as const };
   });
 
-// Authenticated: called AFTER signup completes. Records the fingerprint+IP
-// against the new user so future signups from this device are blocked.
+// Best-effort: called AFTER signup/sign-in to record fingerprint+IP for the
+// user. Tolerates missing/invalid auth (returns skipped) so it never surfaces
+// runtime errors when called before the session has fully hydrated.
 export const recordSignupFingerprint = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((input) =>
     z.object({ fingerprint: z.string().min(8).max(128) }).parse(input),
   )
-  .handler(async ({ data, context }) => {
-    const { userId } = context;
+  .handler(async ({ data }) => {
+    // Resolve userId from the bearer token if present; otherwise no-op.
+    let userId: string | null = null;
+    let req: Request | null = null;
+    try {
+      req = getRequest();
+    } catch {}
+    const authHeader = req?.headers.get("authorization") ?? null;
+    const token = authHeader?.startsWith("Bearer ")
+      ? authHeader.slice(7).trim()
+      : null;
+
+    if (token) {
+      try {
+        const SUPABASE_URL = process.env.SUPABASE_URL!;
+        const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY!;
+        const sb = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+          auth: { persistSession: false, autoRefreshToken: false },
+        });
+        const { data: claims } = await sb.auth.getClaims(token);
+        if (claims?.claims?.sub) userId = claims.claims.sub as string;
+      } catch {}
+    }
+
+    if (!userId) return { ok: true, skipped: true as const };
 
     let ipHash: string | null = null;
     let ua: string | null = null;
     try {
-      const req = getRequest();
       if (req) {
         ipHash = hashIp(clientIpFromHeaders(req));
         ua = req.headers.get("user-agent");
       }
     } catch {}
 
-    // Skip admins
     const { data: prof } = await supabaseAdmin
       .from("profiles")
       .select("email")
@@ -109,7 +132,6 @@ export const recordSignupFingerprint = createServerFn({ method: "POST" })
       return { ok: true, skipped: true as const };
     }
 
-    // Skip if already recorded for this user+fingerprint
     const { data: existing } = await supabaseAdmin
       .from("account_fingerprints")
       .select("id")
@@ -127,3 +149,4 @@ export const recordSignupFingerprint = createServerFn({ method: "POST" })
     if (error) return { ok: false, error: error.message };
     return { ok: true };
   });
+

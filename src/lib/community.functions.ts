@@ -129,8 +129,8 @@ const PUBLISH_INPUT = z.object({
   generationId: z.string().uuid().optional(),
   title: z.string().trim().min(1).max(120),
   description: z.string().trim().max(2000).optional(),
-  imageUrl: z.string().url().max(2000).optional(),
-  modelUrl: z.string().url().max(2000).optional(),
+  imageUrl: z.string().min(1).max(2_000_000).optional(),
+  modelUrl: z.string().min(1).max(2_000_000).optional(),
   generationType: z.string().max(60).optional(),
   tags: z.array(z.string().trim().min(1).max(30)).max(8).optional(),
 });

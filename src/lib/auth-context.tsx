@@ -45,15 +45,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Defer profile fetch to avoid deadlocks
         setTimeout(() => loadProfile(s.user.id), 0);
         // Record this device's fingerprint against the account (one-account-per-user guard).
-        // Safe to call repeatedly — server uses insert; failures are ignored.
+        // Only call when we actually have an access token, so the auth middleware
+        // never rejects with "No authorization header provided".
         setTimeout(async () => {
           try {
+            if (!s?.access_token) return;
             const { getDeviceFingerprint } = await import("@/lib/fingerprint");
             const { recordSignupFingerprint } = await import("@/lib/account-guard.functions");
             const fp = await getDeviceFingerprint();
             await recordSignupFingerprint({ data: { fingerprint: fp } });
           } catch {}
-        }, 100);
+        }, 500);
       } else {
         setProfile(null);
       }
