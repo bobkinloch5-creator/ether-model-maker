@@ -77,7 +77,7 @@ async function gradioCall(
 ): Promise<unknown[]> {
   try {
     console.log(`[HF 3D] Connecting to Space: ${spaceUrl} (API: ${apiName})`);
-    const app = await Client.connect(spaceUrl, { token });
+    const app = await Client.connect(spaceUrl, { token: token as `hf_${string}` });
     console.log(`[HF 3D] Connected successfully. Invoking prediction...`);
     
     const firstInput = payload[0];
