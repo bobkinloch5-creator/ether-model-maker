@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /diag
+Disallow: /reset-password
+Disallow: /forgot-password
+
+Sitemap: https://kingdavez.click/sitemap.xml

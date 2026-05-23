@@ -1,0 +1,22 @@
+# KingDavez Studios
+
+> AI-powered 3D model, texture, and image generation for game devs, indie creators, and Second Life builders.
+
+KingDavez Studios turns text prompts or reference photos into game-ready 3D meshes (GLB, OBJ, STL, FBX), PBR textures, and AI images. Models are exportable for Second Life, Unity, Unreal, Godot, Blender, and 3D printing.
+
+## Pages
+
+- [Home](/): Product overview, features, pricing, and showcase.
+- [Generate](/generate): The creation studio — text-to-3D, image-to-3D, AI retexturing, and AI image generation.
+- [FAQ](/faq): How credits, generation, and Second Life delivery work.
+- [Changelog](/changelog): Recent releases including FBX exports and developer API.
+- [Roadmap](/roadmap): Public product roadmap showing shipped, in-progress, and planned features.
+- [Docs](/docs): Complete documentation for text-to-3D, image-to-3D, PBR textures, REST API, and Second Life integration.
+- [Credits](/credits): Purchase generation credit packs via PayPal.
+- [Second Life](/second-life): AI mesh, textures, and full-perm builder kits for Second Life. SL Marketplace store and in-world shop on Thranduil.
+- [Terms of Service](/tos): Usage rights and ownership of generated assets.
+
+## Optional
+
+- [Login](/login): Sign in to your KingDavez Studios account.
+- [Sign Up](/signup): Create a free account and get 25 starting credits.
