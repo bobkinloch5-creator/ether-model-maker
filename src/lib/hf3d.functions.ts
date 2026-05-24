@@ -943,18 +943,23 @@ async function runStableFast3D(
   console.log(`[SF3D] Using endpoint ${endpointName} (available: ${available.join(", ") || "(none)"})`);
 
   const texSize = opts?.textureResolution && opts.textureResolution > 0 ? opts.textureResolution : 1024;
-  // Different SF3D forks accept different argument signatures. Try the
-  // canonical 5-arg version first, then back off to shorter ones.
+  // Canonical stabilityai/stable-fast-3d /run_button signature (5 named args):
+  //   input_image, foreground_ratio=0.85, remesh_option="None",
+  //   vertex_count=-1, texture_size=1024
+  // Fallback shorter signatures cover community forks that trimmed the API.
   const sigs: unknown[][] = [
-    [inputFile, 0.85, "None", 20000, texSize],
+    [inputFile, 0.85, "None", -1, texSize],
     [inputFile, 0.85],
     [inputFile],
   ];
+  // Hard 90s timeout — if the Space doesn't respond, fail loudly instead of
+  // letting the UI hang at 95%.
+  const SF3D_TIMEOUT_MS = 90_000;
   let out: unknown[] | null = null;
   let lastSigErr = "";
   for (const args of sigs) {
     try {
-      out = await runGradioJob(app, endpointName, args);
+      out = await runGradioJob(app, endpointName, args, { timeoutMs: SF3D_TIMEOUT_MS });
       break;
     } catch (e) {
       lastSigErr = e instanceof Error ? e.message : String(e);
@@ -964,7 +969,7 @@ async function runStableFast3D(
   }
   if (!out) {
     throw new Error(
-      `Gradio ${endpointName} failed: ${lastSigErr}. ` +
+      `Stable Fast 3D ${endpointName} failed: ${lastSigErr}. ` +
       `Available endpoints on this Space: ${available.join(", ") || "(none)"}.`
     );
   }
