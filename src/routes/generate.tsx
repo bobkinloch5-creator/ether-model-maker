@@ -431,7 +431,7 @@ function GeneratePage() {
         try {
           setHfStatus("running");
           setHfProgress(15);
-          setHfMessage("Generating with Stable Fast 3D…");
+          setHfMessage("Generating on local TripoSR server…");
 
           const { getBackendConfig } = await import("@/lib/backend-settings");
           const backendCfg = getBackendConfig();
