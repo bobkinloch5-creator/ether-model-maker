@@ -1044,16 +1044,25 @@ function GeneratePage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl px-4 py-10">
-        <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground backdrop-blur">
-          <Zap className="h-3 w-3 text-primary-glow" /> AI-Powered Workspace
+      <main className="mx-auto max-w-7xl px-4 py-8 lg:py-10">
+        {/* Hero header — full width */}
+        <div className="mb-8">
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground backdrop-blur">
+            <Zap className="h-3 w-3 text-primary-glow" /> AI-Powered Workspace
+          </div>
+          <h1 className="mt-3 font-display text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.05]">
+            <span className="gradient-text">Generate</span> a 3D asset
+          </h1>
+          <p className="mt-2 text-muted-foreground max-w-2xl">
+            Describe what you want — KingDavez Studios crafts game-ready meshes, PBR textures, and concept art in seconds.
+          </p>
         </div>
-        <h1 className="mt-3 font-display text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.05]">
-          <span className="gradient-text">Generate</span> a 3D asset
-        </h1>
-        <p className="mt-2 text-muted-foreground max-w-2xl">
-          Describe what you want — KingDavez Studios crafts game-ready meshes, PBR textures, and concept art in seconds.
-        </p>
+
+        {/* Split studio layout */}
+        <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,540px)] gap-6 lg:gap-8 items-start">
+          {/* LEFT: Controls */}
+          <div className="min-w-0 space-y-0">
+
 
         {/* LLM status */}
         <div className="mt-6 flex items-center gap-2 text-sm">
