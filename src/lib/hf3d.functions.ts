@@ -779,13 +779,17 @@ export const startHF3DJob = createServerFn({ method: "POST" })
   .inputValidator((d) => START_INPUT.parse(d))
   .handler(async ({ data, context }) => {
     const { userId } = context;
-    // Precedence: per-call override → LOCAL_3D_API_URL → HF_SPACE_URL
+    // Precedence: per-call override → LOCAL_3D_API_URL → COMFYUI_URL → HF_TRIPOSR_SPACE → HF_SPACE_URL → AleenDG TripoSR default
+    const triposrDefault = "https://aleendg-3dgentriposr.hf.space";
     const rawUrl = (
       data.spaceUrl?.trim() ||
       process.env.LOCAL_3D_API_URL?.trim() ||
-      process.env.HF_SPACE_URL?.trim()
+      process.env.COMFYUI_URL?.trim() ||
+      process.env.HF_TRIPOSR_SPACE?.trim() ||
+      process.env.HF_SPACE_URL?.trim() ||
+      triposrDefault
     ) ?? "";
-    if (!rawUrl) return { ok: false as const, error: "No 3D backend configured. Set LOCAL_3D_API_URL." };
+    if (!rawUrl) return { ok: false as const, error: "No 3D backend configured. Set LOCAL_3D_API_URL or COMFYUI_URL." };
     let spaceUrl: string;
     try {
       spaceUrl = assertSafeSpaceUrl(normalizeSpaceUrl(rawUrl));
