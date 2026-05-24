@@ -11,11 +11,11 @@ export const BACKEND_PRESETS: BackendPreset[] = [
   {
     id: "local3d",
     label: "Local 3D API (TRELLIS pipeline)",
-    spaceUrl: "https://gdtharusha-3d-modle-generator.hf.space",
+    spaceUrl: "", // empty → server resolves via LOCAL_3D_API_URL secret
     apiName: "/generate",
     extraArgs: "",
     notes:
-      "TRELLIS-style /preprocess → /generate pipeline. Override at runtime via the LOCAL_3D_API_URL secret (e.g. your Cloudflare Tunnel).",
+      "TRELLIS-style /preprocess → /generate pipeline. Set the LOCAL_3D_API_URL secret to your live tunnel URL (e.g. ngrok / Cloudflare Tunnel).",
   },
 ];
 
