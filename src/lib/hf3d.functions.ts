@@ -321,7 +321,7 @@ async function startGradioJob(
   token: string | undefined,
   sessionHash: string,
 ): Promise<string> {
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  const headers: Record<string, string> = { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" };
   if (token) headers.Authorization = `Bearer ${token}`;
   const postRes = await fetch(`${spaceUrl}/gradio_api/call${apiName}`, {
     method: "POST",
@@ -347,7 +347,7 @@ async function ensureStartSession(
   sessionHash: string,
 ): Promise<void> {
   try {
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    const headers: Record<string, string> = { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" };
     if (token) headers.Authorization = `Bearer ${token}`;
     const res = await fetch(`${spaceUrl}/gradio_api/call/start_session`, {
       method: "POST",
@@ -449,7 +449,7 @@ async function gradioCall(
 ): Promise<unknown[]> {
   try {
     console.log(`[HF 3D] Connecting to Space: ${spaceUrl} (API: ${apiName})`);
-    const app = await Client.connect(spaceUrl, { token: token as `hf_${string}` });
+    const app = await Client.connect(spaceUrl, { token: token as `hf_${string}`, headers: { "ngrok-skip-browser-warning": "true" } } as any);
     console.log(`[HF 3D] Connected successfully. Invoking prediction...`);
     
     const firstInput = payload[0];
@@ -499,7 +499,7 @@ async function uploadDataUrlToGradio(
   const form = new FormData();
   form.append("files", new Blob([bin], { type: mime }), filename);
 
-  const headers: Record<string, string> = {};
+  const headers: Record<string, string> = { "ngrok-skip-browser-warning": "true" };
   if (token) headers.Authorization = `Bearer ${token}`;
 
   const res = await fetch(`${spaceUrl}/gradio_api/upload`, {
@@ -565,7 +565,7 @@ export const generateHF3D = createServerFn({ method: "POST" })
         try {
           const ctl = new AbortController();
           const t = setTimeout(() => ctl.abort(), 4000);
-          const r = await fetch(`${spaceUrl}${path}`, { signal: ctl.signal });
+          const r = await fetch(`${spaceUrl}${path}`, { signal: ctl.signal, headers: { "ngrok-skip-browser-warning": "true" } });
           clearTimeout(t);
           lastStatus = r.status;
           // For local/ngrok, we allow any response (even 404/config etc.) as long as it's not a server/connection error
@@ -619,7 +619,10 @@ export const generateHF3D = createServerFn({ method: "POST" })
       }
 
       const fileRes = await fetch(fileUrl, {
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        headers: {
+          "ngrok-skip-browser-warning": "true",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
       });
       if (!fileRes.ok) {
         return { ok: false as const, error: `HF file fetch failed: ${fileRes.status}` };
