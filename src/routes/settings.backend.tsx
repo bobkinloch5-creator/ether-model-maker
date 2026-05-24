@@ -32,14 +32,24 @@ type ServerState = {
 
 async function pingSpace(spaceUrl: string, signal?: AbortSignal): Promise<{ ok: boolean; status: number; detail: string }> {
   const url = spaceUrl.replace(/\/$/, "");
-  try {
-    const res = await fetch(`${url}/gradio_api/info`, { method: "GET", signal });
-    if (res.ok) return { ok: true, status: res.status, detail: "online" };
-    if (res.status === 503) return { ok: false, status: 503, detail: "sleeping" };
-    return { ok: false, status: res.status, detail: `HTTP ${res.status}` };
-  } catch (e) {
-    return { ok: false, status: 0, detail: e instanceof Error ? e.message : "unreachable" };
+  // Different Gradio versions expose the schema at different paths.
+  // Try modern (/gradio_api/info), then legacy (/info), then /config.
+  const paths = ["/gradio_api/info", "/info", "/config"];
+  let lastStatus = 0;
+  for (const p of paths) {
+    try {
+      const res = await fetch(`${url}${p}`, { method: "GET", signal });
+      if (res.ok) return { ok: true, status: res.status, detail: "online" };
+      lastStatus = res.status;
+      if (res.status === 503) return { ok: false, status: 503, detail: "sleeping" };
+    } catch (e) {
+      if ((e as Error)?.name === "AbortError") {
+        return { ok: false, status: 0, detail: "aborted" };
+      }
+      // try next path
+    }
   }
+  return { ok: false, status: lastStatus, detail: lastStatus ? `HTTP ${lastStatus}` : "unreachable" };
 }
 
 function StatusDot({ status }: { status: ServerStatus }) {
