@@ -3,6 +3,25 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 /**
+ * Owner-only: returns the configured LOCAL_3D_API_URL secret so the
+ * backend-settings form can auto-fill with the live ngrok URL.
+ */
+export const getLocal3DUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { userId } = context;
+    const { data: roleRow } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "owner")
+      .maybeSingle();
+    if (!roleRow) return { ok: false as const, error: "Forbidden" };
+    const url = process.env.LOCAL_3D_API_URL?.trim().replace(/\/+$/, "") || "";
+    return { ok: true as const, url };
+  });
+
+/**
  * Owner-only health check for the local Image-to-3D server.
  * Hits `${LOCAL_3D_API_URL}/config` and verifies it returns Gradio JSON.
  *

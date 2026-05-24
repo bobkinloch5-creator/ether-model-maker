@@ -44,15 +44,15 @@ export function getBackendConfig(): BackendConfig {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as Partial<BackendConfig>;
-      // Migrate any older preset/custom selection to Pixal3D — it's the only
-      // supported backend now.
       const known = BACKEND_PRESETS.find((p) => p.id === parsed.presetId);
-      if (!known) return defaults();
+      // If the saved preset id is no longer in our list (e.g. we added/renamed
+      // presets), keep the user's saved spaceUrl/apiName/extraArgs intact and
+      // mark it as "custom" rather than wiping their config.
       return {
-        presetId: known.id,
-        spaceUrl: parsed.spaceUrl || known.spaceUrl,
-        apiName: parsed.apiName || known.apiName,
-        extraArgs: parsed.extraArgs ?? known.extraArgs,
+        presetId: known?.id ?? "custom",
+        spaceUrl: parsed.spaceUrl || known?.spaceUrl || DEFAULT_PRESET.spaceUrl,
+        apiName: parsed.apiName || known?.apiName || DEFAULT_PRESET.apiName,
+        extraArgs: parsed.extraArgs ?? known?.extraArgs ?? DEFAULT_PRESET.extraArgs,
       };
     }
   } catch { /* ignore */ }
