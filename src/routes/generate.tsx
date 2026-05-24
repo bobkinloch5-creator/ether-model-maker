@@ -552,15 +552,24 @@ function GeneratePage() {
             let pollSessionHash = "sessionHash" in startRes ? startRes.sessionHash : undefined;
             let pollStartedAt = startRes.startedAt;
             while (Date.now() < pollDeadline) {
-              const pr = await pollHF3DJob({
-                data: {
-                  eventId: pollEventId,
-                  spaceUrl: startRes.spaceUrl,
-                  apiName: pollApiName,
-                  startedAt: pollStartedAt,
-                  sessionHash: pollSessionHash,
-                },
-              });
+              let pr: any;
+              try {
+                pr = await pollHF3DJob({
+                  data: {
+                    eventId: pollEventId,
+                    spaceUrl: startRes.spaceUrl,
+                    apiName: pollApiName,
+                    startedAt: pollStartedAt,
+                    sessionHash: pollSessionHash,
+                  },
+                });
+              } catch (pollThrow: any) {
+                pollErr = pollThrow?.message || "Polling crashed";
+                if (/internal server error/i.test(pollErr || "")) {
+                  pollErr = "Server error while polling 3D job — backend may have crashed.";
+                }
+                break;
+              }
               if (!pr.ok) {
                 pollErr = "Polling failed";
                 break;
