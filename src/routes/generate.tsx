@@ -426,7 +426,9 @@ function GeneratePage() {
 
           // Fast health-check: skip dead Spaces in <4s instead of waiting 60s+.
           const isHealthy = async (spaceUrl?: string): Promise<boolean> => {
-            if (!spaceUrl) return false;
+            // Empty spaceUrl = server-resolved via LOCAL_3D_API_URL secret.
+            // The server will fail loudly if the secret is missing/unreachable.
+            if (!spaceUrl) return true;
             const base = spaceUrl.replace(/\/$/, "");
             // Bypass health check fetch for local or ngrok urls to avoid CORS/interstitial issues
             if (base.includes("localhost") || base.includes("127.0.0.1") || base.includes("ngrok")) {
