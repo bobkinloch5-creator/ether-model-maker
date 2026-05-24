@@ -1044,16 +1044,25 @@ function GeneratePage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl px-4 py-10">
-        <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground backdrop-blur">
-          <Zap className="h-3 w-3 text-primary-glow" /> AI-Powered Workspace
+      <main className="mx-auto max-w-7xl px-4 py-8 lg:py-10">
+        {/* Hero header — full width */}
+        <div className="mb-8">
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground backdrop-blur">
+            <Zap className="h-3 w-3 text-primary-glow" /> AI-Powered Workspace
+          </div>
+          <h1 className="mt-3 font-display text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.05]">
+            <span className="gradient-text">Generate</span> a 3D asset
+          </h1>
+          <p className="mt-2 text-muted-foreground max-w-2xl">
+            Describe what you want — KingDavez Studios crafts game-ready meshes, PBR textures, and concept art in seconds.
+          </p>
         </div>
-        <h1 className="mt-3 font-display text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.05]">
-          <span className="gradient-text">Generate</span> a 3D asset
-        </h1>
-        <p className="mt-2 text-muted-foreground max-w-2xl">
-          Describe what you want — KingDavez Studios crafts game-ready meshes, PBR textures, and concept art in seconds.
-        </p>
+
+        {/* Split studio layout */}
+        <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,540px)] gap-6 lg:gap-8 items-start">
+          {/* LEFT: Controls */}
+          <div className="min-w-0 space-y-0">
+
 
         {/* LLM status */}
         <div className="mt-6 flex items-center gap-2 text-sm">
@@ -1733,11 +1742,61 @@ function GeneratePage() {
             </div>
           )}
         </div>
+        {/* End LEFT column */}
+          </div>
 
+          {/* RIGHT: Sticky Preview / Result panel */}
+          <div className="lg:sticky lg:top-24 min-w-0 space-y-5">
+            {/* Empty state — shown when no generation yet */}
+            {!currentGen && (
+              <div className="studio-card overflow-hidden animate-fade-in">
+                <div className="flex items-center justify-between border-b border-white/10 px-5 py-3">
+                  <div className="flex items-center gap-2">
+                    <span className="relative flex h-2 w-2">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/60 opacity-75" />
+                      <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+                    </span>
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Studio Preview</span>
+                  </div>
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground/70">Idle</span>
+                </div>
+                <div className="preview-stage relative aspect-square w-full">
+                  <div className="absolute inset-0 grid place-items-center text-center px-8">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="relative h-16 w-16">
+                        <div className="absolute inset-0 rounded-2xl bg-[var(--gradient-primary)] opacity-30 blur-xl animate-pulse" />
+                        <div className="relative grid h-full w-full place-items-center rounded-2xl border border-white/15 bg-white/[0.04] backdrop-blur">
+                          <Box className="h-7 w-7 text-primary-glow" />
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="font-display text-base font-semibold text-foreground">Your model will appear here</h3>
+                        <p className="mt-1 text-xs text-muted-foreground max-w-xs">Pick a generation type, drop in a prompt or image, and hit <span className="text-foreground/90 font-medium">Generate</span>.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 divide-x divide-white/5 border-t border-white/10 text-center">
+                  <div className="px-3 py-3">
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Engine</div>
+                    <div className="mt-0.5 text-xs font-semibold text-foreground/90">TRELLIS · TripoSR</div>
+                  </div>
+                  <div className="px-3 py-3">
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Output</div>
+                    <div className="mt-0.5 text-xs font-semibold text-foreground/90">.glb / .fbx / .obj</div>
+                  </div>
+                  <div className="px-3 py-3">
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Avg time</div>
+                    <div className="mt-0.5 text-xs font-semibold text-foreground/90">~60 s</div>
+                  </div>
+                </div>
+              </div>
+            )}
 
         {/* Generation result */}
         {currentGen && (
-          <div className="mt-8 glass rounded-2xl p-8 animate-scale-in">
+          <div className={`studio-card p-7 animate-scale-in ${currentGen.status === "processing" ? "conic-ring" : ""}`}>
+
             {currentGen.status === "processing" ? (
               <>
                 <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
@@ -2167,36 +2226,47 @@ function GeneratePage() {
           </div>
         )}
 
-        {/* Credit costs info */}
-        <div className="mt-10 glass rounded-2xl p-6">
-          <h3 className="font-display text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-            Credit costs
-          </h3>
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div className="flex items-center gap-3">
-              <ImageIcon className="h-5 w-5 text-blue-400" />
-              <div>
-                <p className="text-sm font-medium">Image → 3D</p>
-                <p className="text-xs text-muted-foreground">3 credits</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Palette className="h-5 w-5 text-pink-400" />
-              <div>
-                <p className="text-sm font-medium">Re-texture</p>
-                <p className="text-xs text-muted-foreground">1 credit</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Sparkles className="h-5 w-5 text-amber-400" />
-              <div>
-                <p className="text-sm font-medium">Text → Image</p>
-                <p className="text-xs text-muted-foreground">1 credit</p>
+            {/* Credit costs info */}
+            <div className="studio-card p-5">
+              <h3 className="font-display text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                Credit costs
+              </h3>
+              <div className="grid gap-3 grid-cols-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="grid h-9 w-9 place-items-center rounded-lg bg-blue-400/10 border border-blue-400/20">
+                    <ImageIcon className="h-4 w-4 text-blue-400" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium truncate">Image → 3D</p>
+                    <p className="text-[11px] text-muted-foreground">3 credits</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <div className="grid h-9 w-9 place-items-center rounded-lg bg-pink-400/10 border border-pink-400/20">
+                    <Palette className="h-4 w-4 text-pink-400" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium truncate">Re-texture</p>
+                    <p className="text-[11px] text-muted-foreground">1 credit</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <div className="grid h-9 w-9 place-items-center rounded-lg bg-amber-400/10 border border-amber-400/20">
+                    <Sparkles className="h-4 w-4 text-amber-400" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium truncate">Text → Image</p>
+                    <p className="text-[11px] text-muted-foreground">1 credit</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+          {/* End RIGHT column */}
         </div>
+        {/* End split studio layout */}
       </main>
+
     </div>
   );
 }
