@@ -838,6 +838,47 @@ async function runTrellisPipelineInner(
   //    Spaces, while the bare subdomain returns a generic "Connection errored
   //    out" while the container is cold.
   console.log(`[HF 3D / TRELLIS] Connecting Gradio client to ${spaceUrl}`);
+
+  // 2a) 10-second reachability pre-flight. If we can't even fetch /config,
+  //     bail out fast with a clear error instead of waiting on a 120s
+  //     Client.connect deadline.
+  {
+    const probeUrl = `${spaceUrl.replace(/\/+$/, "")}/config`;
+    console.log(`[HF 3D / TRELLIS] pre-flight GET ${probeUrl} (10s timeout)`);
+    try {
+      const ctl = new AbortController();
+      const timer = setTimeout(() => ctl.abort(), 10_000);
+      const res = await fetch(probeUrl, {
+        method: "GET",
+        headers: { "ngrok-skip-browser-warning": "true", Accept: "application/json" },
+        signal: ctl.signal,
+      });
+      clearTimeout(timer);
+      console.log(`[HF 3D / TRELLIS] pre-flight ${probeUrl} → HTTP ${res.status}`);
+      if (!res.ok && res.status !== 404) {
+        const body = await res.text().catch(() => "");
+        if (isLocalUrl(spaceUrl)) {
+          throw new Error(`Local 3D server at ${spaceUrl} returned HTTP ${res.status}. Is the Gradio app running on http://127.0.0.1:7860 and the ngrok tunnel pointed at it? Body: ${body.slice(0, 160)}`);
+        }
+        throw new Error(`Pre-flight HTTP ${res.status} from ${probeUrl}: ${body.slice(0, 160)}`);
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (e instanceof Error && e.name === "AbortError") {
+        if (isLocalUrl(spaceUrl)) {
+          throw new Error(`Could not reach your local 3D server at ${spaceUrl} within 10s. Check that TripoSR is running on http://127.0.0.1:7860 and ngrok is forwarding to it.`);
+        }
+        throw new Error(`Pre-flight to ${probeUrl} timed out after 10s.`);
+      }
+      // Re-throw HTTP errors from the block above; wrap network errors.
+      if (/^Pre-flight |^Local 3D server |^Could not reach /.test(msg)) throw e;
+      if (isLocalUrl(spaceUrl)) {
+        throw new Error(`Could not reach your local 3D server at ${spaceUrl}: ${msg}`);
+      }
+      throw new Error(`Pre-flight to ${probeUrl} failed: ${msg}`);
+    }
+  }
+
   const isHf = /\.hf\.space$/i.test(new URL(spaceUrl).hostname);
   const hfToken = token && /^hf_/.test(token) ? (token as `hf_${string}`) : undefined;
 
