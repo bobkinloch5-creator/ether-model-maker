@@ -941,9 +941,10 @@ export const startHF3DJob = createServerFn({ method: "POST" })
           if (!data.prompt) return { ok: false as const, error: "No prompt provided for text-to-3D" };
           imageDataUrl = await generateImageFromPrompt(data.prompt);
         } else {
+          // image-to-3d: require an actual image. TripoSR is image-to-3D only.
           if (data.imageDataUrl) imageDataUrl = data.imageDataUrl;
           else if (data.prompt) imageDataUrl = await generateImageFromPrompt(data.prompt);
-          else return { ok: false as const, error: "No image or prompt provided for 3D generation" };
+          else return { ok: false as const, error: "Please upload or generate an image first." };
         }
 
         const qp = resolveQualityParams(data.quality, data.bakeTexture);
