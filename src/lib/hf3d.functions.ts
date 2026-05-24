@@ -1172,60 +1172,11 @@ export const startHF3DJob = createServerFn({ method: "POST" })
         return { ok: false as const, error: humanizeHFError(extractErrorMessage(err)) };
       }
     }
-
-
-    const sessionHash = makeSessionHash();
-    const startedAt = Date.now();
-
-    try {
-      const extraArgs: unknown[] = data.extraArgs && data.extraArgs.length > 0
-        ? data.extraArgs
-        : (() => {
-            const raw = process.env.HF_EXTRA_ARGS?.trim();
-            if (!raw) return [];
-            try { const v = JSON.parse(raw); return Array.isArray(v) ? v : [v]; } catch { return []; }
-          })();
-
-      // Build image input. If the user entered only a prompt, first create a
-      // reference image, then submit that image to Pixal3D.
-      let imageDataUrl: string;
-      if (data.kind === "text-to-3d") {
-        if (!data.prompt) return { ok: false as const, error: "No prompt provided for text-to-3D" };
-        imageDataUrl = await generateImageFromPrompt(data.prompt);
-      } else {
-        if (data.imageDataUrl) {
-          imageDataUrl = data.imageDataUrl;
-        } else if (data.prompt) {
-          imageDataUrl = await generateImageFromPrompt(data.prompt);
-        } else {
-          return { ok: false as const, error: "No image or prompt provided for 3D generation" };
-        }
-      }
-
-      const imageFile = await uploadDataUrlToGradio(spaceUrl, imageDataUrl, token);
-      const gen3dArgs = buildPayload(apiName, imageFile, extraArgs);
-      if (apiName.toLowerCase().endsWith("/generate_3d")) {
-        gen3dArgs[gen3dArgs.length - 1] = sessionHash;
-      }
-      console.log(`[HF 3D] start ${apiName} with ${gen3dArgs.length} args`);
-      const eventId = await startGradioJob(spaceUrl, apiName, gen3dArgs, token, sessionHash);
-
-      // Return immediately so long-running Pixal3D work is handled by polling
-      // instead of timing out the server request.
-      return {
-        ok: true as const,
-        eventId,
-        spaceUrl,
-        apiName,
-        sessionHash,
-        startedAt,
-      };
-    } catch (err) {
-      console.error(`[HF 3D] startHF3DJob error:`, err);
-      const msg = extractErrorMessage(err);
-      return { ok: false as const, error: msg };
-    }
+    // All HF Spaces are now routed through the SF3D / Trellis pipelines above,
+    // which always return inside their try/catch — no fall-through path.
+    return { ok: false as const, error: "Unreachable: 3D pipeline did not return" };
   });
+
 
 function extractErrorMessage(err: unknown): string {
   if (err instanceof Error) return err.message;
