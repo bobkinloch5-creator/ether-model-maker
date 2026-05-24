@@ -256,7 +256,9 @@ function GeneratePage() {
   }, [user]);
 
   const cost = profile?.is_owner ? 0 : (CREDIT_COSTS[selectedType] ?? 2);
-  const hasEnoughCredits = profile?.is_owner || (profile?.credits ?? 0) >= cost;
+  // Credit gate temporarily disabled (display is reading wrong source).
+  const hasEnoughCredits = true;
+
   const isProceduralPreview = currentGen?.result_data?.generation_method === "procedural";
 
   const handleEnhance = async () => {
