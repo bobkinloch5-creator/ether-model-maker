@@ -983,7 +983,10 @@ async function runTrellisPipelineInner(
   const mc = opts?.mcResolution ?? 96;
   const bake = !!opts?.bakeTexture;
   const texRes = opts?.textureResolution ?? 0;
-  console.log(`[HF 3D / TRELLIS] predict /generate`);
+  console.log(`[HF 3D / TRELLIS] predict /generate`, {
+    url: `${spaceUrl.replace(/\/+$/, "")}/gradio_api/call/generate`,
+    args: { processed_image: "<file handle from /preprocess>", mcResolution: mc, bakeTexture: bake, textureResolution: texRes },
+  });
   let genOut: unknown[];
   try {
     const r = await runGradioJob(app, "/generate", [processed], { timeoutMs: 600_000 });
