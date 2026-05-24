@@ -327,6 +327,33 @@ function BackendSettingsPage() {
 
   useEffect(() => { setCfg(getBackendConfig()); }, []);
 
+  // Auto-fill the Space URL from the live LOCAL_3D_API_URL secret on first
+  // load IF the user hasn't customized it yet (or it's still the old preset
+  // default). Saved overrides always win.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { getLocal3DUrl } = await import("@/lib/local-3d.functions");
+        const res = await getLocal3DUrl();
+        if (cancelled || !res.ok || !res.url) return;
+        setCfg((c) => {
+          const stored = getBackendConfig();
+          // Only overwrite when nothing has been explicitly saved for spaceUrl,
+          // or the saved URL still matches the original hard-coded preset
+          // default (i.e. user hasn't changed it themselves).
+          const presetDefault = BACKEND_PRESETS.find((p) => p.id === stored.presetId)?.spaceUrl;
+          const untouched = !stored.spaceUrl || stored.spaceUrl === presetDefault;
+          if (!untouched) return c;
+          const next = { ...c, spaceUrl: res.url };
+          saveBackendConfig(next);
+          return next;
+        });
+      } catch { /* non-fatal */ }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
