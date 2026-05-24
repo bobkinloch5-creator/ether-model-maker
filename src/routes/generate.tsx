@@ -436,6 +436,13 @@ function GeneratePage() {
           const { getBackendConfig } = await import("@/lib/backend-settings");
           const backendCfg = getBackendConfig();
           const { generateSF3DOnly } = await import("@/lib/hf3d.functions");
+          console.log("[3D GEN / client] calling generateSF3DOnly serverFn", {
+            presetId: "local-pc-triposr",
+            spaceUrl: backendCfg.spaceUrl || "(empty — server reads LOCAL_3D_API_URL)",
+            apiName: backendCfg.apiName,
+            extraArgs: backendCfg.extraArgs,
+            imageBytes: imageDataUrl.length,
+          });
           const res = await generateSF3DOnly({
             data: {
               imageDataUrl,
@@ -445,6 +452,7 @@ function GeneratePage() {
               extraArgs: backendCfg.extraArgs,
             },
           });
+          console.log("[3D GEN / client] generateSF3DOnly returned", res);
 
           if (res.ok) {
             modelUrl = res.modelUrl;
