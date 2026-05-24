@@ -1582,11 +1582,15 @@ async function isDataoortsOnline(url: string): Promise<boolean> {
 
 export const getProviderStatus = createServerFn({ method: "GET" })
   .handler(async () => {
-    const provider = process.env.THREED_PROVIDER || "hf";
+    const provider = process.env.THREED_PROVIDER?.trim() || (
+      process.env.DATAOORTS_3D_API_URL?.trim() || process.env.LOCAL_3D_API_URL?.trim()
+        ? "dataoorts_orion"
+        : "hf"
+    );
     if (provider !== "dataoorts_orion") {
       return { provider, status: "Connected" as const, url: "" };
     }
-    const url = process.env.DATAOORTS_3D_API_URL?.trim() || "";
+    const url = process.env.DATAOORTS_3D_API_URL?.trim() || process.env.LOCAL_3D_API_URL?.trim() || "";
     if (!url) {
       return { provider, status: "Not Configured" as const, url: "" };
     }
@@ -1604,20 +1608,36 @@ export const generateSF3DOnly = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { userId } = context;
 
-    const provider = process.env.THREED_PROVIDER || "hf";
+    const provider = process.env.THREED_PROVIDER?.trim() || (
+      process.env.DATAOORTS_3D_API_URL?.trim() || process.env.LOCAL_3D_API_URL?.trim()
+        ? "dataoorts_orion"
+        : "hf"
+    );
     if (provider === "dataoorts_orion") {
-      const dataoortsUrl = process.env.DATAOORTS_3D_API_URL?.trim() || "";
+      const localApiUrl = process.env.LOCAL_3D_API_URL?.trim();
+      const dataoortsUrl = process.env.DATAOORTS_3D_API_URL?.trim() || localApiUrl || "";
       if (!dataoortsUrl) {
-        return { ok: false as const, error: "3D server not configured. Add your Dataoorts Orion API URL." };
+        return { ok: false as const, error: "3D server not configured. Set DATAOORTS_3D_API_URL or LOCAL_3D_API_URL." };
       }
       if (!await isDataoortsOnline(dataoortsUrl)) {
-        return { ok: false as const, error: "3D server is offline. Start your Dataoorts Orion GPU server." };
+        return { ok: false as const, error: "3D server is offline. Start your local 3D server or verify the ngrok tunnel." };
       }
 
       const m = data.imageDataUrl.match(/^data:([^;]+);base64,(.+)$/);
       if (!m || !/^image\//i.test(m[1])) {
         return { ok: false as const, error: "Uploaded file is not a valid image (PNG or JPG)." };
       }
+
+      if (localApiUrl && !process.env.DATAOORTS_3D_API_URL?.trim()) {
+        try {
+          const result = await runLocalPCTripoSR(dataoortsUrl, "/generate-3d", data.imageDataUrl);
+          return { ok: true as const, modelUrl: result.fileUrl };
+        } catch (err: any) {
+          const msg = err instanceof Error ? err.message : String(err);
+          return { ok: false as const, error: `Local PC TripoSR generation failed: ${msg}` };
+        }
+      }
+
       const mime = m[1];
       const bin = Uint8Array.from(atob(m[2]), (c) => c.charCodeAt(0));
       const ext = (mime.split("/")[1] || "png").replace(/[^a-z0-9]/gi, "");
@@ -1631,7 +1651,7 @@ export const generateSF3DOnly = createServerFn({ method: "POST" })
       const { data: pubIn } = supabaseAdmin.storage.from("models").getPublicUrl(inputPath);
       const inputFile = handle_file(pubIn.publicUrl);
 
-      const orionToken = process.env.DATAOORTS_3D_API_KEY?.trim() || undefined;
+      const orionToken = process.env.DATAOORTS_3D_API_KEY?.trim() || process.env.LOCAL_3D_API_KEY?.trim() || undefined;
 
       let app: Client;
       try {
