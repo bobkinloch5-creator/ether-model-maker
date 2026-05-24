@@ -102,12 +102,6 @@ export function getBackendConfig(): BackendConfig {
           extraArgs: known.extraArgs,
         };
       }
-          presetId: "auto",
-          spaceUrl: known.spaceUrl,
-          apiName: known.apiName,
-          extraArgs: known.extraArgs,
-        };
-      }
       return {
         presetId: known?.id ?? "custom",
         spaceUrl: parsed.spaceUrl || known?.spaceUrl || DEFAULT_PRESET.spaceUrl,
