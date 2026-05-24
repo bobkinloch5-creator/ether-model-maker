@@ -347,7 +347,7 @@ async function ensureStartSession(
   sessionHash: string,
 ): Promise<void> {
   try {
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    const headers: Record<string, string> = { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" };
     if (token) headers.Authorization = `Bearer ${token}`;
     const res = await fetch(`${spaceUrl}/gradio_api/call/start_session`, {
       method: "POST",
