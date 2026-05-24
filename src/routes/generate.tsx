@@ -1963,7 +1963,7 @@ function GeneratePage() {
                 </p>
                 {hfStatus !== "idle" && (
                   <p className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground/70">
-                    Hugging Face job: {hfStatus}
+                    Local server job: {hfStatus}
                   </p>
                 )}
               </>
