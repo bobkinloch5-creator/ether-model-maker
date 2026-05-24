@@ -284,14 +284,31 @@ async function ensureStartSession(
 async function runGradioJob(
   app: any,
   apiName: string,
-  payload: unknown[]
+  payload: unknown[],
+  opts?: { timeoutMs?: number },
 ): Promise<unknown[]> {
-  console.log(`[HF 3D] Submitting job to ${apiName} with payload size ${payload.length}`);
+  const timeoutMs = opts?.timeoutMs ?? 180_000;
+  console.log(`[HF 3D] Submitting job to ${apiName} with payload size ${payload.length} (timeout ${timeoutMs}ms)`);
   const job = app.submit(apiName, payload);
   let lastData: unknown[] | null = null;
-  
+  const startedAt = Date.now();
+
+  const iterator = (job as AsyncIterable<any>)[Symbol.asyncIterator]();
   try {
-    for await (const message of job) {
+    while (true) {
+      const remaining = timeoutMs - (Date.now() - startedAt);
+      if (remaining <= 0) {
+        try { (job as any).cancel?.(); } catch { /* ignore */ }
+        throw new Error(`Generation timed out after ${Math.round(timeoutMs / 1000)}s. The Space may be sleeping or overloaded — please try again in a minute.`);
+      }
+      const next = iterator.next();
+      const timeout = new Promise<{ value: any; done: true }>((_, reject) =>
+        setTimeout(() => reject(new Error(
+          `Generation timed out after ${Math.round(timeoutMs / 1000)}s waiting for the Space to respond. The Hugging Face Space may be sleeping or overloaded — please try again in a minute.`
+        )), remaining),
+      );
+      const message: any = await Promise.race([next, timeout]).then((r: any) => r.done ? null : r.value);
+      if (!message) break;
       if (message.type === "data") {
         lastData = message.data as unknown[];
       } else if (message.type === "status") {
@@ -302,6 +319,7 @@ async function runGradioJob(
       }
     }
   } catch (err: any) {
+    try { (job as any).cancel?.(); } catch { /* ignore */ }
     console.error(`[HF 3D] Error in submit job stream for ${apiName}:`, err);
     throw err;
   }
