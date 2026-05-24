@@ -1628,20 +1628,34 @@ export const generateSF3DOnly = createServerFn({ method: "POST" })
     const { userId } = context;
 
     const presetId = data.presetId || (process.env.LOCAL_3D_API_URL ? "local-pc-triposr" : "stable-fast-3d");
+    console.log("[3D GEN / server] generateSF3DOnly entry", {
+      presetId,
+      hasLOCAL_3D_API_URL: !!process.env.LOCAL_3D_API_URL,
+      LOCAL_3D_API_URL_prefix: process.env.LOCAL_3D_API_URL?.trim().slice(0, 40) || null,
+      hasLocalKey: !!(process.env.LOCAL_3D_API_KEY || process.env.LOCAL_3D_API_PASSWORD),
+      clientSpaceUrl: data.spaceUrl || null,
+      clientApiName: data.apiName || null,
+      userId,
+    });
 
     if (presetId === "local-pc-triposr") {
       const localUrl = process.env.LOCAL_3D_API_URL?.trim();
+      console.log("[3D GEN / server] taking local-pc-triposr branch, localUrl=", localUrl);
       if (localUrl) {
         try {
           const spaceUrl = assertSafeSpaceUrl(normalizeSpaceUrl(localUrl));
           const localKey = process.env.LOCAL_3D_API_KEY?.trim() || process.env.LOCAL_3D_API_PASSWORD?.trim() || undefined;
+          console.log("[3D GEN / server] calling runTrellisPipeline at", spaceUrl, "withKey=", !!localKey);
           const result = await runTrellisPipeline(spaceUrl, data.imageDataUrl, localKey, { mcResolution: 256 });
+          console.log("[3D GEN / server] runTrellisPipeline returned fileUrl=", result.fileUrl);
           return { ok: true as const, modelUrl: result.fileUrl };
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err);
+          console.error("[3D GEN / server] runTrellisPipeline threw:", message);
           return { ok: false as const, error: message };
         }
       } else {
+        console.warn("[3D GEN / server] LOCAL_3D_API_URL not set in worker env");
         return { ok: false as const, error: "Local 3D URL is not configured in backend secrets." };
       }
     }
