@@ -156,15 +156,17 @@ export const testGradioSpace = createServerFn({ method: "POST" })
 
     try {
       // Provider-specific probes:
-      //   HF Spaces  → /gradio_api/info ONLY (never /config — user requirement)
+      //   HF Spaces  → /gradio_api/info → /info → /config (different Gradio
+      //               versions expose the schema at different paths; older
+      //               Spaces like stabilityai/stable-fast-3d only have /info)
       //   ComfyUI    → /system_stats, /queue, or /
-      //   Local      → /gradio_api/info → /config (Gradio convention)
+      //   Local      → /gradio_api/info → /info → /config
       const probePaths: string[] =
         provider === "hf"
-          ? ["/gradio_api/info"]
+          ? ["/gradio_api/info", "/info", "/config"]
           : provider === "comfyui"
           ? ["/system_stats", "/queue", "/"]
-          : ["/gradio_api/info", "/config"];
+          : ["/gradio_api/info", "/info", "/config"];
 
       let res: Response | { __err: unknown } | null = null;
       let usedPath = "";
