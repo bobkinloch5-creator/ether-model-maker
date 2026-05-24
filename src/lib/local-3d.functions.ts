@@ -95,3 +95,79 @@ export const testLocal3DServer = createServerFn({ method: "POST" })
       return { ok: false as const, error: `Failed to reach ${url}: ${msg}` };
     }
   });
+
+/**
+ * Owner-only generic Gradio Space connection test.
+ * Proxies the request server-side so we can attach `ngrok-skip-browser-warning`
+ * (browsers can't include it cross-origin without CORS preflight pain) and
+ * dodge mixed-content / CORS rejections.
+ */
+export const testGradioSpace = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { spaceUrl: string; apiName?: string }) => input)
+  .handler(async ({ context, data }) => {
+    const { userId } = context;
+    const { data: roleRow } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "owner")
+      .maybeSingle();
+    if (!roleRow) return { ok: false as const, error: "Forbidden: owner only" };
+
+    const base = (data.spaceUrl || "").trim().replace(/\/+$/, "");
+    if (!base) return { ok: false as const, error: "Space URL is required" };
+    let parsed: URL;
+    try { parsed = new URL(base); } catch { return { ok: false as const, error: `Invalid URL: ${base}` }; }
+    if (parsed.protocol !== "https:") return { ok: false as const, error: "URL must use https" };
+
+    const headers = { "ngrok-skip-browser-warning": "true", Accept: "application/json" };
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), 10_000);
+
+    try {
+      // Try /gradio_api/info first (HF Spaces), fall back to /config (local Gradio).
+      let res = await fetch(`${base}/gradio_api/info`, { headers, signal: ctl.signal }).catch(() => null);
+      let usedPath = "/gradio_api/info";
+      if (!res || !res.ok) {
+        usedPath = "/config";
+        res = await fetch(`${base}/config`, { headers, signal: ctl.signal });
+      }
+      clearTimeout(timer);
+
+      const text = await res.text();
+      if (!res.ok) {
+        return { ok: false as const, error: `HTTP ${res.status} from ${base}${usedPath}: ${text.slice(0, 220)}` };
+      }
+      let json: any;
+      try { json = JSON.parse(text); } catch {
+        return { ok: false as const, error: `Non-JSON response from ${base}${usedPath}` };
+      }
+
+      const apiName = data.apiName?.trim();
+      // Collect endpoint names from either shape
+      const namedEndpoints = json?.named_endpoints && typeof json.named_endpoints === "object"
+        ? Object.keys(json.named_endpoints) : [];
+      const deps = Array.isArray(json?.dependencies) ? json.dependencies : [];
+      const depNames = deps
+        .map((d: any) => (typeof d?.api_name === "string" ? (d.api_name.startsWith("/") ? d.api_name : `/${d.api_name}`) : null))
+        .filter(Boolean) as string[];
+      const endpoints = Array.from(new Set([...namedEndpoints, ...depNames]));
+
+      if (apiName) {
+        const has = endpoints.includes(apiName);
+        return {
+          ok: has,
+          message: has
+            ? `Connected. Found ${endpoints.length} endpoints, including ${apiName}.`
+            : `Server is up but ${apiName} not found. Available: ${endpoints.join(", ") || "(none)"}`,
+          endpoints,
+        } as const;
+      }
+      return { ok: true as const, message: `Connected. Found ${endpoints.length} endpoints.`, endpoints };
+    } catch (err) {
+      clearTimeout(timer);
+      const msg = err instanceof Error ? err.message : String(err);
+      return { ok: false as const, error: `Failed to reach ${base}: ${msg}` };
+    }
+  });

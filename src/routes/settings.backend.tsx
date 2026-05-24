@@ -381,21 +381,15 @@ function BackendSettingsPage() {
     setTesting(true);
     setTestResult(null);
     try {
-      const url = cfg.spaceUrl.replace(/\/$/, "");
-      const res = await fetch(`${url}/gradio_api/info`, { method: "GET" });
-      if (!res.ok) {
-        setTestResult({ ok: false, msg: `Space responded ${res.status}. It may be sleeping — try again in ~60s.` });
-        return;
-      }
-      const info = await res.json();
-      const endpoints = Object.keys(info?.named_endpoints || {});
-      const hasEndpoint = endpoints.includes(cfg.apiName);
-      setTestResult({
-        ok: hasEndpoint,
-        msg: hasEndpoint
-          ? `Connected. Found ${endpoints.length} endpoints, including ${cfg.apiName}.`
-          : `Space is up but API ${cfg.apiName} not found. Available: ${endpoints.join(", ") || "(none)"}`,
+      const { testGradioSpace } = await import("@/lib/local-3d.functions");
+      const res = await testGradioSpace({
+        data: { spaceUrl: cfg.spaceUrl, apiName: cfg.apiName },
       });
+      if (res.ok) {
+        setTestResult({ ok: true, msg: res.message });
+      } else {
+        setTestResult({ ok: false, msg: ("error" in res && res.error) ? res.error : ("message" in res ? res.message : "Connection failed") });
+      }
     } catch (e) {
       setTestResult({ ok: false, msg: e instanceof Error ? e.message : "Connection failed" });
     } finally {
