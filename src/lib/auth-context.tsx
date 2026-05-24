@@ -93,23 +93,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signInWithGoogle = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/dashboard`,
-      },
+    const { lovable } = await import("@/integrations/lovable");
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: `${window.location.origin}/dashboard`,
     });
-    return { error: error?.message ?? null };
+    if (result.error) return { error: result.error instanceof Error ? result.error.message : String(result.error) };
+    return { error: null };
   };
 
   const signInWithApple = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "apple",
-      options: {
-        redirectTo: `${window.location.origin}/dashboard`,
-      },
+    const { lovable } = await import("@/integrations/lovable");
+    const result = await lovable.auth.signInWithOAuth("apple", {
+      redirect_uri: `${window.location.origin}/dashboard`,
     });
-    return { error: error?.message ?? null };
+    if (result.error) return { error: result.error instanceof Error ? result.error.message : String(result.error) };
+    return { error: null };
   };
 
   const resetPassword = async (email: string) => {

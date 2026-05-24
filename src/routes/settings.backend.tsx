@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { ArrowLeft, Save, Server, CheckCircle2, Loader2, ExternalLink, Power, Circle } from "lucide-react";
+import { ArrowLeft, Save, Server, CheckCircle2, Loader2, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,66 +18,8 @@ import {
   saveBackendConfig,
   resolveExtraArgs,
   type BackendConfig,
-  type BackendPreset,
 } from "@/lib/backend-settings";
 import { useAuth } from "@/lib/auth-context";
-
-type ServerStatus = "unknown" | "checking" | "online" | "sleeping" | "starting" | "error";
-
-type ServerState = {
-  status: ServerStatus;
-  detail?: string;
-  checkedAt?: number;
-};
-
-async function pingSpace(spaceUrl: string, signal?: AbortSignal): Promise<{ ok: boolean; status: number; detail: string }> {
-  const url = spaceUrl.replace(/\/$/, "");
-  // Different Gradio versions expose the schema at different paths.
-  // Try modern (/gradio_api/info), then legacy (/info), then /config.
-  const paths = ["/gradio_api/info", "/info", "/config"];
-  let lastStatus = 0;
-  for (const p of paths) {
-    try {
-      const res = await fetch(`${url}${p}`, { method: "GET", signal });
-      if (res.ok) return { ok: true, status: res.status, detail: "online" };
-      lastStatus = res.status;
-      if (res.status === 503) return { ok: false, status: 503, detail: "sleeping" };
-    } catch (e) {
-      if ((e as Error)?.name === "AbortError") {
-        return { ok: false, status: 0, detail: "aborted" };
-      }
-      // try next path
-    }
-  }
-  return { ok: false, status: lastStatus, detail: lastStatus ? `HTTP ${lastStatus}` : "unreachable" };
-}
-
-function StatusDot({ status }: { status: ServerStatus }) {
-  const map: Record<ServerStatus, string> = {
-    unknown: "text-muted-foreground",
-    checking: "text-sky-400 animate-pulse",
-    online: "text-emerald-400",
-    sleeping: "text-amber-400",
-    starting: "text-amber-400 animate-pulse",
-    error: "text-red-400",
-  };
-  return <Circle className={`w-3 h-3 fill-current ${map[status]}`} />;
-}
-
-function hfRestartUrl(spaceUrl: string): string {
-  // https://dave1010101-trellis-2.hf.space  ->  https://huggingface.co/spaces/dave1010101/trellis-2/settings
-  try {
-    const host = new URL(spaceUrl).host; // dave1010101-trellis-2.hf.space
-    const sub = host.split(".")[0]; // dave1010101-trellis-2
-    const idx = sub.indexOf("-");
-    if (idx < 0) return "https://huggingface.co/spaces";
-    const user = sub.slice(0, idx);
-    const name = sub.slice(idx + 1);
-    return `https://huggingface.co/spaces/${user}/${name}`;
-  } catch {
-    return "https://huggingface.co/spaces";
-  }
-}
 
 async function openExternalUrl(url: string, label: string) {
   const popup = window.open(url, "_blank", "noopener,noreferrer");
@@ -98,190 +40,6 @@ async function openExternalUrl(url: string, label: string) {
   }
 }
 
-function ServersPanel({ isOwner }: { isOwner: boolean }) {
-  const [states, setStates] = useState<Record<string, ServerState>>(() =>
-    Object.fromEntries(BACKEND_PRESETS.map((p) => [p.id, { status: "unknown" as ServerStatus }]))
-  );
-  const [busy, setBusy] = useState(false);
-
-  const openExternal = useCallback(async (url: string, label: string) => {
-    await openExternalUrl(url, label);
-  }, []);
-
-  const checkOne = useCallback(async (preset: BackendPreset) => {
-    setStates((s) => ({ ...s, [preset.id]: { ...s[preset.id], status: "checking" } }));
-    if (preset.id === "dataoorts_orion") {
-      try {
-        const { getProviderStatus } = await import("@/lib/hf3d.functions");
-        const res = await getProviderStatus();
-        setStates((s) => ({
-          ...s,
-          [preset.id]: {
-            status: res.status === "Connected" ? "online" : res.status === "Offline" ? "error" : "error",
-            detail: res.status === "Not Configured" ? "Not Configured" : res.status,
-            checkedAt: Date.now(),
-          },
-        }));
-        return res.status === "Connected";
-      } catch (e) {
-        setStates((s) => ({
-          ...s,
-          [preset.id]: {
-            status: "error",
-            detail: "unreachable",
-            checkedAt: Date.now(),
-          },
-        }));
-        return false;
-      }
-    }
-    const r = await pingSpace(preset.spaceUrl);
-    setStates((s) => ({
-      ...s,
-      [preset.id]: {
-        status: r.ok ? "online" : r.status === 503 ? "sleeping" : "error",
-        detail: r.detail,
-        checkedAt: Date.now(),
-      },
-    }));
-    return r.ok;
-  }, []);
-
-  const checkAll = useCallback(async () => {
-    setBusy(true);
-    await Promise.all(BACKEND_PRESETS.map((p) => checkOne(p)));
-    setBusy(false);
-  }, [checkOne]);
-
-  const wakeOne = useCallback(async (preset: BackendPreset) => {
-    if (!preset.spaceUrl) return;
-    const base = preset.spaceUrl.replace(/\/$/, "");
-    // Hit multiple endpoints: HF wakes a Space on any inbound request, but
-    // hitting the gradio API path is more reliable than the root HTML page.
-    const urls = [
-      `${base}/`,
-      `${base}/gradio_api/info`,
-      `${base}/config`,
-      `${base}/api/predict`,
-    ];
-    await Promise.all(
-      urls.map((u) =>
-        fetch(u, { method: "GET", mode: "no-cors" as RequestMode }).catch(() => {})
-      )
-    );
-  }, []);
-
-  const startAll = useCallback(async () => {
-    if (!isOwner) return;
-    setBusy(true);
-    toast.info("Waking servers…", { description: "This can take 30–90s. Spaces in error state need a manual restart on Hugging Face." });
-    setStates((s) => {
-      const next = { ...s };
-      for (const p of BACKEND_PRESETS) next[p.id] = { ...next[p.id], status: "starting" };
-      return next;
-    });
-    // Fire wake pings to every sleeping Space
-    await Promise.all(BACKEND_PRESETS.map((p) => wakeOne(p)));
-
-    // Poll every 8s for up to ~3 min; re-ping any still down at each tick
-    let allUp = false;
-    for (let i = 0; i < 22; i++) {
-      await new Promise((r) => setTimeout(r, 8_000));
-      const results = await Promise.all(BACKEND_PRESETS.map((p) => checkOne(p)));
-      allUp = results.every(Boolean);
-      if (allUp) break;
-      // Re-ping the still-down ones to keep nudging HF
-      const down = BACKEND_PRESETS.filter((_, idx) => !results[idx]);
-      await Promise.all(down.map((p) => wakeOne(p)));
-    }
-    setBusy(false);
-    if (allUp) {
-      toast.success("All servers online");
-    } else {
-      toast.warning("Some Spaces couldn't be woken", {
-        description: "They're likely in HF error state — click the Restart link next to each.",
-      });
-    }
-  }, [isOwner, checkOne, wakeOne]);
-
-  useEffect(() => { checkAll(); }, [checkAll]);
-
-  const labelFor = (st: ServerStatus) => ({
-    unknown: "Unknown",
-    checking: "Checking…",
-    online: "Online",
-    sleeping: "Sleeping",
-    starting: "Starting…",
-    error: "Offline",
-  })[st];
-
-  return (
-    <div className="mb-6 space-y-4 rounded-2xl border border-border bg-card/50 p-6 backdrop-blur">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-semibold">Server status</h2>
-          <p className="text-xs text-muted-foreground">
-            Live status of all Hugging Face Spaces. {isOwner ? "Use Start to wake any that are sleeping. Spaces stuck in error need a Restart on HF." : "Only owners can wake sleeping servers."}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button onClick={checkAll} variant="outline" size="sm" disabled={busy} className="gap-2">
-            {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-            Refresh
-          </Button>
-          {isOwner && (
-            <Button onClick={startAll} size="sm" disabled={busy} className="gap-2">
-              <Power className="w-4 h-4" />
-              Start servers
-            </Button>
-          )}
-        </div>
-      </div>
-
-      <ul className="divide-y divide-border/60 rounded-lg border border-border/60 overflow-hidden">
-        {BACKEND_PRESETS.map((p) => {
-          const st = states[p.id]?.status ?? "unknown";
-          const needsRestart = st === "sleeping" || st === "error";
-          return (
-            <li key={p.id} className="flex items-center justify-between gap-3 px-4 py-3 text-sm">
-              <div className="min-w-0 flex items-center gap-3">
-                <StatusDot status={st} />
-                <div className="min-w-0">
-                  <div className="font-medium truncate">{p.label}</div>
-                  <div className="text-xs text-muted-foreground truncate">{p.spaceUrl}</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <span className="text-xs text-muted-foreground">{labelFor(st)}</span>
-                {needsRestart && isOwner && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="gap-1 h-7 px-2 text-xs"
-                    title="Open Space page on Hugging Face in a new tab — click 'Restart this Space' there"
-                    onClick={() => void openExternal(hfRestartUrl(p.spaceUrl), "Restart")}
-                  >
-                    Restart on HF <ExternalLink className="w-3 h-3" />
-                  </Button>
-                )}
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="gap-1 h-7 px-2"
-                  onClick={() => void openExternal(p.spaceUrl, p.label)}
-                >
-                  <ExternalLink className="w-3 h-3" />
-                </Button>
-              </div>
-            </li>
-          );
-        })}
-      </ul>
-    </div>
-  );
-}
 
 function LocalServerPanel() {
   const [busy, setBusy] = useState(false);
@@ -351,7 +109,7 @@ export const Route = createFileRoute("/settings/backend")({
 });
 
 function BackendSettingsPage() {
-  const { profile, loading: authLoading } = useAuth();
+  const { profile, session, loading: authLoading } = useAuth();
   const isOwner = profile?.is_owner === true || (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"));
   const [cfg, setCfg] = useState<BackendConfig>(() => getBackendConfig());
   const [testing, setTesting] = useState(false);
@@ -363,10 +121,11 @@ function BackendSettingsPage() {
 
   useEffect(() => { setCfg(getBackendConfig()); }, []);
 
-  // Auto-fill the Space URL from the live LOCAL_3D_API_URL secret on first
-  // load IF the user hasn't customized it yet (or it's still the old preset
-  // default). Saved overrides always win.
+  // Auto-fill the Space URL from the live LOCAL_3D_API_URL secret. Gated on
+  // `session` so the server fn call goes out with a bearer token — otherwise
+  // requireSupabaseAuth 401s on first render before the session hydrates.
   useEffect(() => {
+    if (!session) return;
     let cancelled = false;
     (async () => {
       try {
@@ -375,9 +134,6 @@ function BackendSettingsPage() {
         if (cancelled || !res.ok || !res.url) return;
         setCfg((c) => {
           const stored = getBackendConfig();
-          // Only overwrite when nothing has been explicitly saved for spaceUrl,
-          // or the saved URL still matches the original hard-coded preset
-          // default (i.e. user hasn't changed it themselves).
           const presetDefault = BACKEND_PRESETS.find((p) => p.id === stored.presetId)?.spaceUrl;
           const untouched = !stored.spaceUrl || stored.spaceUrl === presetDefault;
           if (!untouched) return c;
@@ -388,7 +144,7 @@ function BackendSettingsPage() {
       } catch { /* non-fatal */ }
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [session]);
 
   if (authLoading) {
     return (
@@ -487,12 +243,15 @@ function BackendSettingsPage() {
           <h1 className="text-3xl font-bold">3D Backend</h1>
         </div>
         <p className="text-muted-foreground mb-8">
-          Pick which Hugging Face Space generates your 3D models. Settings are stored on this device.
+          Connect your own local TripoSR server via an ngrok / Cloudflare tunnel. Settings are stored on this device.
         </p>
 
-        <ServersPanel isOwner={isOwner} />
-
         <LocalServerPanel />
+
+
+
+
+
 
 
 
