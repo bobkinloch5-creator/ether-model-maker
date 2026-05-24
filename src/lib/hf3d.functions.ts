@@ -1443,3 +1443,106 @@ export const pollHF3DJob = createServerFn({ method: "POST" })
     }
   });
 
+
+// =============================================================================
+// SIMPLE SF3D PATH — single backend, no fallbacks, verbose errors.
+// stabilityai/stable-fast-3d  →  /run_button(input_image, foreground_ratio=0.85,
+//   remesh_option="None", vertex_count=-1, texture_size=1024)
+// =============================================================================
+
+const SF3D_INPUT = z.object({
+  imageDataUrl: z.string().min(1).max(15_000_000),
+});
+
+const SF3D_SPACE_URL = "https://stabilityai-stable-fast-3d.hf.space";
+const SF3D_SPACE_ID = "stabilityai/stable-fast-3d";
+const SF3D_API_NAME = "/run_button";
+
+export const generateSF3DOnly = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => SF3D_INPUT.parse(d))
+  .handler(async ({ data, context }) => {
+    const { userId } = context;
+    const token = process.env.HF_TOKEN?.trim();
+    if (!token) {
+      return { ok: false as const, error: "HF_TOKEN secret is missing on the server." };
+    }
+
+    const m = data.imageDataUrl.match(/^data:([^;]+);base64,(.+)$/);
+    if (!m || !/^image\//i.test(m[1])) {
+      return { ok: false as const, error: "Uploaded file is not a valid image (PNG or JPG)." };
+    }
+    const mime = m[1];
+    const bin = Uint8Array.from(atob(m[2]), (c) => c.charCodeAt(0));
+    const ext = (mime.split("/")[1] || "png").replace(/[^a-z0-9]/gi, "");
+    const inputPath = `sf3d-inputs/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
+    const upIn = await supabaseAdmin.storage
+      .from("models")
+      .upload(inputPath, bin, { contentType: mime, upsert: false });
+    if (upIn.error) {
+      return { ok: false as const, error: `Image upload to storage failed: ${upIn.error.message}` };
+    }
+    const { data: pubIn } = supabaseAdmin.storage.from("models").getPublicUrl(inputPath);
+    const inputFile = handle_file(pubIn.publicUrl);
+
+    let app: Client;
+    try {
+      app = await Client.connect(SF3D_SPACE_ID, { hf_token: token as `hf_${string}` } as any);
+    } catch (e) {
+      const raw = e instanceof Error ? e.message : String(e);
+      return { ok: false as const, error: `Connect failed → ${SF3D_SPACE_URL}: ${raw.slice(0, 400)}` };
+    }
+
+    let out: unknown[];
+    try {
+      out = await runGradioJob(
+        app,
+        SF3D_API_NAME,
+        [inputFile, 0.85, "None", -1, 1024],
+        { timeoutMs: 120_000 },
+      );
+    } catch (e) {
+      const raw = e instanceof Error ? e.message : String(e);
+      return { ok: false as const, error: `${SF3D_SPACE_URL}${SF3D_API_NAME} failed: ${raw.slice(0, 600)}` };
+    }
+
+    let fileUrl: string | null = null;
+    for (const item of out) {
+      const u = extractFileUrl(SF3D_SPACE_URL, item);
+      if (u && /\.(glb|obj|ply)(\?|$)/i.test(u)) { fileUrl = u; break; }
+    }
+    if (!fileUrl) {
+      for (const item of out) {
+        const u = extractFileUrl(SF3D_SPACE_URL, item);
+        if (u) { fileUrl = u; break; }
+      }
+    }
+    if (!fileUrl) {
+      return { ok: false as const, error: `No model file in Space output: ${JSON.stringify(out).slice(0, 400)}` };
+    }
+
+    const fileRes = await fetch(fileUrl, { headers: { Authorization: `Bearer ${token}` } });
+    if (!fileRes.ok) {
+      const body = await fileRes.text().catch(() => "");
+      return {
+        ok: false as const,
+        error: `Download failed → ${fileUrl} (HTTP ${fileRes.status} ${fileRes.statusText}). ${body.slice(0, 200)}`,
+      };
+    }
+    const buf = new Uint8Array(await fileRes.arrayBuffer());
+    const outExt = fileUrl.toLowerCase().endsWith(".obj")
+      ? "obj"
+      : fileUrl.toLowerCase().endsWith(".ply")
+      ? "ply"
+      : "glb";
+    const outPath = `hf/${userId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${outExt}`;
+    const upOut = await supabaseAdmin.storage.from("models").upload(outPath, buf, {
+      contentType: outExt === "glb" ? "model/gltf-binary" : "application/octet-stream",
+      upsert: false,
+    });
+    if (upOut.error) {
+      return { ok: false as const, error: `Storage upload failed: ${upOut.error.message}` };
+    }
+    const { data: pubOut } = supabaseAdmin.storage.from("models").getPublicUrl(outPath);
+    return { ok: true as const, modelUrl: pubOut.publicUrl };
+  });
