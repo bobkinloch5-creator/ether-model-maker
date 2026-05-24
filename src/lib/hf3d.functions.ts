@@ -917,7 +917,7 @@ async function runTrellisPipelineInner(
   console.log(`[HF 3D / TRELLIS] predict /preprocess (optional)`);
   let processed: unknown = inputFile;
   try {
-    const preRes = await runGradioJob(app, "/preprocess", [inputFile, true, 0.85]);
+    const preRes = await runGradioJob(app, "/preprocess", [inputFile, true, 0.85], { timeoutMs: 600_000 });
     if (preRes && preRes[0]) processed = preRes[0];
   } catch (e) {
     const msg = e instanceof Error ? e.message : (typeof e === "object" ? JSON.stringify(e).slice(0, 300) : String(e));
