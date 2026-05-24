@@ -371,8 +371,19 @@ function GeneratePage() {
 
       let hfError: string | null = null;
       if (selectedType === "image-to-3d") {
+        if (!imageDataUrl) {
+          const msg = "Please upload an image first. Local 3D generation requires an image.";
+          setError(msg);
+          setHfStatus("error");
+          setHfMessage(msg);
+          toast.error("Image required", { description: msg });
+          setIsGenerating(false);
+          setGenStartedAt(null);
+          return;
+        }
         try {
           let inputImage = imageDataUrl;
+
 
           const { startHF3DJob, pollHF3DJob } = await import("@/lib/hf3d.functions");
           const { getBackendConfig, resolveExtraArgs, BACKEND_PRESETS } = await import("@/lib/backend-settings");
