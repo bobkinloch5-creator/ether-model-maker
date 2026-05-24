@@ -321,7 +321,7 @@ async function startGradioJob(
   token: string | undefined,
   sessionHash: string,
 ): Promise<string> {
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  const headers: Record<string, string> = { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" };
   if (token) headers.Authorization = `Bearer ${token}`;
   const postRes = await fetch(`${spaceUrl}/gradio_api/call${apiName}`, {
     method: "POST",
