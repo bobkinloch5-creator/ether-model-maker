@@ -704,12 +704,16 @@ async function runTrellisPipelineInner(
   //    forward the ngrok header on every request via options.headers.
   console.log(`[HF 3D / TRELLIS] Connecting Gradio client to ${spaceUrl}`);
   let app: Client;
+  const isHf = /\.hf\.space$/i.test(new URL(spaceUrl).hostname);
+  const hfToken = token && /^hf_/.test(token) ? (token as `hf_${string}`) : undefined;
   try {
     app = await Client.connect(spaceUrl, {
       headers: baseHeaders,
       events: ["data", "status"],
-      ...(token && /^hf_/.test(token) ? { token: token as `hf_${string}` } : {}),
-    });
+      // @gradio/client uses `hf_token`, not `token`. Pass it for HF spaces
+      // (required for ZeroGPU / gated spaces).
+      ...(hfToken ? { hf_token: hfToken } : {}),
+    } as any);
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     if (isLocalUrl(spaceUrl)) {
@@ -721,23 +725,32 @@ async function runTrellisPipelineInner(
     if (/\b500\b/.test(msg)) {
       throw new Error(`Hugging Face Space returned 500 — the Space crashed. Real error: ${msg}`);
     }
+    if (isHf && /errored out|fetch failed|ENOTFOUND|ECONNRESET/i.test(msg)) {
+      throw new Error(`Hugging Face Space ${spaceUrl} could not be reached. It may be sleeping — visit it once in your browser to wake it, then retry. (${msg})`);
+    }
     throw new Error(`3D backend unavailable at ${spaceUrl} — the Hugging Face Space is offline, sleeping, or the API has changed. Try a different backend in Settings. (${msg})`);
   }
 
   // Skip /check_input_image and view_api — they're optional and add 1-2 extra
   // round trips. /preprocess already validates the image.
 
-  // 5) /preprocess(image, remove_bg, foreground_ratio)
-  console.log(`[HF 3D / TRELLIS] predict /preprocess`);
-  let processed: unknown;
+  // 5) /preprocess(image, remove_bg, foreground_ratio) — OPTIONAL.
+  // Some TripoSR spaces only expose /generate. If /preprocess is missing
+  // or fails for a "no such endpoint" reason, fall through with the raw image.
+  console.log(`[HF 3D / TRELLIS] predict /preprocess (optional)`);
+  let processed: unknown = inputFile;
   try {
     const preRes = await runGradioJob(app, "/preprocess", [inputFile, true, 0.85]);
-    processed = preRes[0];
+    if (preRes && preRes[0]) processed = preRes[0];
   } catch (e) {
     const msg = e instanceof Error ? e.message : (typeof e === "object" ? JSON.stringify(e).slice(0, 300) : String(e));
-    throw new Error(`Gradio /preprocess failed at ${spaceUrl}: ${msg}`);
+    if (/no.*endpoint|not found|404|unknown api|does not exist/i.test(msg)) {
+      console.warn(`[HF 3D / TRELLIS] /preprocess not available on ${spaceUrl}, using raw image.`);
+    } else {
+      throw new Error(`Gradio /preprocess failed at ${spaceUrl}: ${msg}`);
+    }
   }
-  if (!processed) throw new Error("Preprocess returned no image");
+  if (!processed) processed = inputFile;
 
   // 6) /generate — try the minimal 1-arg signature first (matches local
   //    TripoSR/SF3D builds where /generate only accepts the processed image),
