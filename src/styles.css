@@ -242,41 +242,25 @@ html, body { background: var(--background); color: var(--foreground); }
   pointer-events: none;
 }
 
-/* Animated gradient ring for processing state */
-@property --ring-angle {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: false;
-}
-@keyframes ring-spin {
-  to { --ring-angle: 360deg; }
-}
-@keyframes ring-pulse {
-  0%, 100% { opacity: 0.85; }
-  50% { opacity: 1; }
+/* Animated glow ring for processing state — pulsing border + soft glow */
+@keyframes processing-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px oklch(0.7 0.22 305 / 0.45),
+      0 0 24px -2px oklch(0.7 0.22 305 / 0.35),
+      inset 0 1px 0 oklch(1 0 0 / 0.06);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px oklch(0.78 0.2 200 / 0.55),
+      0 0 36px -2px oklch(0.78 0.2 200 / 0.5),
+      inset 0 1px 0 oklch(1 0 0 / 0.08);
+  }
 }
 @utility conic-ring {
-  position: relative;
-  overflow: hidden;
+  animation: processing-glow 2.4s ease-in-out infinite;
 }
-.conic-ring::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1.5px;
-  background: conic-gradient(from var(--ring-angle, 0deg),
-    oklch(0.7 0.22 305 / 0.9),
-    oklch(0.78 0.2 200 / 0.9),
-    oklch(0.78 0.2 330 / 0.9),
-    oklch(0.7 0.22 305 / 0.9));
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  animation: ring-spin 4s linear infinite, ring-pulse 2s ease-in-out infinite;
-  pointer-events: none;
-}
+
 
 
 /* Animation utility classes */
