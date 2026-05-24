@@ -926,7 +926,7 @@ async function runStableFast3D(
   for (const ref of candidates) {
     try {
       console.log(`[SF3D] Client.connect → ${ref}`);
-      app = await Client.connect(ref, { ...(hfToken ? { hf_token: hfToken } : {}) } as any);
+      app = await Client.connect(ref, { ...(hfToken ? { token: hfToken } : {}) } as any);
       break;
     } catch (e) {
       lastErr = e instanceof Error ? e.message : String(e);
@@ -1487,10 +1487,17 @@ export const generateSF3DOnly = createServerFn({ method: "POST" })
 
     let app: Client;
     try {
-      app = await Client.connect(SF3D_SPACE_ID, { hf_token: token as `hf_${string}` } as any);
+      app = await Client.connect(SF3D_SPACE_ID, { token: token as `hf_${string}` } as any);
     } catch (e) {
       const raw = e instanceof Error ? e.message : String(e);
       return { ok: false as const, error: `Connect failed → ${SF3D_SPACE_URL}: ${raw.slice(0, 400)}` };
+    }
+
+    try {
+      await runGradioJob(app, "/requires_bg_remove", [inputFile, 0.85], { timeoutMs: 60_000 });
+    } catch (e) {
+      const raw = e instanceof Error ? e.message : String(e);
+      return { ok: false as const, error: `${SF3D_SPACE_URL}/requires_bg_remove failed: ${raw.slice(0, 600)}` };
     }
 
     let out: unknown[];
