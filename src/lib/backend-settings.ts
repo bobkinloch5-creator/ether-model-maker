@@ -8,36 +8,46 @@ export type BackendPreset = {
 };
 
 // Provider priority (default = "auto"):
-//   1. Hugging Face TripoSR (RBX-CREATOR/3DGenTripoSR) — free, always available
-//   2. Local TripoSR (only if LOCAL_TRIPOSR_ENABLED=true)
-//   3. Local ComfyUI (only if LOCAL_3D_ENABLED=true)
+//   1. Stable Fast 3D (stabilityai/stable-fast-3d) — DEFAULT cloud provider
+//   2. Official TripoSR (stabilityai/TripoSR)       — explicit override only
+//   3. RBX-CREATOR/3DGenTripoSR                     — explicit override only
+//   4. Local ComfyUI (only if LOCAL_3D_ENABLED=true)
 export const BACKEND_PRESETS: BackendPreset[] = [
   {
     id: "auto",
-    label: "Auto Free (Hugging Face TripoSR)",
-    spaceUrl: "https://rbx-creator-3dgentriposr.hf.space",
+    label: "Auto (Stable Fast 3D)",
+    spaceUrl: "https://stabilityai-stable-fast-3d.hf.space",
+    apiName: "/run_button",
+    extraArgs: "",
+    notes:
+      "Default cloud generation via Stability AI's Stable Fast 3D Space on Hugging Face. Image-to-3D only. Requires HF_TOKEN and accepted model terms on Hugging Face.",
+  },
+  {
+    id: "stable-fast-3d",
+    label: "Stable Fast 3D (stabilityai/stable-fast-3d)",
+    spaceUrl: "https://stabilityai-stable-fast-3d.hf.space",
+    apiName: "/run_button",
+    extraArgs: "",
+    notes:
+      "Stability AI's official Stable Fast 3D Space. Image-to-3D, returns GLB. Gated — accept terms on the Space page first.",
+  },
+  {
+    id: "triposr-official",
+    label: "TripoSR (stabilityai/TripoSR)",
+    spaceUrl: "https://stabilityai-triposr.hf.space",
     apiName: "/generate",
     extraArgs: "",
     notes:
-      "Free cloud generation via Hugging Face. No paid APIs, no local PC required. Falls back to local providers only if explicitly enabled in secrets.",
+      "Stability AI's official TripoSR Space. Use only if it's confirmed running.",
   },
   {
     id: "triposr",
-    label: "Hugging Face TripoSR (RBX-CREATOR/3DGenTripoSR)",
+    label: "RBX-CREATOR/3DGenTripoSR",
     spaceUrl: "https://rbx-creator-3dgentriposr.hf.space",
     apiName: "/generate",
     extraArgs: "",
     notes:
-      "Free cloud Space. Image-to-3D only. The Space may need ~30s to wake from sleep on first use.",
-  },
-  {
-    id: "local-triposr",
-    label: "Local TripoSR (optional)",
-    spaceUrl: "",
-    apiName: "/generate",
-    extraArgs: "",
-    notes:
-      "Your own GPU running TripoSR. Only used when LOCAL_TRIPOSR_ENABLED=true. Set LOCAL_TRIPOSR_URL to your tunnel URL.",
+      "Personal TripoSR Space. May need ~30s to wake from sleep on first use.",
   },
   {
     id: "local-comfyui",
