@@ -431,7 +431,7 @@ function GeneratePage() {
         try {
           setHfStatus("running");
           setHfProgress(15);
-          setHfMessage("Generating with Stable Fast 3D…");
+          setHfMessage("Generating on local TripoSR server…");
 
           const { getBackendConfig } = await import("@/lib/backend-settings");
           const backendCfg = getBackendConfig();
@@ -439,7 +439,7 @@ function GeneratePage() {
           const res = await generateSF3DOnly({
             data: {
               imageDataUrl,
-              presetId: backendCfg.presetId,
+              presetId: "local-pc-triposr",
               spaceUrl: backendCfg.spaceUrl,
               apiName: backendCfg.apiName,
               extraArgs: backendCfg.extraArgs,
@@ -1963,7 +1963,7 @@ function GeneratePage() {
                 </p>
                 {hfStatus !== "idle" && (
                   <p className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground/70">
-                    Hugging Face job: {hfStatus}
+                    Local server job: {hfStatus}
                   </p>
                 )}
               </>
