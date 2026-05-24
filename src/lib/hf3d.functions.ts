@@ -843,36 +843,77 @@ export const startHF3DJob = createServerFn({ method: "POST" })
   .inputValidator((d) => START_INPUT.parse(d))
   .handler(async ({ data, context }) => {
     const { userId } = context;
-    // Precedence: per-call override → LOCAL_3D_API_URL → COMFYUI_URL → HF_TRIPOSR_SPACE → HF_SPACE_URL → AleenDG TripoSR default
-    const triposrDefault = "https://aleendg-3dgentriposr.hf.space";
-    const rawUrl = (
-      data.spaceUrl?.trim() ||
-      process.env.LOCAL_3D_API_URL?.trim() ||
-      process.env.COMFYUI_URL?.trim() ||
-      process.env.HF_TRIPOSR_SPACE?.trim() ||
-      process.env.HF_SPACE_URL?.trim() ||
-      triposrDefault
-    ) ?? "";
-    if (!rawUrl) return { ok: false as const, error: "No 3D backend configured. Set LOCAL_3D_API_URL or COMFYUI_URL." };
+
+    // Provider priority (cloud-first, no paid APIs):
+    //   1. Hugging Face TripoSR (RBX-CREATOR/3DGenTripoSR) — always-on default
+    //   2. Local TripoSR — only if LOCAL_TRIPOSR_ENABLED=true
+    //   3. Local ComfyUI — only if LOCAL_3D_ENABLED=true
+    const HF_DEFAULT = "https://rbx-creator-3dgentriposr.hf.space";
+    const localTriposrEnabled = /^(1|true|yes)$/i.test(
+      (process.env.LOCAL_TRIPOSR_ENABLED ?? "").trim(),
+    );
+    const localComfyEnabled = /^(1|true|yes)$/i.test(
+      (process.env.LOCAL_3D_ENABLED ?? "").trim(),
+    );
+
+    // Determine which backend to use based on the per-call override (preset id).
+    // The client sends spaceUrl="" and a presetId hint via apiName-prefixed scheme;
+    // we keep it simple: empty spaceUrl with no override → cloud. Explicit URL → use it.
+    const presetHint = data.spaceUrl?.trim() ?? "";
+
+    let rawUrl = "";
+    if (presetHint) {
+      // Explicit URL from settings panel → respect it (still SSRF-checked below).
+      rawUrl = presetHint;
+    } else {
+      // No explicit URL: cloud HF TripoSR by default.
+      rawUrl =
+        process.env.HF_TRIPOSR_SPACE?.trim() ||
+        process.env.HF_SPACE_URL?.trim() ||
+        HF_DEFAULT;
+      // Normalize bare "user/space" → full hf.space URL
+      if (/^[\w-]+\/[\w.-]+$/.test(rawUrl)) {
+        rawUrl = `https://${rawUrl
+          .toLowerCase()
+          .replace("/", "-")
+          .replace(/[^a-z0-9-]/g, "-")}.hf.space`;
+      }
+    }
+
     let spaceUrl: string;
     try {
       spaceUrl = assertSafeSpaceUrl(normalizeSpaceUrl(rawUrl));
     } catch (e) {
       return { ok: false as const, error: e instanceof Error ? e.message : "Invalid Space URL" };
     }
+
+    // Refuse to call local backends unless explicitly enabled via secrets.
+    if (isLocalUrl(spaceUrl)) {
+      const isComfyish =
+        spaceUrl === process.env.COMFYUI_URL?.trim() ||
+        spaceUrl === process.env.LOCAL_3D_API_URL?.trim();
+      const isTriposrLocal = spaceUrl === process.env.LOCAL_TRIPOSR_URL?.trim();
+      if (!localTriposrEnabled && !localComfyEnabled && !(isComfyish && localComfyEnabled) && !(isTriposrLocal && localTriposrEnabled)) {
+        return {
+          ok: false as const,
+          error:
+            "Local 3D backend is disabled. Enable LOCAL_TRIPOSR_ENABLED or LOCAL_3D_ENABLED to use a local server, or switch to Hugging Face TripoSR in Settings.",
+        };
+      }
+    }
+
     const apiName = data.apiName?.trim() || process.env.HF_API_NAME || "/generate";
     let token: string | undefined =
       process.env.LOCAL_3D_API_PASSWORD?.trim() || process.env.HF_TOKEN?.trim();
 
     // Pixal3D hub → resolve to a live *.gradio.live worker tunnel.
-    // If the URL is already a .gradio.live tunnel, just strip the token.
     if (isPixal3DHub(spaceUrl)) {
       if (new URL(spaceUrl).hostname.endsWith(".gradio.live")) {
-        token = undefined; // public tunnel; HF token does not apply
+        token = undefined;
       } else {
         try {
           spaceUrl = await resolvePixal3DTunnel(spaceUrl);
-          token = undefined; // public tunnel; HF token does not apply
+          token = undefined;
         } catch (e) {
           return { ok: false as const, error: e instanceof Error ? e.message : "Pixal3D unavailable" };
         }
