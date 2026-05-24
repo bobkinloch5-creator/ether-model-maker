@@ -10,12 +10,21 @@ export type BackendPreset = {
 export const BACKEND_PRESETS: BackendPreset[] = [
   {
     id: "local3d",
-    label: "Local 3D API (TRELLIS pipeline)",
-    spaceUrl: "", // empty → server resolves via LOCAL_3D_API_URL secret
+    label: "ComfyUI / Local 3D server",
+    spaceUrl: "", // empty → server resolves via LOCAL_3D_API_URL / COMFYUI_URL secret
     apiName: "/generate",
     extraArgs: "",
     notes:
-      "TRELLIS-style /preprocess → /generate pipeline. Set the LOCAL_3D_API_URL secret to your live tunnel URL (e.g. ngrok / Cloudflare Tunnel).",
+      "Your own GPU. TRELLIS / TripoSR / Stable-Fast-3D pipeline at /preprocess → /generate. Set the LOCAL_3D_API_URL (or COMFYUI_URL) secret to your live tunnel URL (ngrok / Cloudflare Tunnel).",
+  },
+  {
+    id: "triposr",
+    label: "Hugging Face TripoSR (AleenDG/3DGenTripoSR)",
+    spaceUrl: "https://aleendg-3dgentriposr.hf.space",
+    apiName: "/generate",
+    extraArgs: "",
+    notes:
+      "Cloud fallback. Hosted Hugging Face Space — slower than local but always available. The Space may need ~30s to wake from sleep.",
   },
 ];
 

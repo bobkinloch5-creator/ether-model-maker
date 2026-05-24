@@ -684,8 +684,9 @@ async function runTrellisPipelineInner(
   //    server is unreachable, Client.connect will throw a clear error which
   //    we surface to the user.
   const m = imageDataUrl.match(/^data:([^;]+);base64,(.+)$/);
-  if (!m) throw new Error("Invalid image data URL");
+  if (!m) throw new Error("Please upload a valid image.");
   const mime = m[1];
+  if (!/^image\//i.test(mime)) throw new Error("Please upload a valid image.");
   const bin = Uint8Array.from(atob(m[2]), (c) => c.charCodeAt(0));
   const ext = (mime.split("/")[1] || "png").replace(/[^a-z0-9]/gi, "");
   const inputPath = `trellis-inputs/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
@@ -713,6 +714,12 @@ async function runTrellisPipelineInner(
     const msg = e instanceof Error ? e.message : String(e);
     if (isLocalUrl(spaceUrl)) {
       throw new Error(`Could not reach your local 3D server at ${spaceUrl} — is your PC on, the Gradio app running, and ngrok forwarding? (${msg})`);
+    }
+    if (/\b(503|502|504)\b/.test(msg) || /sleep|starting|loading/i.test(msg)) {
+      throw new Error(`Hugging Face Space is starting, please try again in ~30 seconds. (${spaceUrl})`);
+    }
+    if (/\b500\b/.test(msg)) {
+      throw new Error(`Hugging Face Space returned 500 — the Space crashed. Real error: ${msg}`);
     }
     throw new Error(`3D backend unavailable at ${spaceUrl} — the Hugging Face Space is offline, sleeping, or the API has changed. Try a different backend in Settings. (${msg})`);
   }
@@ -769,7 +776,7 @@ async function runTrellisPipelineInner(
     const u = extractFileUrl(spaceUrl, item);
     if (u) { fileUrl = u; break; }
   }
-  if (!fileUrl) throw new Error(`No model in /generate output: ${JSON.stringify(genOut).slice(0, 300)}`);
+  if (!fileUrl) throw new Error(`3D model was not returned by the backend. Raw output: ${JSON.stringify(genOut).slice(0, 300)}`);
   return { fileUrl };
 }
 
@@ -779,13 +786,17 @@ export const startHF3DJob = createServerFn({ method: "POST" })
   .inputValidator((d) => START_INPUT.parse(d))
   .handler(async ({ data, context }) => {
     const { userId } = context;
-    // Precedence: per-call override → LOCAL_3D_API_URL → HF_SPACE_URL
+    // Precedence: per-call override → LOCAL_3D_API_URL → COMFYUI_URL → HF_TRIPOSR_SPACE → HF_SPACE_URL → AleenDG TripoSR default
+    const triposrDefault = "https://aleendg-3dgentriposr.hf.space";
     const rawUrl = (
       data.spaceUrl?.trim() ||
       process.env.LOCAL_3D_API_URL?.trim() ||
-      process.env.HF_SPACE_URL?.trim()
+      process.env.COMFYUI_URL?.trim() ||
+      process.env.HF_TRIPOSR_SPACE?.trim() ||
+      process.env.HF_SPACE_URL?.trim() ||
+      triposrDefault
     ) ?? "";
-    if (!rawUrl) return { ok: false as const, error: "No 3D backend configured. Set LOCAL_3D_API_URL." };
+    if (!rawUrl) return { ok: false as const, error: "No 3D backend configured. Set LOCAL_3D_API_URL or COMFYUI_URL." };
     let spaceUrl: string;
     try {
       spaceUrl = assertSafeSpaceUrl(normalizeSpaceUrl(rawUrl));
