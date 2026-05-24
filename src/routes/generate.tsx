@@ -439,7 +439,7 @@ function GeneratePage() {
           const res = await generateSF3DOnly({
             data: {
               imageDataUrl,
-              presetId: backendCfg.presetId,
+              presetId: "local-pc-triposr",
               spaceUrl: backendCfg.spaceUrl,
               apiName: backendCfg.apiName,
               extraArgs: backendCfg.extraArgs,
