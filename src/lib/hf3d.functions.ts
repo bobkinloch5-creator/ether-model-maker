@@ -714,6 +714,12 @@ async function runTrellisPipelineInner(
     if (isLocalUrl(spaceUrl)) {
       throw new Error(`Could not reach your local 3D server at ${spaceUrl} — is your PC on, the Gradio app running, and ngrok forwarding? (${msg})`);
     }
+    if (/\b(503|502|504)\b/.test(msg) || /sleep|starting|loading/i.test(msg)) {
+      throw new Error(`Hugging Face Space is starting, please try again in ~30 seconds. (${spaceUrl})`);
+    }
+    if (/\b500\b/.test(msg)) {
+      throw new Error(`Hugging Face Space returned 500 — the Space crashed. Real error: ${msg}`);
+    }
     throw new Error(`3D backend unavailable at ${spaceUrl} — the Hugging Face Space is offline, sleeping, or the API has changed. Try a different backend in Settings. (${msg})`);
   }
 
