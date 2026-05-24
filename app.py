@@ -143,32 +143,71 @@ with gr.Blocks() as demo:
         outputs=[output_model, output_model2],
     )
 
-async def generate_3d_endpoint(request: Request):
+def require_api_key(request: Request):
     api_key = os.environ.get("LOCAL_3D_API_KEY")
-    if not api_key:
-        return JSONResponse({"detail": "LOCAL_3D_API_KEY is not configured."}, status_code=500)
+    if api_key:
+        if request.headers.get("x-api-key") != api_key:
+            return JSONResponse(
+                {"detail": "Unauthorized: invalid or missing x-api-key."},
+                status_code=401,
+            )
+    elif os.environ.get("ALLOW_LOCAL_3D_NO_KEY", "").lower() not in (
+        "1",
+        "true",
+        "yes",
+    ):
+        return JSONResponse(
+            {"detail": "LOCAL_3D_API_KEY is not configured."},
+            status_code=500,
+        )
+    return None
 
-    if request.headers.get("x-api-key") != api_key:
-        return JSONResponse({"detail": "Unauthorized: invalid or missing x-api-key."}, status_code=401)
 
+async def parse_request_image(request: Request):
     form = await request.form()
     upload = form.get("image")
-    if upload is None:
-        return JSONResponse({"detail": "Missing image file in form field 'image'."}, status_code=400)
+    if upload is not None:
+        try:
+            if hasattr(upload, "file"):
+                return Image.open(upload.file).convert("RGBA")
+            return Image.open(io.BytesIO(upload.read())).convert("RGBA")
+        except Exception as e:
+            raise ValueError(f"Invalid image data: {str(e)}")
+
+    payload = await request.json()
+    image_data = payload.get("image") or payload.get("image_base64")
+    if not image_data:
+        raise ValueError("Missing image file in form field 'image' or JSON key 'image'.")
 
     try:
-        if hasattr(upload, "file"):
-            image = Image.open(upload.file).convert("RGBA")
-        else:
-            image = Image.open(io.BytesIO(upload.read())).convert("RGBA")
+        import base64
+
+        decoded = base64.b64decode(image_data)
+        return Image.open(io.BytesIO(decoded)).convert("RGBA")
     except Exception as e:
-        return JSONResponse({"detail": f"Invalid image data: {str(e)}"}, status_code=400)
+        raise ValueError(f"Invalid base64 image data: {str(e)}")
+
+
+async def generate_3d_endpoint(request: Request):
+    auth_error = require_api_key(request)
+    if auth_error is not None:
+        return auth_error
+
+    try:
+        image = await parse_request_image(request)
+    except ValueError as exc:
+        return JSONResponse({"detail": str(exc)}, status_code=400)
 
     try:
         _, glb_path = generate(image)
         filename = os.path.basename(glb_path)
-        return FileResponse(glb_path, media_type="model/gltf-binary", filename=filename)
+        return FileResponse(
+            glb_path,
+            media_type="model/gltf-binary",
+            filename=filename,
+        )
     except Exception as e:
+        logging.exception("generate_3d_endpoint failed")
         return JSONResponse({"detail": str(e)}, status_code=500)
 
 
@@ -176,11 +215,32 @@ async def health_endpoint(request: Request):
     return JSONResponse({"ok": True})
 
 
+async def routes_endpoint(request: Request):
+    return JSONResponse(
+        {
+            "routes": [
+                "/",
+                "/health",
+                "/generate-3d",
+            ]
+        }
+    )
+
+
 demo.app.add_api_route("/generate-3d", generate_3d_endpoint, methods=["POST"])
 
 demo.app.add_api_route("/health", health_endpoint, methods=["GET"])
 
+demo.app.add_api_route("/routes", routes_endpoint, methods=["GET"])
+
 app = demo.app
+
+
+@app.on_event("startup")
+async def log_routes_on_startup():
+    route_paths = [route.path for route in app.routes]
+    logging.info("Starting TripoSR server with routes: %s", route_paths)
+
 
 demo.queue(max_size=10)
 
