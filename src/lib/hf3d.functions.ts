@@ -838,6 +838,47 @@ async function runTrellisPipelineInner(
   //    Spaces, while the bare subdomain returns a generic "Connection errored
   //    out" while the container is cold.
   console.log(`[HF 3D / TRELLIS] Connecting Gradio client to ${spaceUrl}`);
+
+  // 2a) 10-second reachability pre-flight. If we can't even fetch /config,
+  //     bail out fast with a clear error instead of waiting on a 120s
+  //     Client.connect deadline.
+  {
+    const probeUrl = `${spaceUrl.replace(/\/+$/, "")}/config`;
+    console.log(`[HF 3D / TRELLIS] pre-flight GET ${probeUrl} (10s timeout)`);
+    try {
+      const ctl = new AbortController();
+      const timer = setTimeout(() => ctl.abort(), 10_000);
+      const res = await fetch(probeUrl, {
+        method: "GET",
+        headers: { "ngrok-skip-browser-warning": "true", Accept: "application/json" },
+        signal: ctl.signal,
+      });
+      clearTimeout(timer);
+      console.log(`[HF 3D / TRELLIS] pre-flight ${probeUrl} → HTTP ${res.status}`);
+      if (!res.ok && res.status !== 404) {
+        const body = await res.text().catch(() => "");
+        if (isLocalUrl(spaceUrl)) {
+          throw new Error(`Local 3D server at ${spaceUrl} returned HTTP ${res.status}. Is the Gradio app running on http://127.0.0.1:7860 and the ngrok tunnel pointed at it? Body: ${body.slice(0, 160)}`);
+        }
+        throw new Error(`Pre-flight HTTP ${res.status} from ${probeUrl}: ${body.slice(0, 160)}`);
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (e instanceof Error && e.name === "AbortError") {
+        if (isLocalUrl(spaceUrl)) {
+          throw new Error(`Could not reach your local 3D server at ${spaceUrl} within 10s. Check that TripoSR is running on http://127.0.0.1:7860 and ngrok is forwarding to it.`);
+        }
+        throw new Error(`Pre-flight to ${probeUrl} timed out after 10s.`);
+      }
+      // Re-throw HTTP errors from the block above; wrap network errors.
+      if (/^Pre-flight |^Local 3D server |^Could not reach /.test(msg)) throw e;
+      if (isLocalUrl(spaceUrl)) {
+        throw new Error(`Could not reach your local 3D server at ${spaceUrl}: ${msg}`);
+      }
+      throw new Error(`Pre-flight to ${probeUrl} failed: ${msg}`);
+    }
+  }
+
   const isHf = /\.hf\.space$/i.test(new URL(spaceUrl).hostname);
   const hfToken = token && /^hf_/.test(token) ? (token as `hf_${string}`) : undefined;
 
@@ -914,11 +955,17 @@ async function runTrellisPipelineInner(
   // 5) /preprocess(image, remove_bg, foreground_ratio) — OPTIONAL.
   // Some TripoSR spaces only expose /generate. If /preprocess is missing
   // or fails for a "no such endpoint" reason, fall through with the raw image.
-  console.log(`[HF 3D / TRELLIS] predict /preprocess (optional)`);
+  console.log(`[HF 3D / TRELLIS] predict /preprocess (optional)`, {
+    url: `${spaceUrl.replace(/\/+$/, "")}/gradio_api/call/preprocess`,
+    args: { image: "<file handle>", remove_bg: true, foreground_ratio: 0.85 },
+    inputFilePublicUrl: publicUrl,
+  });
   let processed: unknown = inputFile;
   try {
     const preRes = await runGradioJob(app, "/preprocess", [inputFile, true, 0.85], { timeoutMs: 600_000 });
     if (preRes && preRes[0]) processed = preRes[0];
+    console.log(`[HF 3D / TRELLIS] /preprocess returned`, { hasResult: !!preRes?.[0] });
+
   } catch (e) {
     const msg = e instanceof Error ? e.message : (typeof e === "object" ? JSON.stringify(e).slice(0, 300) : String(e));
     if (/no.*endpoint|not found|404|unknown api|does not exist/i.test(msg)) {
@@ -936,7 +983,10 @@ async function runTrellisPipelineInner(
   const mc = opts?.mcResolution ?? 96;
   const bake = !!opts?.bakeTexture;
   const texRes = opts?.textureResolution ?? 0;
-  console.log(`[HF 3D / TRELLIS] predict /generate`);
+  console.log(`[HF 3D / TRELLIS] predict /generate`, {
+    url: `${spaceUrl.replace(/\/+$/, "")}/gradio_api/call/generate`,
+    args: { processed_image: "<file handle from /preprocess>", mcResolution: mc, bakeTexture: bake, textureResolution: texRes },
+  });
   let genOut: unknown[];
   try {
     const r = await runGradioJob(app, "/generate", [processed], { timeoutMs: 600_000 });
