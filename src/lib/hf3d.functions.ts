@@ -1637,186 +1637,44 @@ export const pollHF3DJob = createServerFn({ method: "POST" })
 
 
 // =============================================================================
-// SIMPLE SF3D PATH — single backend, no fallbacks, verbose errors.
-// stabilityai/stable-fast-3d  →  /run_button(input_image, foreground_ratio=0.85,
-//   remesh_option="None", vertex_count=-1, texture_size=1024)
+// LOCAL-ONLY 3D PATH — single backend (user's local TripoSR via LOCAL_3D_API_URL).
+// No Hugging Face, no SF3D, no fallback of any kind.
 // =============================================================================
 
-const SF3D_INPUT = z.object({
+const LOCAL3D_INPUT = z.object({
   imageDataUrl: z.string().min(1).max(15_000_000),
-  presetId: z.string().optional(),
-  spaceUrl: z.string().optional(),
-  apiName: z.string().optional(),
-  extraArgs: z.string().optional(),
 });
-
-const SF3D_SPACE_URL = "https://stabilityai-stable-fast-3d.hf.space";
-const SF3D_SPACE_ID = "stabilityai/stable-fast-3d";
-const SF3D_API_NAME = "/run_button";
 
 export const getProviderStatus = createServerFn({ method: "GET" })
   .handler(async () => {
     return { provider: "local", status: "Connected" as const, url: "" };
   });
 
-function getSpaceIdFromUrl(url: string): string {
-  try {
-    const parsed = new URL(url);
-    const host = parsed.hostname.toLowerCase();
-    if (host.endsWith(".hf.space")) {
-      const sub = host.replace(/\.hf\.space$/i, "");
-      const dash = sub.indexOf("-");
-      if (dash > 0) {
-        return `${sub.slice(0, dash)}/${sub.slice(dash + 1)}`;
-      }
-    }
-  } catch { /* ignore */ }
-  return url;
-}
-
-export const generateSF3DOnly = createServerFn({ method: "POST" })
+export const generateLocal3D = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => SF3D_INPUT.parse(d))
+  .inputValidator((d) => LOCAL3D_INPUT.parse(d))
   .handler(async ({ data, context }) => {
     const { userId } = context;
-
-    const presetId = data.presetId || (process.env.LOCAL_3D_API_URL ? "local-pc-triposr" : "stable-fast-3d");
-    console.log("[3D GEN / server] generateSF3DOnly entry", {
-      presetId,
-      hasLOCAL_3D_API_URL: !!process.env.LOCAL_3D_API_URL,
-      LOCAL_3D_API_URL_prefix: process.env.LOCAL_3D_API_URL?.trim().slice(0, 40) || null,
+    const localUrl = process.env.LOCAL_3D_API_URL?.trim();
+    console.log("[3D GEN / server] generateLocal3D entry", {
+      hasLOCAL_3D_API_URL: !!localUrl,
+      LOCAL_3D_API_URL_prefix: localUrl?.slice(0, 40) || null,
       hasLocalKey: !!(process.env.LOCAL_3D_API_KEY || process.env.LOCAL_3D_API_PASSWORD),
-      clientSpaceUrl: data.spaceUrl || null,
-      clientApiName: data.apiName || null,
       userId,
     });
-
-    if (presetId === "local-pc-triposr") {
-      const localUrl = process.env.LOCAL_3D_API_URL?.trim();
-      console.log("[3D GEN / server] taking local-pc-triposr branch, localUrl=", localUrl);
-      if (localUrl) {
-        try {
-          const spaceUrl = assertSafeSpaceUrl(normalizeSpaceUrl(localUrl));
-          const localKey = process.env.LOCAL_3D_API_KEY?.trim() || process.env.LOCAL_3D_API_PASSWORD?.trim() || undefined;
-          console.log("[3D GEN / server] calling runTrellisPipeline at", spaceUrl, "withKey=", !!localKey);
-          const result = await runTrellisPipeline(spaceUrl, data.imageDataUrl, localKey, { mcResolution: 256 });
-          console.log("[3D GEN / server] runTrellisPipeline returned fileUrl=", result.fileUrl);
-          return { ok: true as const, modelUrl: result.fileUrl };
-        } catch (err) {
-          const message = err instanceof Error ? err.message : String(err);
-          console.error("[3D GEN / server] runTrellisPipeline threw:", message);
-          return { ok: false as const, error: message };
-        }
-      } else {
-        console.warn("[3D GEN / server] LOCAL_3D_API_URL not set in worker env");
-        return { ok: false as const, error: "Local 3D URL is not configured in backend secrets." };
-      }
+    if (!localUrl) {
+      return { ok: false as const, error: "Local 3D URL is not configured (LOCAL_3D_API_URL)." };
     }
-
-    const token = process.env.HF_TOKEN?.trim();
-    if (!token) {
-      return { ok: false as const, error: "HF_TOKEN secret is missing on the server." };
-    }
-
-    const m = data.imageDataUrl.match(/^data:([^;]+);base64,(.+)$/);
-    if (!m || !/^image\//i.test(m[1])) {
-      return { ok: false as const, error: "Uploaded file is not a valid image (PNG or JPG)." };
-    }
-    const mime = m[1];
-    const bin = Uint8Array.from(atob(m[2]), (c) => c.charCodeAt(0));
-    const ext = (mime.split("/")[1] || "png").replace(/[^a-z0-9]/gi, "");
-    const inputPath = `sf3d-inputs/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
-    const upIn = await supabaseAdmin.storage
-      .from("models")
-      .upload(inputPath, bin, { contentType: mime, upsert: false });
-    if (upIn.error) {
-      return { ok: false as const, error: `Image upload to storage failed: ${upIn.error.message}` };
-    }
-    const { data: pubIn } = supabaseAdmin.storage.from("models").getPublicUrl(inputPath);
-    const inputFile = handle_file(pubIn.publicUrl);
-
-    const spaceUrl = data.spaceUrl?.trim() || SF3D_SPACE_URL;
-    const spaceId = data.spaceUrl ? getSpaceIdFromUrl(data.spaceUrl) : SF3D_SPACE_ID;
-    const apiName = data.apiName?.trim() || SF3D_API_NAME;
-
-    let app: Client;
     try {
-      app = await Client.connect(spaceId, { token: token as `hf_${string}` } as any);
-    } catch (e) {
-      const raw = e instanceof Error ? e.message : String(e);
-      return { ok: false as const, error: `Connect failed → ${spaceId}: ${raw.slice(0, 400)}` };
+      const spaceUrl = assertSafeSpaceUrl(normalizeSpaceUrl(localUrl));
+      const localKey = process.env.LOCAL_3D_API_KEY?.trim() || process.env.LOCAL_3D_API_PASSWORD?.trim() || undefined;
+      console.log("[3D GEN / server] calling runTrellisPipeline at", spaceUrl, "withKey=", !!localKey);
+      const result = await runTrellisPipeline(spaceUrl, data.imageDataUrl, localKey, { mcResolution: 256 });
+      console.log("[3D GEN / server] runTrellisPipeline returned fileUrl=", result.fileUrl);
+      return { ok: true as const, modelUrl: result.fileUrl };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error("[3D GEN / server] runTrellisPipeline threw:", message);
+      return { ok: false as const, error: message };
     }
-
-    try {
-      await runGradioJob(app, "/requires_bg_remove", [inputFile, 0.85], { timeoutMs: 60_000 });
-    } catch { /* ignore */ }
-
-    let out: unknown[];
-    try {
-      const { name: endpointName } = await resolveGradioEndpoint(
-        app,
-        apiName,
-        ["/run_button", "/generate", "/predict", "/infer", "/process", "/run"]
-      );
-
-      const resolvedExtra = data.extraArgs ? resolveExtraArgs(data.extraArgs) : [];
-      if (endpointName === "/run_button" && resolvedExtra.length === 0) {
-        out = await runGradioJob(
-          app,
-          endpointName,
-          [inputFile, 0.85, "None", -1, 1024],
-          { timeoutMs: 120_000 },
-        );
-      } else {
-        out = await runGradioJob(
-          app,
-          endpointName,
-          [inputFile, ...resolvedExtra],
-          { timeoutMs: 120_000 },
-        );
-      }
-    } catch (e) {
-      const raw = e instanceof Error ? e.message : String(e);
-      return { ok: false as const, error: `${spaceUrl} generation failed: ${raw.slice(0, 600)}` };
-    }
-
-    let fileUrl: string | null = null;
-    for (const item of out) {
-      const u = extractFileUrl(spaceUrl, item);
-      if (u && /\.(glb|obj|ply)(\?|$)/i.test(u)) { fileUrl = u; break; }
-    }
-    if (!fileUrl) {
-      for (const item of out) {
-        const u = extractFileUrl(spaceUrl, item);
-        if (u) { fileUrl = u; break; }
-      }
-    }
-    if (!fileUrl) {
-      return { ok: false as const, error: `No model file in Space output: ${JSON.stringify(out).slice(0, 400)}` };
-    }
-
-    const fileRes = await fetch(fileUrl, { headers: { Authorization: `Bearer ${token}` } });
-    if (!fileRes.ok) {
-      const body = await fileRes.text().catch(() => "");
-      return {
-        ok: false as const,
-        error: `Download failed → ${fileUrl} (HTTP ${fileRes.status} ${fileRes.statusText}). ${body.slice(0, 200)}`,
-      };
-    }
-    const buf = new Uint8Array(await fileRes.arrayBuffer());
-    const outExt = fileUrl.toLowerCase().endsWith(".obj")
-      ? "obj"
-      : fileUrl.toLowerCase().endsWith(".ply")
-      ? "ply"
-      : "glb";
-    const outPath = `hf/${userId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${outExt}`;
-    const upOut = await supabaseAdmin.storage.from("models").upload(outPath, buf, {
-      contentType: outExt === "glb" ? "model/gltf-binary" : "application/octet-stream",
-      upsert: false,
-    });
-    if (upOut.error) {
-      return { ok: false as const, error: `Storage upload failed: ${upOut.error.message}` };
-    }
-    const { data: pubOut } = supabaseAdmin.storage.from("models").getPublicUrl(outPath);
-    return { ok: true as const, modelUrl: pubOut.publicUrl };
   });

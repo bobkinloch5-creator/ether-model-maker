@@ -433,26 +433,14 @@ function GeneratePage() {
           setHfProgress(15);
           setHfMessage("Generating on local TripoSR server…");
 
-          const { getBackendConfig } = await import("@/lib/backend-settings");
-          const backendCfg = getBackendConfig();
-          const { generateSF3DOnly } = await import("@/lib/hf3d.functions");
-          console.log("[3D GEN / client] calling generateSF3DOnly serverFn", {
-            presetId: "local-pc-triposr",
-            spaceUrl: backendCfg.spaceUrl || "(empty — server reads LOCAL_3D_API_URL)",
-            apiName: backendCfg.apiName,
-            extraArgs: backendCfg.extraArgs,
+          const { generateLocal3D } = await import("@/lib/hf3d.functions");
+          console.log("[3D GEN / client] calling generateLocal3D serverFn", {
             imageBytes: imageDataUrl.length,
           });
-          const res = await generateSF3DOnly({
-            data: {
-              imageDataUrl,
-              presetId: "local-pc-triposr",
-              spaceUrl: backendCfg.spaceUrl,
-              apiName: backendCfg.apiName,
-              extraArgs: backendCfg.extraArgs,
-            },
+          const res = await generateLocal3D({
+            data: { imageDataUrl },
           });
-          console.log("[3D GEN / client] generateSF3DOnly returned", res);
+          console.log("[3D GEN / client] generateLocal3D returned", res);
 
           if (res.ok) {
             modelUrl = res.modelUrl;
@@ -464,14 +452,14 @@ function GeneratePage() {
             hfError = res.error;
             setHfStatus("error");
             setHfMessage(hfError);
-            console.error("[SF3D] failed:", hfError);
+            console.error("[LOCAL 3D] failed:", hfError);
           }
         } catch (e: any) {
           const msg = e?.message || String(e);
           hfError = msg;
           setHfStatus("error");
           setHfMessage(msg);
-          console.error("[SF3D] threw:", e);
+          console.error("[LOCAL 3D] threw:", e);
         }
       }
 
