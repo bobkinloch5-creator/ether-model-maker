@@ -838,6 +838,98 @@ async function runTrellisPipelineInner(
 }
 
 
+/**
+ * Stable Fast 3D pipeline (stabilityai/stable-fast-3d Space).
+ *
+ * SF3D exposes /run_button(image, foreground_ratio, remesh_option,
+ * vertex_count, texture_size) → (preview_image, glb_file). It does NOT
+ * have /preprocess or /generate, so the Trellis/TripoSR pipeline cannot
+ * be reused as-is.
+ */
+async function runStableFast3D(
+  spaceUrl: string,
+  imageDataUrl: string,
+  token: string | undefined,
+  opts?: { textureResolution?: number },
+): Promise<{ fileUrl: string }> {
+  const m = imageDataUrl.match(/^data:([^;]+);base64,(.+)$/);
+  if (!m || !/^image\//i.test(m[1])) {
+    throw new Error("Please upload a valid image (PNG or JPG).");
+  }
+  const mime = m[1];
+  const bin = Uint8Array.from(atob(m[2]), (c) => c.charCodeAt(0));
+  const ext = (mime.split("/")[1] || "png").replace(/[^a-z0-9]/gi, "");
+  const inputPath = `sf3d-inputs/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
+  const { error: upErr } = await supabaseAdmin.storage
+    .from("models")
+    .upload(inputPath, bin, { contentType: mime, upsert: false });
+  if (upErr) throw new Error(`Image upload failed: ${upErr.message}`);
+  const { data: pub } = supabaseAdmin.storage.from("models").getPublicUrl(inputPath);
+  const inputFile = handle_file(pub.publicUrl);
+
+  const hfToken = token && /^hf_/.test(token) ? (token as `hf_${string}`) : undefined;
+  // Connect via Space ID first (HF inference router wakes sleeping Spaces),
+  // fall back to the .hf.space URL.
+  const candidates: string[] = [];
+  const envSpace = process.env.HF_3D_SPACE?.trim();
+  if (envSpace && /^[\w-]+\/[\w.-]+$/.test(envSpace)) candidates.push(envSpace);
+  candidates.push("stabilityai/stable-fast-3d", spaceUrl);
+
+  let app: Client | null = null;
+  let lastErr = "";
+  for (const ref of candidates) {
+    try {
+      console.log(`[SF3D] Client.connect → ${ref}`);
+      app = await Client.connect(ref, { ...(hfToken ? { hf_token: hfToken } : {}) } as any);
+      break;
+    } catch (e) {
+      lastErr = e instanceof Error ? e.message : String(e);
+      console.warn(`[SF3D] connect failed (${ref}): ${lastErr}`);
+    }
+  }
+  if (!app) throw new Error(humanizeHFError(lastErr));
+
+  const texSize = opts?.textureResolution && opts.textureResolution > 0 ? opts.textureResolution : 1024;
+  const out = await runGradioJob(app, "/run_button", [inputFile, 0.85, "None", 20000, texSize]);
+
+  // Returns: [previewImage, glbFile]
+  let fileUrl: string | null = null;
+  for (const item of out) {
+    const u = extractFileUrl(spaceUrl, item);
+    if (u && /\.(glb|obj|ply)(\?|$)/i.test(u)) { fileUrl = u; break; }
+  }
+  if (!fileUrl) {
+    const u = extractFileUrl(spaceUrl, out[1] ?? out[0]);
+    if (u) fileUrl = u;
+  }
+  if (!fileUrl) throw new Error("No 3D model returned by Stable Fast 3D.");
+  return { fileUrl };
+}
+
+/**
+ * Maps low-level HF/Gradio errors into user-friendly messages.
+ */
+function humanizeHFError(raw: string): string {
+  if (!raw) return "3D backend is unreachable. Please try again in a moment.";
+  const s = raw.toLowerCase();
+  if (s.includes("401") || s.includes("unauthorized")) {
+    return "Hugging Face token is missing or invalid. Set HF_TOKEN in secrets.";
+  }
+  if (s.includes("403") || s.includes("gated") || s.includes("terms") || s.includes("agreement") || s.includes("access to model")) {
+    return "Hugging Face model terms not accepted. Visit the Space on Hugging Face, accept the model license, then retry.";
+  }
+  if (s.includes("503") || s.includes("starting") || s.includes("sleeping") || s.includes("loading") || s.includes("cold")) {
+    return "The Hugging Face Space is starting up. Please wait 30–60 seconds and try again.";
+  }
+  if (s.includes("timeout") || s.includes("timed out") || s.includes("aborted")) {
+    return "Generation timed out. The Space may be overloaded — try again in a minute.";
+  }
+  if (s.includes("rate") && s.includes("limit")) {
+    return "Hugging Face rate limit hit. Wait a minute and try again.";
+  }
+  return raw.length > 220 ? raw.slice(0, 220) + "…" : raw;
+}
+
 export const startHF3DJob = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => START_INPUT.parse(d))
@@ -845,10 +937,10 @@ export const startHF3DJob = createServerFn({ method: "POST" })
     const { userId } = context;
 
     // Provider priority (cloud-first, no paid APIs):
-    //   1. Hugging Face TripoSR (RBX-CREATOR/3DGenTripoSR) — always-on default
-    //   2. Local TripoSR — only if LOCAL_TRIPOSR_ENABLED=true
-    //   3. Local ComfyUI — only if LOCAL_3D_ENABLED=true
-    const HF_DEFAULT = "https://rbx-creator-3dgentriposr.hf.space";
+    //   1. Stable Fast 3D (stabilityai/stable-fast-3d) — DEFAULT
+    //   2. Official TripoSR / RBX-CREATOR/3DGenTripoSR  — explicit override only
+    //   3. Local ComfyUI                                 — only if LOCAL_3D_ENABLED
+    const SF3D_DEFAULT = "https://stabilityai-stable-fast-3d.hf.space";
     const localTriposrEnabled = /^(1|true|yes)$/i.test(
       (process.env.LOCAL_TRIPOSR_ENABLED ?? "").trim(),
     );
@@ -856,22 +948,16 @@ export const startHF3DJob = createServerFn({ method: "POST" })
       (process.env.LOCAL_3D_ENABLED ?? "").trim(),
     );
 
-    // Determine which backend to use based on the per-call override (preset id).
-    // The client sends spaceUrl="" and a presetId hint via apiName-prefixed scheme;
-    // we keep it simple: empty spaceUrl with no override → cloud. Explicit URL → use it.
     const presetHint = data.spaceUrl?.trim() ?? "";
 
     let rawUrl = "";
     if (presetHint) {
-      // Explicit URL from settings panel → respect it (still SSRF-checked below).
       rawUrl = presetHint;
     } else {
-      // No explicit URL: cloud HF TripoSR by default.
       rawUrl =
-        process.env.HF_TRIPOSR_SPACE?.trim() ||
+        process.env.HF_3D_SPACE?.trim() ||
         process.env.HF_SPACE_URL?.trim() ||
-        HF_DEFAULT;
-      // Normalize bare "user/space" → full hf.space URL
+        SF3D_DEFAULT;
       if (/^[\w-]+\/[\w.-]+$/.test(rawUrl)) {
         rawUrl = `https://${rawUrl
           .toLowerCase()
@@ -887,7 +973,6 @@ export const startHF3DJob = createServerFn({ method: "POST" })
       return { ok: false as const, error: e instanceof Error ? e.message : "Invalid Space URL" };
     }
 
-    // Refuse to call local backends unless explicitly enabled via secrets.
     if (isLocalUrl(spaceUrl)) {
       const isComfyish =
         spaceUrl === process.env.COMFYUI_URL?.trim() ||
@@ -897,16 +982,33 @@ export const startHF3DJob = createServerFn({ method: "POST" })
         return {
           ok: false as const,
           error:
-            "Local 3D backend is disabled. Enable LOCAL_TRIPOSR_ENABLED or LOCAL_3D_ENABLED to use a local server, or switch to Hugging Face TripoSR in Settings.",
+            "Local 3D backend is disabled. Enable LOCAL_3D_ENABLED to use a local ComfyUI server, or use the cloud Stable Fast 3D backend.",
         };
       }
     }
 
-    const apiName = data.apiName?.trim() || process.env.HF_API_NAME || "/generate";
+    // Auto-detect the right Gradio endpoint based on the Space:
+    //   stabilityai-stable-fast-3d.hf.space → /run_button
+    //   everything else (TripoSR/TRELLIS)   → /generate
+    const isSF3D = /stabilityai-stable-fast-3d/i.test(spaceUrl);
+    const apiName =
+      data.apiName?.trim() ||
+      process.env.HF_API_NAME?.trim() ||
+      (isSF3D ? "/run_button" : "/generate");
     let token: string | undefined =
       process.env.LOCAL_3D_API_PASSWORD?.trim() || process.env.HF_TOKEN?.trim();
 
-    // Pixal3D hub → resolve to a live *.gradio.live worker tunnel.
+    // Stable Fast 3D is a gated model — fail fast with a clear message
+    // instead of letting Gradio surface a generic 401.
+    if (isSF3D && !token) {
+      return {
+        ok: false as const,
+        error:
+          "Hugging Face token missing. Set HF_TOKEN in secrets so the server can call the gated Stable Fast 3D Space.",
+      };
+    }
+
+    // Pixal3D hub (legacy) → resolve to a live *.gradio.live worker tunnel.
     if (isPixal3DHub(spaceUrl)) {
       if (new URL(spaceUrl).hostname.endsWith(".gradio.live")) {
         token = undefined;
@@ -920,51 +1022,65 @@ export const startHF3DJob = createServerFn({ method: "POST" })
       }
     }
 
-    // TRELLIS pipeline: /generate (preceded by /preprocess). Run synchronously
-    // through the Gradio client; the route already handles the {modelUrl} fast
-    // path returned below.
-    if (apiName.toLowerCase() === "/generate") {
+    // Image-to-3D pipelines: SF3D (/run_button) and TripoSR/TRELLIS (/generate).
+    const apiLower = apiName.toLowerCase();
+    if (apiLower === "/run_button" || apiLower === "/generate") {
       try {
         let imageDataUrl: string;
         if (isLocalUrl(spaceUrl)) {
-          // Local 3D server is image-to-3D only. Never auto-generate from
-          // prompt — require a real uploaded image so the user controls the
-          // input that hits their PC's GPU.
           if (!data.imageDataUrl) {
-            return {
-              ok: false as const,
-              error: "Please upload an image first. Local 3D generation requires an image.",
-            };
+            return { ok: false as const, error: "Please upload an image first. Local 3D generation requires an image." };
           }
           imageDataUrl = data.imageDataUrl;
-        } else if (data.kind === "text-to-3d") {
-          if (!data.prompt) return { ok: false as const, error: "No prompt provided for text-to-3D" };
-          imageDataUrl = await generateImageFromPrompt(data.prompt);
-        } else {
-          // image-to-3d: require an actual image. TripoSR is image-to-3D only.
+        } else if (data.kind === "image-to-3d") {
           if (data.imageDataUrl) imageDataUrl = data.imageDataUrl;
           else if (data.prompt) imageDataUrl = await generateImageFromPrompt(data.prompt);
           else return { ok: false as const, error: "Please upload or generate an image first." };
+        } else {
+          if (!data.prompt) return { ok: false as const, error: "No prompt provided for text-to-3D" };
+          imageDataUrl = await generateImageFromPrompt(data.prompt);
         }
 
         const qp = resolveQualityParams(data.quality, data.bakeTexture);
-        const { fileUrl } = await runTrellisPipeline(spaceUrl, imageDataUrl, token, qp);
+        const { fileUrl } = apiLower === "/run_button"
+          ? await runStableFast3D(spaceUrl, imageDataUrl, token, qp)
+          : await runTrellisPipeline(spaceUrl, imageDataUrl, token, qp);
+
         const fileRes = await fetch(fileUrl, {
           headers: {
             "ngrok-skip-browser-warning": "true",
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
         });
-        if (!fileRes.ok) return { ok: false as const, error: `File fetch failed (${fileRes.status})` };
+        if (!fileRes.ok) return { ok: false as const, error: `Could not download generated model (HTTP ${fileRes.status}).` };
         const buf = new Uint8Array(await fileRes.arrayBuffer());
-        const ext = fileUrl.toLowerCase().endsWith(".obj") ? "obj" : "glb";
+        const ext = fileUrl.toLowerCase().endsWith(".obj")
+          ? "obj"
+          : fileUrl.toLowerCase().endsWith(".ply")
+          ? "ply"
+          : "glb";
         const path = `hf/${userId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
         const up = await supabaseAdmin.storage.from("models").upload(path, buf, {
-          contentType: ext === "glb" ? "model/gltf-binary" : "text/plain",
+          contentType: ext === "glb" ? "model/gltf-binary" : "application/octet-stream",
           upsert: false,
         });
         if (up.error) return { ok: false as const, error: `Storage upload failed: ${up.error.message}` };
         const { data: pub } = supabaseAdmin.storage.from("models").getPublicUrl(path);
+
+        // Best-effort: persist a generation record server-side.
+        try {
+          await supabaseAdmin.from("generations").insert({
+            user_id: userId,
+            prompt: data.prompt ?? "",
+            generation_type: data.kind === "image-to-3d" ? "image-to-3d" : "text-to-3d",
+            status: "completed",
+            result_data: { modelUrl: pub.publicUrl, spaceUrl, apiName },
+            source: "web",
+          });
+        } catch (e) {
+          console.warn("[HF 3D] generations insert failed:", e instanceof Error ? e.message : e);
+        }
+
         return {
           ok: true as const,
           modelUrl: pub.publicUrl,
@@ -975,8 +1091,8 @@ export const startHF3DJob = createServerFn({ method: "POST" })
           startedAt: Date.now(),
         };
       } catch (err) {
-        console.error(`[HF 3D / TRELLIS] error:`, err);
-        return { ok: false as const, error: extractErrorMessage(err) };
+        console.error(`[HF 3D] image→3D error:`, err);
+        return { ok: false as const, error: humanizeHFError(extractErrorMessage(err)) };
       }
     }
 
