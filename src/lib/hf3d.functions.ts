@@ -619,7 +619,10 @@ export const generateHF3D = createServerFn({ method: "POST" })
       }
 
       const fileRes = await fetch(fileUrl, {
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        headers: {
+          "ngrok-skip-browser-warning": "true",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
       });
       if (!fileRes.ok) {
         return { ok: false as const, error: `HF file fetch failed: ${fileRes.status}` };
