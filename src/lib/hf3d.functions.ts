@@ -983,34 +983,27 @@ async function runTrellisPipelineInner(
   //    TripoSR/SF3D builds where /generate only accepts the processed image),
   //    then fall back to extended signatures for spaces that take resolution
   //    / bake / texture-resolution.
-  const mc = opts?.mcResolution ?? 96;
+  const mc = opts?.mcResolution ?? 256;
   const bake = !!opts?.bakeTexture;
   const texRes = opts?.textureResolution ?? 0;
   console.log(`[HF 3D / TRELLIS] predict /generate`, {
     url: `${spaceUrl.replace(/\/+$/, "")}/gradio_api/call/generate`,
-    args: { processed_image: "<file handle from /preprocess>", mcResolution: mc, bakeTexture: bake, textureResolution: texRes },
+    args: { processed_image: "<file handle from /preprocess>", mcResolution: mc },
   });
   let genOut: unknown[];
   try {
-    const r = await runGradioJob(app, "/generate", [processed], { timeoutMs: 600_000 });
+    // TripoSR /generate signature: [processed_image, mc_resolution]
+    const r = await runGradioJob(app, "/generate", [processed, mc], { timeoutMs: 600_000 });
     genOut = r;
   } catch (e1) {
     const m1 = e1 instanceof Error ? e1.message : String(e1);
-    console.warn(`[HF 3D / TRELLIS] /generate(image) failed, retrying (image, mc):`, m1);
+    console.warn(`[HF 3D / TRELLIS] /generate(image, mc) failed, trying full sig:`, m1);
     try {
-      const r = await runGradioJob(app, "/generate", [processed, mc], { timeoutMs: 600_000 });
+      const r = await runGradioJob(app, "/generate", [processed, mc, bake, texRes], { timeoutMs: 600_000 });
       genOut = r;
     } catch (e2) {
       const m2 = e2 instanceof Error ? e2.message : String(e2);
-      console.warn(`[HF 3D / TRELLIS] /generate(image, mc) failed, retrying full sig:`, m2);
-      try {
-        const r = await runGradioJob(app, "/generate", [processed, mc, bake, texRes], { timeoutMs: 600_000 });
-        genOut = r;
-      } catch (e3) {
-        const m3 = e3 instanceof Error ? e3.message : String(e3);
-        // Surface the original (most informative) error to the user.
-        throw new Error(`Gradio /generate failed at ${spaceUrl}: ${m1 || m3}`);
-      }
+      throw new Error(`Gradio /generate failed at ${spaceUrl}: ${m1 || m2}`);
     }
   }
 
