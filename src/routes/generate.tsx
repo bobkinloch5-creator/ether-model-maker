@@ -1840,6 +1840,22 @@ function GeneratePage() {
                   </div>
                 </div>
 
+                {/* Wall-clock ETA */}
+                <div className="mt-3 text-center">
+                  <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-wider text-muted-foreground">
+                    {doneAt ? (
+                      <>
+                        <span>Estimated done at</span>
+                        <span className="font-mono text-foreground tabular-nums normal-case tracking-normal">
+                          {fmtClock(doneAt)}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-primary-glow">Finalizing your asset…</span>
+                    )}
+                  </span>
+                </div>
+
                 {/* Progress bar */}
                 <div className="mt-4 mx-auto max-w-md h-2 rounded-full bg-white/5 overflow-hidden border border-white/10">
                   <div
@@ -1854,6 +1870,7 @@ function GeneratePage() {
                   {hfMessage ? (
                     <span className="text-foreground/90">{hfMessage}</span>
                   ) : (
+
                     <>
                       {progressPct < 30 && "Initializing model & priming the GPU…"}
                       {progressPct >= 30 && progressPct < 65 && "Building geometry and topology…"}
