@@ -414,7 +414,7 @@ function BackendSettingsPage() {
       //   ComfyUI    → /system_stats / /queue / /
       //   Local      → /gradio_api/info → /config
       const provider: "hf" | "comfyui" | "local" =
-        cfg.presetId === "auto" || cfg.presetId === "triposr"
+        cfg.presetId === "auto" || cfg.presetId === "stable-fast-3d" || cfg.presetId === "triposr-official" || cfg.presetId === "triposr"
           ? "hf"
           : cfg.presetId === "local-comfyui"
           ? "comfyui"
