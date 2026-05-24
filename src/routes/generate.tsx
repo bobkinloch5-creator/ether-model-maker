@@ -388,7 +388,7 @@ function GeneratePage() {
       let hfError: string | null = null;
       if (selectedType === "image-to-3d") {
         if (!imageDataUrl) {
-          const msg = "Please upload an image first. Local 3D generation requires an image.";
+          const msg = "Please upload an image first.";
           setError(msg);
           setHfStatus("error");
           setHfMessage(msg);
@@ -398,237 +398,35 @@ function GeneratePage() {
           return;
         }
         try {
-          let inputImage = imageDataUrl;
+          setHfStatus("running");
+          setHfProgress(15);
+          setHfMessage("Generating with Stable Fast 3D…");
 
+          const { generateSF3DOnly } = await import("@/lib/hf3d.functions");
+          const res = await generateSF3DOnly({ data: { imageDataUrl } });
 
-          const { startHF3DJob, pollHF3DJob } = await import("@/lib/hf3d.functions");
-          const { getBackendConfig, resolveExtraArgs, BACKEND_PRESETS } = await import("@/lib/backend-settings");
-          const userBackend = getBackendConfig();
-
-          // Build an ordered list of backends to try: user's choice first, then
-          // TripoSR (known reliable), then every other preset.
-          const tried = new Set<string>();
-          const attempts: Array<{ spaceUrl?: string; apiName?: string; extraArgs: unknown[]; label: string }> = [];
-          const pushAttempt = (spaceUrl: string | undefined, apiName: string | undefined, extraArgs: unknown[], label: string) => {
-            const key = `${spaceUrl}::${apiName}`;
-            if (spaceUrl?.startsWith("demo://") || apiName === "/demo") return;
-            if (tried.has(key)) return;
-            tried.add(key);
-            attempts.push({ spaceUrl, apiName, extraArgs, label });
-          };
-          pushAttempt(userBackend.spaceUrl, userBackend.apiName, resolveExtraArgs(userBackend.extraArgs), "Selected backend");
-          // Force TripoSR (known-reliable image-to-3D) to the front of the fallback list
-          const triposr = BACKEND_PRESETS.find((p) => p.id === "triposr");
-          if (triposr) pushAttempt(triposr.spaceUrl, triposr.apiName, resolveExtraArgs(triposr.extraArgs), triposr.label);
-          for (const p of BACKEND_PRESETS) {
-            pushAttempt(p.spaceUrl, p.apiName, resolveExtraArgs(p.extraArgs), p.label);
-          }
-
-          // Fast health-check: skip dead Spaces in <4s instead of waiting 60s+.
-          const isHealthy = async (spaceUrl?: string): Promise<boolean> => {
-            // Empty spaceUrl = server-resolved via LOCAL_3D_API_URL secret.
-            // The server will fail loudly if the secret is missing/unreachable.
-            if (!spaceUrl) return true;
-            const base = spaceUrl.replace(/\/$/, "");
-            // Bypass health check fetch for local or ngrok urls to avoid CORS/interstitial issues
-            if (base.includes("localhost") || base.includes("127.0.0.1") || base.includes("ngrok")) {
-              console.log(`Bypassing client-side health check fetch for local/ngrok backend: ${base}`);
-              return true;
-            }
-            // Try both Gradio prefixes: 4.30+ uses /gradio_api/info, older
-            // (e.g. 4.8) uses /info. Either responding 2xx means alive.
-            for (const path of ["/gradio_api/info", "/info"]) {
-              try {
-                const ctl = new AbortController();
-                const t = setTimeout(() => ctl.abort(), 4000);
-                const r = await fetch(`${base}${path}`, { signal: ctl.signal });
-                clearTimeout(t);
-                if (r.ok) return true;
-              } catch { /* try next */ }
-            }
-            return false;
-          };
-
-          setHfStatus("queued");
-          setHfProgress(2);
-          setHfMessage("Checking 3D backends…");
-
-          let finalUrl: string | null = null;
-          let lastErr: string | null = null;
-
-          for (let i = 0; i < attempts.length && !finalUrl; i++) {
-            const a = attempts[i];
-            const isFallback = i > 0;
-
-            // Pre-flight: skip Spaces that are clearly down so we reach a working one fast.
-            const healthy = await isHealthy(a.spaceUrl);
-            if (!healthy) {
-              lastErr = `${a.label} is offline (503/timeout)`;
-              console.warn(`Skipping ${a.label} — health check failed`);
-              continue;
-            }
-
-            if (isFallback) {
-              toast.info(`Using ${a.label}`, { description: "Previous backend was offline." });
-            }
-            setHfMessage(`Generating with ${a.label}…`);
-            setHfStatus("running");
-            setHfProgress(15);
-
-            // Smooth client-side progress ticker so the user sees motion +
-            // phase messages while the synchronous Trellis pipeline runs on
-            // the server. Cancelled as soon as startHF3DJob returns.
-            const phases: Array<{ at: number; pct: number; msg: string }> = [
-              { at: 0,     pct: 18, msg: "Uploading image to backend…" },
-              { at: 2500,  pct: 28, msg: "Connecting to 3D server…" },
-              { at: 6000,  pct: 38, msg: "Removing background…" },
-              { at: 12000, pct: 50, msg: "Analysing geometry…" },
-              { at: 22000, pct: 62, msg: "Generating 3D mesh…" },
-              { at: 45000, pct: 74, msg: "Refining shape…" },
-              { at: 75000, pct: 84, msg: "Baking textures…" },
-              { at: 110000, pct: 92, msg: "Finalising model…" },
-            ];
-            const tickerStart = Date.now();
-            const ticker = setInterval(() => {
-              const elapsed = Date.now() - tickerStart;
-              const phase = [...phases].reverse().find((p) => elapsed >= p.at);
-              if (phase) {
-                setHfProgress((cur) => Math.max(cur, phase.pct));
-                setHfMessage(phase.msg);
-              }
-            }, 700);
-
-            // Start the async job, then poll until complete/error. Each poll
-            // reads ~6s of the Gradio SSE stream — well under any Worker
-            // request timeout — so long-running 3D jobs don't time out.
-            let startRes: any;
-            try {
-              startRes = await startHF3DJob({
-                data: {
-                  kind: selectedType,
-                  prompt: composedPrompt,
-                  imageDataUrl: inputImage || undefined,
-                  spaceUrl: a.spaceUrl || undefined,
-                  apiName: a.apiName || undefined,
-                  extraArgs: a.extraArgs,
-                  quality,
-                  bakeTexture,
-                },
-              });
-            } catch (callErr: any) {
-              clearInterval(ticker);
-              const raw = callErr?.message || String(callErr);
-              // Generic 500 from server fn → translate to actionable text
-              const friendly = /internal server error/i.test(raw)
-                ? `${a.label} crashed on the server. Trying another backend…`
-                : raw;
-              lastErr = friendly;
-              console.warn(`Backend ${a.label} threw:`, raw);
-              continue;
-            } finally {
-              clearInterval(ticker);
-            }
-
-            if (!startRes.ok) {
-              lastErr = startRes.error || "Failed to start job";
-              console.warn(`Backend ${a.label} failed to start:`, lastErr);
-              continue;
-            }
-            // Synchronous fast path — startHF3DJob now runs the full pipeline
-            // and returns modelUrl directly. Skip the poll loop in that case.
-            if ("modelUrl" in startRes && startRes.modelUrl) {
-              finalUrl = startRes.modelUrl;
-              setHfMessage("Loading preview…");
-              setHfStatus("complete");
-              setHfProgress(100);
-              break;
-            }
-
-
-            // Poll loop — bounded at ~5 minutes total per backend.
-            const pollDeadline = Date.now() + 5 * 60_000;
-            let pollErr: string | null = null;
-            let modelOut: string | null = null;
-            let pollEventId = startRes.eventId;
-            let pollApiName = startRes.apiName;
-            let pollSessionHash = "sessionHash" in startRes ? startRes.sessionHash : undefined;
-            let pollStartedAt = startRes.startedAt;
-            while (Date.now() < pollDeadline) {
-              let pr: any;
-              try {
-                pr = await pollHF3DJob({
-                  data: {
-                    eventId: pollEventId,
-                    spaceUrl: startRes.spaceUrl,
-                    apiName: pollApiName,
-                    startedAt: pollStartedAt,
-                    sessionHash: pollSessionHash,
-                  },
-                });
-              } catch (pollThrow: any) {
-                pollErr = pollThrow?.message || "Polling crashed";
-                if (/internal server error/i.test(pollErr || "")) {
-                  pollErr = "Server error while polling 3D job — backend may have crashed.";
-                }
-                break;
-              }
-              if (!pr.ok) {
-                pollErr = "Polling failed";
-                break;
-              }
-              if (typeof pr.progress === "number") setHfProgress(pr.progress);
-              if (pr.message) setHfMessage(pr.message);
-              setHfStatus(pr.status);
-              if ("eventId" in pr && "apiName" in pr && pr.eventId && pr.apiName) {
-                pollEventId = pr.eventId;
-                pollApiName = pr.apiName;
-                pollSessionHash = "sessionHash" in pr ? pr.sessionHash : undefined;
-                pollStartedAt = Date.now();
-              }
-              if (pr.status === "complete" && pr.modelUrl) {
-                modelOut = pr.modelUrl;
-                break;
-              }
-              if (pr.status === "error") {
-                pollErr = pr.error || pr.message || "Generation error";
-                break;
-              }
-              // Brief gap before next poll; the poll itself blocks for SSE.
-              await new Promise((r) => setTimeout(r, 800));
-            }
-
-            if (modelOut) {
-              finalUrl = modelOut;
-              setHfStatus("complete");
-              setHfProgress(100);
-              break;
-            } else {
-              lastErr = pollErr || "Generation timed out";
-              console.warn(`Backend ${a.label} failed:`, lastErr);
-            }
-          }
-
-          if (finalUrl) {
-            modelUrl = finalUrl;
+          if (res.ok) {
+            modelUrl = res.modelUrl;
             generationMethod = "hf3d";
-            hfError = null;
+            setHfStatus("complete");
+            setHfProgress(100);
+            setHfMessage("Done");
           } else {
-            hfError = lastErr || "All 3D backends are unavailable";
+            hfError = res.error;
             setHfStatus("error");
             setHfMessage(hfError);
-            console.error("All HF Spaces failed:", hfError);
+            console.error("[SF3D] failed:", hfError);
           }
         } catch (e: any) {
-          let msg = e?.message || String(e);
-          if (/internal server error/i.test(msg)) {
-            msg = "The 3D generation server crashed unexpectedly. The configured backend (Hugging Face Space) is likely offline or sleeping. Try a different backend in Settings, or upload an image and retry.";
-          }
+          const msg = e?.message || String(e);
           hfError = msg;
           setHfStatus("error");
-          setHfMessage(hfError);
-          console.error("3D generation failed:", e);
+          setHfMessage(msg);
+          console.error("[SF3D] threw:", e);
         }
       }
+
+
 
 
       const settings = {
