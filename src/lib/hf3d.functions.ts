@@ -684,8 +684,9 @@ async function runTrellisPipelineInner(
   //    server is unreachable, Client.connect will throw a clear error which
   //    we surface to the user.
   const m = imageDataUrl.match(/^data:([^;]+);base64,(.+)$/);
-  if (!m) throw new Error("Invalid image data URL");
+  if (!m) throw new Error("Please upload a valid image.");
   const mime = m[1];
+  if (!/^image\//i.test(mime)) throw new Error("Please upload a valid image.");
   const bin = Uint8Array.from(atob(m[2]), (c) => c.charCodeAt(0));
   const ext = (mime.split("/")[1] || "png").replace(/[^a-z0-9]/gi, "");
   const inputPath = `trellis-inputs/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
