@@ -2226,36 +2226,47 @@ function GeneratePage() {
           </div>
         )}
 
-        {/* Credit costs info */}
-        <div className="mt-10 glass rounded-2xl p-6">
-          <h3 className="font-display text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-            Credit costs
-          </h3>
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div className="flex items-center gap-3">
-              <ImageIcon className="h-5 w-5 text-blue-400" />
-              <div>
-                <p className="text-sm font-medium">Image → 3D</p>
-                <p className="text-xs text-muted-foreground">3 credits</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Palette className="h-5 w-5 text-pink-400" />
-              <div>
-                <p className="text-sm font-medium">Re-texture</p>
-                <p className="text-xs text-muted-foreground">1 credit</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Sparkles className="h-5 w-5 text-amber-400" />
-              <div>
-                <p className="text-sm font-medium">Text → Image</p>
-                <p className="text-xs text-muted-foreground">1 credit</p>
+            {/* Credit costs info */}
+            <div className="studio-card p-5">
+              <h3 className="font-display text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                Credit costs
+              </h3>
+              <div className="grid gap-3 grid-cols-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="grid h-9 w-9 place-items-center rounded-lg bg-blue-400/10 border border-blue-400/20">
+                    <ImageIcon className="h-4 w-4 text-blue-400" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium truncate">Image → 3D</p>
+                    <p className="text-[11px] text-muted-foreground">3 credits</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <div className="grid h-9 w-9 place-items-center rounded-lg bg-pink-400/10 border border-pink-400/20">
+                    <Palette className="h-4 w-4 text-pink-400" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium truncate">Re-texture</p>
+                    <p className="text-[11px] text-muted-foreground">1 credit</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <div className="grid h-9 w-9 place-items-center rounded-lg bg-amber-400/10 border border-amber-400/20">
+                    <Sparkles className="h-4 w-4 text-amber-400" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium truncate">Text → Image</p>
+                    <p className="text-[11px] text-muted-foreground">1 credit</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+          {/* End RIGHT column */}
         </div>
+        {/* End split studio layout */}
       </main>
+
     </div>
   );
 }
