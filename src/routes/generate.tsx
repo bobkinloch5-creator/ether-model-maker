@@ -590,9 +590,10 @@ function GeneratePage() {
         const reason = hfError || "3D generation service is unavailable. Please try again.";
         setError(reason);
         toast.error("3D generation failed", {
-          description: reason.slice(0, 220),
-          duration: 10000,
+          description: reason.slice(0, 600),
+          duration: 12000,
         });
+
       } else {
         if (!gen) {
           gen = await createGeneration(
