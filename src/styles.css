@@ -230,7 +230,7 @@ html, body { background: var(--background); color: var(--foreground); }
   overflow: hidden;
   isolation: isolate;
 }
-@utility preview-stage::before {
+.preview-stage::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -249,7 +249,7 @@ html, body { background: var(--background); color: var(--foreground); }
 @utility conic-ring {
   position: relative;
 }
-@utility conic-ring::before {
+.conic-ring::before {
   content: "";
   position: absolute;
   inset: -1px;
