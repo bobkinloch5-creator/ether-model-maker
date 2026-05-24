@@ -699,37 +699,81 @@ async function runTrellisPipelineInner(
   if (!publicUrl) throw new Error("Could not resolve public URL for uploaded image");
   const inputFile = handle_file(publicUrl);
 
-  // 2) Connect the official Gradio client. It handles the queue + SSE
-  //    automatically — no manual POST to /preprocess or /generate. We
-  //    forward the ngrok header on every request via options.headers.
+  // 2) Connect the official Gradio client with retry. For HF Spaces, prefer
+  //    the "user/space" Space ID over the .hf.space URL — Client.connect
+  //    resolves the ID against the HF inference router which wakes sleeping
+  //    Spaces, while the bare subdomain returns a generic "Connection errored
+  //    out" while the container is cold.
   console.log(`[HF 3D / TRELLIS] Connecting Gradio client to ${spaceUrl}`);
-  let app: Client;
   const isHf = /\.hf\.space$/i.test(new URL(spaceUrl).hostname);
   const hfToken = token && /^hf_/.test(token) ? (token as `hf_${string}`) : undefined;
-  try {
-    app = await Client.connect(spaceUrl, {
-      headers: baseHeaders,
-      events: ["data", "status"],
-      // @gradio/client uses `hf_token`, not `token`. Pass it for HF spaces
-      // (required for ZeroGPU / gated spaces).
-      ...(hfToken ? { hf_token: hfToken } : {}),
-    } as any);
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    if (isLocalUrl(spaceUrl)) {
-      throw new Error(`Could not reach your local 3D server at ${spaceUrl} — is your PC on, the Gradio app running, and ngrok forwarding? (${msg})`);
+
+  // Build connection candidates: Space ID (if HF + we can derive it) → URL.
+  const candidates: string[] = [];
+  if (isHf) {
+    const fromEnv = process.env.HF_TRIPOSR_SPACE?.trim();
+    if (fromEnv && /^[\w-]+\/[\w.-]+$/.test(fromEnv)) candidates.push(fromEnv);
+    // Derive "<user>/<space>" from "<user>-<space>.hf.space" — best effort,
+    // works when neither user nor space slug contains a dash.
+    const host = new URL(spaceUrl).hostname.toLowerCase();
+    const sub = host.replace(/\.hf\.space$/i, "");
+    const dash = sub.indexOf("-");
+    if (dash > 0) {
+      const guess = `${sub.slice(0, dash)}/${sub.slice(dash + 1)}`;
+      if (!candidates.includes(guess)) candidates.push(guess);
     }
-    if (/\b(503|502|504)\b/.test(msg) || /sleep|starting|loading/i.test(msg)) {
-      throw new Error(`Hugging Face Space is starting, please try again in ~30 seconds. (${spaceUrl})`);
-    }
-    if (/\b500\b/.test(msg)) {
-      throw new Error(`Hugging Face Space returned 500 — the Space crashed. Real error: ${msg}`);
-    }
-    if (isHf && /errored out|fetch failed|ENOTFOUND|ECONNRESET/i.test(msg)) {
-      throw new Error(`Hugging Face Space ${spaceUrl} could not be reached. It may be sleeping — visit it once in your browser to wake it, then retry. (${msg})`);
-    }
-    throw new Error(`3D backend unavailable at ${spaceUrl} — the Hugging Face Space is offline, sleeping, or the API has changed. Try a different backend in Settings. (${msg})`);
   }
+  candidates.push(spaceUrl);
+
+  const TOTAL_DEADLINE_MS = 120_000;
+  const RETRY_DELAY_MS = 10_000;
+  const MAX_ATTEMPTS = 3;
+  const startedAt = Date.now();
+
+  let app: Client | null = null;
+  let lastErrMsg = "";
+  outer: for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    if (Date.now() - startedAt > TOTAL_DEADLINE_MS) break;
+    for (const ref of candidates) {
+      try {
+        console.log(`[HF 3D / TRELLIS] connect attempt ${attempt} → ${ref}`);
+        app = await Client.connect(ref, {
+          headers: baseHeaders,
+          events: ["data", "status"],
+          ...(hfToken ? { hf_token: hfToken } : {}),
+        } as any);
+        break outer;
+      } catch (e) {
+        lastErrMsg = e instanceof Error ? e.message : String(e);
+        console.warn(`[HF 3D / TRELLIS] connect failed (${ref}): ${lastErrMsg}`);
+      }
+    }
+    if (attempt < MAX_ATTEMPTS && Date.now() - startedAt + RETRY_DELAY_MS < TOTAL_DEADLINE_MS) {
+      await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
+    }
+  }
+
+  if (!app) {
+    if (isLocalUrl(spaceUrl)) {
+      throw new Error(`Could not reach your local 3D server at ${spaceUrl} — is your PC on, the Gradio app running, and ngrok forwarding? (${lastErrMsg})`);
+    }
+    if (isHf) {
+      throw new Error(`Hugging Face Space is starting. Please wait 1–2 minutes and try again. (${lastErrMsg})`);
+    }
+    throw new Error(`3D backend unavailable at ${spaceUrl}. (${lastErrMsg})`);
+  }
+
+  // Quick sanity-check: ensure the Space exposes the endpoints we need.
+  try {
+    const info: any = await (app as any).view_api?.();
+    if (info && info.named_endpoints) {
+      const names = Object.keys(info.named_endpoints);
+      console.log(`[HF 3D / TRELLIS] view_api endpoints:`, names.join(", "));
+    }
+  } catch (e) {
+    console.warn(`[HF 3D / TRELLIS] view_api failed:`, e instanceof Error ? e.message : e);
+  }
+
 
   // Skip /check_input_image and view_api — they're optional and add 1-2 extra
   // round trips. /preprocess already validates the image.
