@@ -195,7 +195,6 @@ export const testGradioSpace = createServerFn({ method: "POST" })
       }
       return { ok: true as const, message: `Connected. Found ${endpoints.length} endpoints.`, endpoints };
     } catch (err) {
-      clearTimeout(timer);
       const msg = err instanceof Error ? err.message : String(err);
       return { ok: false as const, error: `Failed to reach ${base}: ${msg}` };
     }
