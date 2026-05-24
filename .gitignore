@@ -1,0 +1,22 @@
+venv/
+__pycache__/
+*.pyc
+*.pkl
+*.ckpt
+*.pt
+*.pth
+*.egg-info/
+dist/
+build/
+.env
+.env.*
+.DS_Store
+.ipynb_checkpoints/
+models/
+weights/
+# Python virtual env
+venv/
+# OS files
+Thumbs.db
+# Visual Studio Code
+.vscode/
