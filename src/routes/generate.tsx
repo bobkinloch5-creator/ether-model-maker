@@ -457,21 +457,49 @@ function GeneratePage() {
             setHfStatus("running");
             setHfProgress(15);
 
+            // Smooth client-side progress ticker so the user sees motion +
+            // phase messages while the synchronous Trellis pipeline runs on
+            // the server. Cancelled as soon as startHF3DJob returns.
+            const phases: Array<{ at: number; pct: number; msg: string }> = [
+              { at: 0,     pct: 18, msg: "Uploading image to backend…" },
+              { at: 2500,  pct: 28, msg: "Connecting to 3D server…" },
+              { at: 6000,  pct: 38, msg: "Removing background…" },
+              { at: 12000, pct: 50, msg: "Analysing geometry…" },
+              { at: 22000, pct: 62, msg: "Generating 3D mesh…" },
+              { at: 45000, pct: 74, msg: "Refining shape…" },
+              { at: 75000, pct: 84, msg: "Baking textures…" },
+              { at: 110000, pct: 92, msg: "Finalising model…" },
+            ];
+            const tickerStart = Date.now();
+            const ticker = setInterval(() => {
+              const elapsed = Date.now() - tickerStart;
+              const phase = [...phases].reverse().find((p) => elapsed >= p.at);
+              if (phase) {
+                setHfProgress((cur) => Math.max(cur, phase.pct));
+                setHfMessage(phase.msg);
+              }
+            }, 700);
+
             // Start the async job, then poll until complete/error. Each poll
             // reads ~6s of the Gradio SSE stream — well under any Worker
             // request timeout — so long-running 3D jobs don't time out.
-            const startRes = await startHF3DJob({
-              data: {
-                kind: selectedType,
-                prompt: composedPrompt,
-                imageDataUrl: inputImage || undefined,
-                spaceUrl: a.spaceUrl || undefined,
-                apiName: a.apiName || undefined,
-                extraArgs: a.extraArgs,
-                quality,
-                bakeTexture,
-              },
-            });
+            let startRes: any;
+            try {
+              startRes = await startHF3DJob({
+                data: {
+                  kind: selectedType,
+                  prompt: composedPrompt,
+                  imageDataUrl: inputImage || undefined,
+                  spaceUrl: a.spaceUrl || undefined,
+                  apiName: a.apiName || undefined,
+                  extraArgs: a.extraArgs,
+                  quality,
+                  bakeTexture,
+                },
+              });
+            } finally {
+              clearInterval(ticker);
+            }
 
             if (!startRes.ok) {
               lastErr = startRes.error || "Failed to start job";
@@ -482,6 +510,7 @@ function GeneratePage() {
             // and returns modelUrl directly. Skip the poll loop in that case.
             if ("modelUrl" in startRes && startRes.modelUrl) {
               finalUrl = startRes.modelUrl;
+              setHfMessage("Loading preview…");
               setHfStatus("complete");
               setHfProgress(100);
               break;
