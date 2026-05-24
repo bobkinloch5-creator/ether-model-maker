@@ -7,74 +7,17 @@ export type BackendPreset = {
   notes: string;
 };
 
-// Provider priority (default = "auto"):
-//   1. Stable Fast 3D (stabilityai/stable-fast-3d) — DEFAULT cloud provider
-//   2. Official TripoSR (stabilityai/TripoSR)       — explicit override only
-//   3. RBX-CREATOR/3DGenTripoSR                     — explicit override only
-//   4. Local ComfyUI (only if LOCAL_3D_ENABLED=true)
+// Only one provider: the user's own local TripoSR server, exposed via
+// Cloudflare/ngrok tunnel and configured through LOCAL_3D_API_URL + LOCAL_3D_API_KEY.
 export const BACKEND_PRESETS: BackendPreset[] = [
-  {
-    id: "auto",
-    label: "Auto (Stable Fast 3D)",
-    spaceUrl: "https://stabilityai-stable-fast-3d.hf.space",
-    apiName: "/run_button",
-    extraArgs: "",
-    notes:
-      "Default cloud generation via Stability AI's Stable Fast 3D Space on Hugging Face. Image-to-3D only. Requires HF_TOKEN and accepted model terms on Hugging Face.",
-  },
-  {
-    id: "stable-fast-3d",
-    label: "Stable Fast 3D (stabilityai/stable-fast-3d)",
-    spaceUrl: "https://stabilityai-stable-fast-3d.hf.space",
-    apiName: "/run_button",
-    extraArgs: "",
-    notes:
-      "Stability AI's official Stable Fast 3D Space. Image-to-3D, returns GLB. Gated — accept terms on the Space page first.",
-  },
-  {
-    id: "triposr-official",
-    label: "TripoSR (stabilityai/TripoSR)",
-    spaceUrl: "https://stabilityai-triposr.hf.space",
-    apiName: "/generate",
-    extraArgs: "",
-    notes:
-      "Stability AI's official TripoSR Space. Use only if it's confirmed running.",
-  },
-  {
-    id: "triposr",
-    label: "RBX-CREATOR/3DGenTripoSR",
-    spaceUrl: "https://rbx-creator-3dgentriposr.hf.space",
-    apiName: "/generate",
-    extraArgs: "",
-    notes:
-      "Personal TripoSR Space. May need ~30s to wake from sleep on first use.",
-  },
-  {
-    id: "local-comfyui",
-    label: "Local ComfyUI (optional)",
-    spaceUrl: "",
-    apiName: "/generate",
-    extraArgs: "",
-    notes:
-      "Your own ComfyUI server. Only used when LOCAL_3D_ENABLED=true. Set COMFYUI_URL or LOCAL_3D_API_URL.",
-  },
   {
     id: "local-pc-triposr",
     label: "Local PC TripoSR",
     spaceUrl: "",
-    apiName: "/generate-3d",
+    apiName: "/generate",
     extraArgs: "",
     notes:
-      "Use your own local TripoSR server exposed over Cloudflare Tunnel. Set LOCAL_3D_API_URL and LOCAL_3D_API_KEY in environment secrets.",
-  },
-  {
-    id: "dataoorts_orion",
-    label: "Dataoorts Orion / GPU Cloud",
-    spaceUrl: "",
-    apiName: "/run_button",
-    extraArgs: "",
-    notes:
-      "Dataoorts Orion GPU server. Configured via DATAOORTS_3D_API_URL and DATAOORTS_3D_API_KEY environment variables.",
+      "Use your own local TripoSR server running from C:\\Users\\david\\Downloads\\TripoSR-main, exposed over an ngrok / Cloudflare Tunnel. Set LOCAL_3D_API_URL and LOCAL_3D_API_KEY in environment secrets.",
   },
 ];
 
@@ -86,7 +29,7 @@ export type BackendConfig = {
 };
 
 const STORAGE_KEY = "kd_backend_config_v2";
-const DEFAULT_PRESET = BACKEND_PRESETS[0]; // "auto"
+const DEFAULT_PRESET = BACKEND_PRESETS[0];
 
 function defaults(): BackendConfig {
   return {
@@ -110,14 +53,6 @@ export function getBackendConfig(): BackendConfig {
           spaceUrl: "",
           apiName: known.apiName,
           extraArgs: known.extraArgs,
-        };
-      }
-      if (known && known.id === "dataoorts_orion") {
-        return {
-          presetId: known.id,
-          spaceUrl: parsed.spaceUrl || "",
-          apiName: parsed.apiName || known.apiName,
-          extraArgs: parsed.extraArgs ?? known.extraArgs,
         };
       }
       if (known && (known.id === "auto" || known.id === "stable-fast-3d" || known.id === "triposr-official" || known.id === "triposr")) {

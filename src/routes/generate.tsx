@@ -306,20 +306,6 @@ function GeneratePage() {
 
   const handleGenerate = async () => {
     if (!prompt.trim() || !user) return;
-    if (providerInfo?.provider === "dataoorts_orion") {
-      if (providerInfo.status === "Not Configured") {
-        const msg = "3D server not configured. Add your Dataoorts Orion API URL.";
-        setError(msg);
-        toast.error("Generation blocked", { description: msg });
-        return;
-      }
-      if (providerInfo.status === "Offline") {
-        const msg = "3D server is offline. Start your Dataoorts Orion GPU server.";
-        setError(msg);
-        toast.error("Generation blocked", { description: msg });
-        return;
-      }
-    }
     // Credit gate temporarily disabled — credit display is reading the wrong source.
     // TODO: re-enable once credit display is fixed.
 
@@ -447,8 +433,18 @@ function GeneratePage() {
           setHfProgress(15);
           setHfMessage("Generating with Stable Fast 3D…");
 
+          const { getBackendConfig } = await import("@/lib/backend-settings");
+          const backendCfg = getBackendConfig();
           const { generateSF3DOnly } = await import("@/lib/hf3d.functions");
-          const res = await generateSF3DOnly({ data: { imageDataUrl } });
+          const res = await generateSF3DOnly({
+            data: {
+              imageDataUrl,
+              presetId: backendCfg.presetId,
+              spaceUrl: backendCfg.spaceUrl,
+              apiName: backendCfg.apiName,
+              extraArgs: backendCfg.extraArgs,
+            },
+          });
 
           if (res.ok) {
             modelUrl = res.modelUrl;
@@ -681,20 +677,6 @@ function GeneratePage() {
   // style/material prompt. Costs 1 credit (vs 3 for a fresh image-to-3D).
   const handleRetexture = async () => {
     if (!user || !currentGen) return;
-    if (providerInfo?.provider === "dataoorts_orion") {
-      if (providerInfo.status === "Not Configured") {
-        const msg = "3D server not configured. Add your Dataoorts Orion API URL.";
-        setError(msg);
-        toast.error("Retexture blocked", { description: msg });
-        return;
-      }
-      if (providerInfo.status === "Offline") {
-        const msg = "3D server is offline. Start your Dataoorts Orion GPU server.";
-        setError(msg);
-        toast.error("Retexture blocked", { description: msg });
-        return;
-      }
-    }
     const sourceImg = (currentGen.result_data?.source_image_data_url as string) || imageDataUrl;
     if (!sourceImg) {
       toast.error("Can't retexture", { description: "Original source image is unavailable. Generate a new model first." });
@@ -1093,15 +1075,15 @@ function GeneratePage() {
                 <span className="text-yellow-400">Checking…</span>
               ) : providerInfo.status === "Connected" ? (
                 <span className="text-emerald-400 font-semibold">
-                  Connected ({providerInfo.provider === "dataoorts_orion" ? "Dataoorts Orion" : "Cloud"})
+                  Connected
                 </span>
               ) : providerInfo.status === "Offline" ? (
                 <span className="text-red-400 font-semibold">
-                  3D server is offline. Start your Dataoorts Orion GPU server.
+                  Offline
                 </span>
               ) : (
                 <span className="text-amber-500 font-semibold">
-                  3D server not configured. Add your Dataoorts Orion API URL.
+                  Not Configured
                 </span>
               )}
             </span>
