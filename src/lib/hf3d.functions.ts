@@ -704,12 +704,16 @@ async function runTrellisPipelineInner(
   //    forward the ngrok header on every request via options.headers.
   console.log(`[HF 3D / TRELLIS] Connecting Gradio client to ${spaceUrl}`);
   let app: Client;
+  const isHf = /\.hf\.space$/i.test(new URL(spaceUrl).hostname);
+  const hfToken = token && /^hf_/.test(token) ? (token as `hf_${string}`) : undefined;
   try {
     app = await Client.connect(spaceUrl, {
       headers: baseHeaders,
       events: ["data", "status"],
-      ...(token && /^hf_/.test(token) ? { token: token as `hf_${string}` } : {}),
-    });
+      // @gradio/client uses `hf_token`, not `token`. Pass it for HF spaces
+      // (required for ZeroGPU / gated spaces).
+      ...(hfToken ? { hf_token: hfToken } : {}),
+    } as any);
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     if (isLocalUrl(spaceUrl)) {
@@ -720,6 +724,9 @@ async function runTrellisPipelineInner(
     }
     if (/\b500\b/.test(msg)) {
       throw new Error(`Hugging Face Space returned 500 — the Space crashed. Real error: ${msg}`);
+    }
+    if (isHf && /errored out|fetch failed|ENOTFOUND|ECONNRESET/i.test(msg)) {
+      throw new Error(`Hugging Face Space ${spaceUrl} could not be reached. It may be sleeping — visit it once in your browser to wake it, then retry. (${msg})`);
     }
     throw new Error(`3D backend unavailable at ${spaceUrl} — the Hugging Face Space is offline, sleeping, or the API has changed. Try a different backend in Settings. (${msg})`);
   }
