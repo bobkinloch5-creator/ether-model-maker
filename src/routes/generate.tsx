@@ -697,14 +697,12 @@ function GeneratePage() {
         : `${basePrompt}, alternate textures and materials, fresh color pass`;
 
       const { generateHF3D } = await import("@/lib/hf3d.functions");
-      const { getBackendConfig, resolveExtraArgs, BACKEND_PRESETS } = await import("@/lib/backend-settings");
+      const { getBackendConfig, resolveExtraArgs } = await import("@/lib/backend-settings");
       const userBackend = getBackendConfig();
-      const triposr = BACKEND_PRESETS.find((p) => p.id === "triposr");
+      // Local-only: no Hugging Face / cloud fallbacks. If the local server
+      // fails, surface the error instead of silently retrying elsewhere.
       const attempts = [
-        { spaceUrl: userBackend.spaceUrl, apiName: userBackend.apiName, extraArgs: resolveExtraArgs(userBackend.extraArgs), label: "Selected backend" },
-        ...(triposr && triposr.spaceUrl !== userBackend.spaceUrl
-          ? [{ spaceUrl: triposr.spaceUrl, apiName: triposr.apiName, extraArgs: resolveExtraArgs(triposr.extraArgs), label: triposr.label }]
-          : []),
+        { spaceUrl: userBackend.spaceUrl, apiName: userBackend.apiName, extraArgs: resolveExtraArgs(userBackend.extraArgs), label: "Local backend" },
       ];
 
       let finalUrl: string | null = null;
