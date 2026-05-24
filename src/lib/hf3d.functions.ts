@@ -955,11 +955,17 @@ async function runTrellisPipelineInner(
   // 5) /preprocess(image, remove_bg, foreground_ratio) — OPTIONAL.
   // Some TripoSR spaces only expose /generate. If /preprocess is missing
   // or fails for a "no such endpoint" reason, fall through with the raw image.
-  console.log(`[HF 3D / TRELLIS] predict /preprocess (optional)`);
+  console.log(`[HF 3D / TRELLIS] predict /preprocess (optional)`, {
+    url: `${spaceUrl.replace(/\/+$/, "")}/gradio_api/call/preprocess`,
+    args: { image: "<file handle>", remove_bg: true, foreground_ratio: 0.85 },
+    inputFilePublicUrl: publicUrl,
+  });
   let processed: unknown = inputFile;
   try {
     const preRes = await runGradioJob(app, "/preprocess", [inputFile, true, 0.85], { timeoutMs: 600_000 });
     if (preRes && preRes[0]) processed = preRes[0];
+    console.log(`[HF 3D / TRELLIS] /preprocess returned`, { hasResult: !!preRes?.[0] });
+
   } catch (e) {
     const msg = e instanceof Error ? e.message : (typeof e === "object" ? JSON.stringify(e).slice(0, 300) : String(e));
     if (/no.*endpoint|not found|404|unknown api|does not exist/i.test(msg)) {
