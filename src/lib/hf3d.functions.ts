@@ -734,17 +734,23 @@ async function runTrellisPipelineInner(
   // Skip /check_input_image and view_api — they're optional and add 1-2 extra
   // round trips. /preprocess already validates the image.
 
-  // 5) /preprocess(image, remove_bg, foreground_ratio)
-  console.log(`[HF 3D / TRELLIS] predict /preprocess`);
-  let processed: unknown;
+  // 5) /preprocess(image, remove_bg, foreground_ratio) — OPTIONAL.
+  // Some TripoSR spaces only expose /generate. If /preprocess is missing
+  // or fails for a "no such endpoint" reason, fall through with the raw image.
+  console.log(`[HF 3D / TRELLIS] predict /preprocess (optional)`);
+  let processed: unknown = inputFile;
   try {
     const preRes = await runGradioJob(app, "/preprocess", [inputFile, true, 0.85]);
-    processed = preRes[0];
+    if (preRes && preRes[0]) processed = preRes[0];
   } catch (e) {
     const msg = e instanceof Error ? e.message : (typeof e === "object" ? JSON.stringify(e).slice(0, 300) : String(e));
-    throw new Error(`Gradio /preprocess failed at ${spaceUrl}: ${msg}`);
+    if (/no.*endpoint|not found|404|unknown api|does not exist/i.test(msg)) {
+      console.warn(`[HF 3D / TRELLIS] /preprocess not available on ${spaceUrl}, using raw image.`);
+    } else {
+      throw new Error(`Gradio /preprocess failed at ${spaceUrl}: ${msg}`);
+    }
   }
-  if (!processed) throw new Error("Preprocess returned no image");
+  if (!processed) processed = inputFile;
 
   // 6) /generate — try the minimal 1-arg signature first (matches local
   //    TripoSR/SF3D builds where /generate only accepts the processed image),
