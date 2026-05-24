@@ -513,6 +513,16 @@ function GeneratePage() {
                   bakeTexture,
                 },
               });
+            } catch (callErr: any) {
+              clearInterval(ticker);
+              const raw = callErr?.message || String(callErr);
+              // Generic 500 from server fn → translate to actionable text
+              const friendly = /internal server error/i.test(raw)
+                ? `${a.label} crashed on the server. Trying another backend…`
+                : raw;
+              lastErr = friendly;
+              console.warn(`Backend ${a.label} threw:`, raw);
+              continue;
             } finally {
               clearInterval(ticker);
             }
