@@ -499,7 +499,7 @@ async function uploadDataUrlToGradio(
   const form = new FormData();
   form.append("files", new Blob([bin], { type: mime }), filename);
 
-  const headers: Record<string, string> = {};
+  const headers: Record<string, string> = { "ngrok-skip-browser-warning": "true" };
   if (token) headers.Authorization = `Bearer ${token}`;
 
   const res = await fetch(`${spaceUrl}/gradio_api/upload`, {
