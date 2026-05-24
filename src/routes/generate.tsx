@@ -513,6 +513,16 @@ function GeneratePage() {
                   bakeTexture,
                 },
               });
+            } catch (callErr: any) {
+              clearInterval(ticker);
+              const raw = callErr?.message || String(callErr);
+              // Generic 500 from server fn → translate to actionable text
+              const friendly = /internal server error/i.test(raw)
+                ? `${a.label} crashed on the server. Trying another backend…`
+                : raw;
+              lastErr = friendly;
+              console.warn(`Backend ${a.label} threw:`, raw);
+              continue;
             } finally {
               clearInterval(ticker);
             }
@@ -542,15 +552,24 @@ function GeneratePage() {
             let pollSessionHash = "sessionHash" in startRes ? startRes.sessionHash : undefined;
             let pollStartedAt = startRes.startedAt;
             while (Date.now() < pollDeadline) {
-              const pr = await pollHF3DJob({
-                data: {
-                  eventId: pollEventId,
-                  spaceUrl: startRes.spaceUrl,
-                  apiName: pollApiName,
-                  startedAt: pollStartedAt,
-                  sessionHash: pollSessionHash,
-                },
-              });
+              let pr: any;
+              try {
+                pr = await pollHF3DJob({
+                  data: {
+                    eventId: pollEventId,
+                    spaceUrl: startRes.spaceUrl,
+                    apiName: pollApiName,
+                    startedAt: pollStartedAt,
+                    sessionHash: pollSessionHash,
+                  },
+                });
+              } catch (pollThrow: any) {
+                pollErr = pollThrow?.message || "Polling crashed";
+                if (/internal server error/i.test(pollErr || "")) {
+                  pollErr = "Server error while polling 3D job — backend may have crashed.";
+                }
+                break;
+              }
               if (!pr.ok) {
                 pollErr = "Polling failed";
                 break;
@@ -598,7 +617,11 @@ function GeneratePage() {
             console.error("All HF Spaces failed:", hfError);
           }
         } catch (e: any) {
-          hfError = e?.message || String(e);
+          let msg = e?.message || String(e);
+          if (/internal server error/i.test(msg)) {
+            msg = "The 3D generation server crashed unexpectedly. The configured backend (Hugging Face Space) is likely offline or sleeping. Try a different backend in Settings, or upload an image and retry.";
+          }
+          hfError = msg;
           setHfStatus("error");
           setHfMessage(hfError);
           console.error("3D generation failed:", e);

@@ -711,7 +711,10 @@ async function runTrellisPipelineInner(
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    throw new Error(`Could not reach local 3D server at ${spaceUrl} — is your PC on, the Gradio app running, and ngrok forwarding? (${msg})`);
+    if (isLocalUrl(spaceUrl)) {
+      throw new Error(`Could not reach your local 3D server at ${spaceUrl} — is your PC on, the Gradio app running, and ngrok forwarding? (${msg})`);
+    }
+    throw new Error(`3D backend unavailable at ${spaceUrl} — the Hugging Face Space is offline, sleeping, or the API has changed. Try a different backend in Settings. (${msg})`);
   }
 
   // Skip /check_input_image and view_api — they're optional and add 1-2 extra
