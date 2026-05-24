@@ -776,7 +776,7 @@ async function runTrellisPipelineInner(
     const u = extractFileUrl(spaceUrl, item);
     if (u) { fileUrl = u; break; }
   }
-  if (!fileUrl) throw new Error(`No model in /generate output: ${JSON.stringify(genOut).slice(0, 300)}`);
+  if (!fileUrl) throw new Error(`3D model was not returned by the backend. Raw output: ${JSON.stringify(genOut).slice(0, 300)}`);
   return { fileUrl };
 }
 
