@@ -86,7 +86,7 @@ export function getBackendConfig(): BackendConfig {
     if (raw) {
       const parsed = JSON.parse(raw) as Partial<BackendConfig>;
       const known = BACKEND_PRESETS.find((p) => p.id === parsed.presetId);
-      if (known && (known.id === "local-triposr" || known.id === "local-comfyui")) {
+      if (known && known.id === "local-comfyui") {
         return {
           presetId: known.id,
           spaceUrl: "",
@@ -94,8 +94,14 @@ export function getBackendConfig(): BackendConfig {
           extraArgs: known.extraArgs,
         };
       }
-      if (known?.id === "auto") {
+      if (known && (known.id === "auto" || known.id === "stable-fast-3d" || known.id === "triposr-official" || known.id === "triposr")) {
         return {
+          presetId: known.id,
+          spaceUrl: known.spaceUrl,
+          apiName: known.apiName,
+          extraArgs: known.extraArgs,
+        };
+      }
           presetId: "auto",
           spaceUrl: known.spaceUrl,
           apiName: known.apiName,
