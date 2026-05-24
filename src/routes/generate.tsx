@@ -274,10 +274,9 @@ function GeneratePage() {
 
   const handleGenerate = async () => {
     if (!prompt.trim() || !user) return;
-    if (!hasEnoughCredits) {
-      setError(`Not enough credits. You need ${cost} but have ${profile?.credits ?? 0}.`);
-      return;
-    }
+    // Credit gate temporarily disabled — credit display is reading the wrong source.
+    // TODO: re-enable once credit display is fixed.
+
 
     setIsGenerating(true);
     setGenStartedAt(Date.now());
