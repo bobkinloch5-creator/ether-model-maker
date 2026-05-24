@@ -242,30 +242,42 @@ html, body { background: var(--background); color: var(--foreground); }
   pointer-events: none;
 }
 
-/* Animated conic ring for processing state */
-@keyframes conic-spin {
-  to { transform: rotate(360deg); }
+/* Animated gradient ring for processing state */
+@property --ring-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes ring-spin {
+  to { --ring-angle: 360deg; }
+}
+@keyframes ring-pulse {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 1; }
 }
 @utility conic-ring {
   position: relative;
+  overflow: hidden;
 }
 .conic-ring::before {
   content: "";
   position: absolute;
-  inset: -1px;
+  inset: 0;
   border-radius: inherit;
-  padding: 1px;
-  background: conic-gradient(from 0deg,
-    oklch(0.7 0.22 305) 0%,
-    oklch(0.78 0.2 330) 25%,
-    oklch(0.78 0.2 200) 50%,
-    oklch(0.7 0.22 305) 100%);
+  padding: 1.5px;
+  background: conic-gradient(from var(--ring-angle, 0deg),
+    oklch(0.7 0.22 305 / 0.9),
+    oklch(0.78 0.2 200 / 0.9),
+    oklch(0.78 0.2 330 / 0.9),
+    oklch(0.7 0.22 305 / 0.9));
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask-composite: exclude;
-  animation: conic-spin 4s linear infinite;
+  animation: ring-spin 4s linear infinite, ring-pulse 2s ease-in-out infinite;
   pointer-events: none;
 }
+
 
 /* Animation utility classes */
 @utility animate-fade-in {
