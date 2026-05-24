@@ -1742,11 +1742,61 @@ function GeneratePage() {
             </div>
           )}
         </div>
+        {/* End LEFT column */}
+          </div>
 
+          {/* RIGHT: Sticky Preview / Result panel */}
+          <div className="lg:sticky lg:top-24 min-w-0 space-y-5">
+            {/* Empty state — shown when no generation yet */}
+            {!currentGen && (
+              <div className="studio-card overflow-hidden animate-fade-in">
+                <div className="flex items-center justify-between border-b border-white/10 px-5 py-3">
+                  <div className="flex items-center gap-2">
+                    <span className="relative flex h-2 w-2">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/60 opacity-75" />
+                      <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+                    </span>
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Studio Preview</span>
+                  </div>
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground/70">Idle</span>
+                </div>
+                <div className="preview-stage relative aspect-square w-full">
+                  <div className="absolute inset-0 grid place-items-center text-center px-8">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="relative h-16 w-16">
+                        <div className="absolute inset-0 rounded-2xl bg-[var(--gradient-primary)] opacity-30 blur-xl animate-pulse" />
+                        <div className="relative grid h-full w-full place-items-center rounded-2xl border border-white/15 bg-white/[0.04] backdrop-blur">
+                          <Box className="h-7 w-7 text-primary-glow" />
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="font-display text-base font-semibold text-foreground">Your model will appear here</h3>
+                        <p className="mt-1 text-xs text-muted-foreground max-w-xs">Pick a generation type, drop in a prompt or image, and hit <span className="text-foreground/90 font-medium">Generate</span>.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 divide-x divide-white/5 border-t border-white/10 text-center">
+                  <div className="px-3 py-3">
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Engine</div>
+                    <div className="mt-0.5 text-xs font-semibold text-foreground/90">TRELLIS · TripoSR</div>
+                  </div>
+                  <div className="px-3 py-3">
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Output</div>
+                    <div className="mt-0.5 text-xs font-semibold text-foreground/90">.glb / .fbx / .obj</div>
+                  </div>
+                  <div className="px-3 py-3">
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Avg time</div>
+                    <div className="mt-0.5 text-xs font-semibold text-foreground/90">~60 s</div>
+                  </div>
+                </div>
+              </div>
+            )}
 
         {/* Generation result */}
         {currentGen && (
-          <div className="mt-8 glass rounded-2xl p-8 animate-scale-in">
+          <div className={`studio-card p-7 animate-scale-in ${currentGen.status === "processing" ? "conic-ring" : ""}`}>
+
             {currentGen.status === "processing" ? (
               <>
                 <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
