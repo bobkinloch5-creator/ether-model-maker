@@ -857,18 +857,48 @@ async function runTrellisPipelineInner(
 
 
 /**
+ * Resolve which Gradio endpoint to call by inspecting view_api().
+ * Tries the user's preferred name first, then a list of candidates,
+ * and finally falls back to the first available named endpoint.
+ * Throws an error listing real endpoint names when nothing matches.
+ */
+async function resolveGradioEndpoint(
+  app: any,
+  preferred: string | undefined,
+  candidates: string[],
+): Promise<{ name: string; available: string[] }> {
+  let info: any = null;
+  try { info = await app.view_api?.(); } catch { /* ignore */ }
+  const named = info?.named_endpoints && typeof info.named_endpoints === "object"
+    ? Object.keys(info.named_endpoints) : [];
+  const norm = (s: string) => (s.startsWith("/") ? s : `/${s}`).toLowerCase();
+  const set = new Set(named.map(norm));
+  if (preferred) {
+    const p = norm(preferred);
+    if (set.has(p)) return { name: p, available: named };
+  }
+  for (const c of candidates) {
+    const n = norm(c);
+    if (set.has(n)) return { name: n, available: named };
+  }
+  if (named.length > 0) return { name: norm(named[0]), available: named };
+  throw new Error(
+    `No usable Gradio endpoint found on this Space.` +
+    (preferred ? ` "${preferred}" does not exist.` : "") +
+    ` view_api returned no named endpoints — the Space may still be starting up.`
+  );
+}
+
+/**
  * Stable Fast 3D pipeline (stabilityai/stable-fast-3d Space).
- *
- * SF3D exposes /run_button(image, foreground_ratio, remesh_option,
- * vertex_count, texture_size) → (preview_image, glb_file). It does NOT
- * have /preprocess or /generate, so the Trellis/TripoSR pipeline cannot
- * be reused as-is.
+ * Endpoint name is resolved dynamically because Space forks rename it
+ * (/run_button, /generate, /predict, etc.).
  */
 async function runStableFast3D(
   spaceUrl: string,
   imageDataUrl: string,
   token: string | undefined,
-  opts?: { textureResolution?: number },
+  opts?: { textureResolution?: number; apiName?: string },
 ): Promise<{ fileUrl: string }> {
   const m = imageDataUrl.match(/^data:([^;]+);base64,(.+)$/);
   if (!m || !/^image\//i.test(m[1])) {
@@ -886,8 +916,6 @@ async function runStableFast3D(
   const inputFile = handle_file(pub.publicUrl);
 
   const hfToken = token && /^hf_/.test(token) ? (token as `hf_${string}`) : undefined;
-  // Connect via Space ID first (HF inference router wakes sleeping Spaces),
-  // fall back to the .hf.space URL.
   const candidates: string[] = [];
   const envSpace = process.env.HF_3D_SPACE?.trim();
   if (envSpace && /^[\w-]+\/[\w.-]+$/.test(envSpace)) candidates.push(envSpace);
@@ -907,10 +935,40 @@ async function runStableFast3D(
   }
   if (!app) throw new Error(humanizeHFError(lastErr));
 
-  const texSize = opts?.textureResolution && opts.textureResolution > 0 ? opts.textureResolution : 1024;
-  const out = await runGradioJob(app, "/run_button", [inputFile, 0.85, "None", 20000, texSize]);
+  const { name: endpointName, available } = await resolveGradioEndpoint(
+    app,
+    opts?.apiName,
+    ["/run_button", "/generate", "/predict", "/infer", "/process", "/run"],
+  );
+  console.log(`[SF3D] Using endpoint ${endpointName} (available: ${available.join(", ") || "(none)"})`);
 
-  // Returns: [previewImage, glbFile]
+  const texSize = opts?.textureResolution && opts.textureResolution > 0 ? opts.textureResolution : 1024;
+  // Different SF3D forks accept different argument signatures. Try the
+  // canonical 5-arg version first, then back off to shorter ones.
+  const sigs: unknown[][] = [
+    [inputFile, 0.85, "None", 20000, texSize],
+    [inputFile, 0.85],
+    [inputFile],
+  ];
+  let out: unknown[] | null = null;
+  let lastSigErr = "";
+  for (const args of sigs) {
+    try {
+      out = await runGradioJob(app, endpointName, args);
+      break;
+    } catch (e) {
+      lastSigErr = e instanceof Error ? e.message : String(e);
+      // Only retry shorter signatures for arity / type mismatches.
+      if (!/argument|signature|parameter|positional|expected|takes/i.test(lastSigErr)) throw e;
+    }
+  }
+  if (!out) {
+    throw new Error(
+      `Gradio ${endpointName} failed: ${lastSigErr}. ` +
+      `Available endpoints on this Space: ${available.join(", ") || "(none)"}.`
+    );
+  }
+
   let fileUrl: string | null = null;
   for (const item of out) {
     const u = extractFileUrl(spaceUrl, item);
@@ -1040,9 +1098,10 @@ export const startHF3DJob = createServerFn({ method: "POST" })
       }
     }
 
-    // Image-to-3D pipelines: SF3D (/run_button) and TripoSR/TRELLIS (/generate).
-    const apiLower = apiName.toLowerCase();
-    if (apiLower === "/run_button" || apiLower === "/generate") {
+    // Image-to-3D pipelines. Route SF3D (by Space host) through runStableFast3D
+    // which dynamically resolves the real endpoint name via view_api(); other
+    // hosts (TripoSR/TRELLIS) use the /generate pipeline.
+    {
       try {
         let imageDataUrl: string;
         if (isLocalUrl(spaceUrl)) {
@@ -1060,8 +1119,8 @@ export const startHF3DJob = createServerFn({ method: "POST" })
         }
 
         const qp = resolveQualityParams(data.quality, data.bakeTexture);
-        const { fileUrl } = apiLower === "/run_button"
-          ? await runStableFast3D(spaceUrl, imageDataUrl, token, qp)
+        const { fileUrl } = isSF3D
+          ? await runStableFast3D(spaceUrl, imageDataUrl, token, { ...qp, apiName })
           : await runTrellisPipeline(spaceUrl, imageDataUrl, token, qp);
 
         const fileRes = await fetch(fileUrl, {
@@ -1113,60 +1172,11 @@ export const startHF3DJob = createServerFn({ method: "POST" })
         return { ok: false as const, error: humanizeHFError(extractErrorMessage(err)) };
       }
     }
-
-
-    const sessionHash = makeSessionHash();
-    const startedAt = Date.now();
-
-    try {
-      const extraArgs: unknown[] = data.extraArgs && data.extraArgs.length > 0
-        ? data.extraArgs
-        : (() => {
-            const raw = process.env.HF_EXTRA_ARGS?.trim();
-            if (!raw) return [];
-            try { const v = JSON.parse(raw); return Array.isArray(v) ? v : [v]; } catch { return []; }
-          })();
-
-      // Build image input. If the user entered only a prompt, first create a
-      // reference image, then submit that image to Pixal3D.
-      let imageDataUrl: string;
-      if (data.kind === "text-to-3d") {
-        if (!data.prompt) return { ok: false as const, error: "No prompt provided for text-to-3D" };
-        imageDataUrl = await generateImageFromPrompt(data.prompt);
-      } else {
-        if (data.imageDataUrl) {
-          imageDataUrl = data.imageDataUrl;
-        } else if (data.prompt) {
-          imageDataUrl = await generateImageFromPrompt(data.prompt);
-        } else {
-          return { ok: false as const, error: "No image or prompt provided for 3D generation" };
-        }
-      }
-
-      const imageFile = await uploadDataUrlToGradio(spaceUrl, imageDataUrl, token);
-      const gen3dArgs = buildPayload(apiName, imageFile, extraArgs);
-      if (apiName.toLowerCase().endsWith("/generate_3d")) {
-        gen3dArgs[gen3dArgs.length - 1] = sessionHash;
-      }
-      console.log(`[HF 3D] start ${apiName} with ${gen3dArgs.length} args`);
-      const eventId = await startGradioJob(spaceUrl, apiName, gen3dArgs, token, sessionHash);
-
-      // Return immediately so long-running Pixal3D work is handled by polling
-      // instead of timing out the server request.
-      return {
-        ok: true as const,
-        eventId,
-        spaceUrl,
-        apiName,
-        sessionHash,
-        startedAt,
-      };
-    } catch (err) {
-      console.error(`[HF 3D] startHF3DJob error:`, err);
-      const msg = extractErrorMessage(err);
-      return { ok: false as const, error: msg };
-    }
+    // All HF Spaces are now routed through the SF3D / Trellis pipelines above,
+    // which always return inside their try/catch — no fall-through path.
+    return { ok: false as const, error: "Unreachable: 3D pipeline did not return" };
   });
+
 
 function extractErrorMessage(err: unknown): string {
   if (err instanceof Error) return err.message;
