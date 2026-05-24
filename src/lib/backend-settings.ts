@@ -45,9 +45,17 @@ export function getBackendConfig(): BackendConfig {
     if (raw) {
       const parsed = JSON.parse(raw) as Partial<BackendConfig>;
       const known = BACKEND_PRESETS.find((p) => p.id === parsed.presetId);
-      // If the saved preset id is no longer in our list (e.g. we added/renamed
-      // presets), keep the user's saved spaceUrl/apiName/extraArgs intact and
-      // mark it as "custom" rather than wiping their config.
+      // For the local3d preset, always use the empty spaceUrl so the server
+      // resolves it from the LOCAL_3D_API_URL secret. This also clears any
+      // stale hardcoded URL saved from a previous version.
+      if (known?.id === "local3d") {
+        return {
+          presetId: "local3d",
+          spaceUrl: "",
+          apiName: known.apiName,
+          extraArgs: known.extraArgs,
+        };
+      }
       return {
         presetId: known?.id ?? "custom",
         spaceUrl: parsed.spaceUrl || known?.spaceUrl || DEFAULT_PRESET.spaceUrl,
