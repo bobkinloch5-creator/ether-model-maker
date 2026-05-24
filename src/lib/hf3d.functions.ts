@@ -736,7 +736,7 @@ async function runTrellisPipelineInner(
   const mc = opts?.mcResolution ?? 96;
   const bake = !!opts?.bakeTexture;
   const texRes = opts?.textureResolution ?? 0;
-  console.log(`[HF 3D / TRELLIS] predict /generate (hasGenerate=${hasGenerate})`);
+  console.log(`[HF 3D / TRELLIS] predict /generate`);
   let genOut: unknown[];
   try {
     const r = await runGradioJob(app, "/generate", [processed]);
