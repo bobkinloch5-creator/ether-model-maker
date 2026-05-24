@@ -383,6 +383,23 @@ async function runGradioJob(
 ): Promise<unknown[]> {
   const timeoutMs = opts?.timeoutMs ?? 180_000;
   console.log(`[HF 3D] Submitting job to ${apiName} with payload size ${payload.length} (timeout ${timeoutMs}ms)`);
+  
+  const rootUrl = app.config?.root || "";
+  const isLocal = isLocalUrl(rootUrl) || rootUrl.includes("localhost") || rootUrl.includes("127.0.0.1");
+  if (isLocal) {
+    console.log(`[HF 3D] Local or ngrok backend detected (${rootUrl}), bypassing queue/SSE and using app.predict`);
+    const promise = app.predict(apiName, payload).then((r: any) => {
+      if (r && typeof r === "object" && "data" in r && Array.isArray(r.data)) {
+        return r.data;
+      }
+      return Array.isArray(r) ? r : [r];
+    });
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error(`Local generation timed out after ${Math.round(timeoutMs / 1000)}s.`)), timeoutMs)
+    );
+    return Promise.race([promise, timeout]);
+  }
+
   const job = app.submit(apiName, payload);
   let lastData: unknown[] | null = null;
   const startedAt = Date.now();
