@@ -7,24 +7,46 @@ export type BackendPreset = {
   notes: string;
 };
 
+// Provider priority (default = "auto"):
+//   1. Hugging Face TripoSR (RBX-CREATOR/3DGenTripoSR) — free, always available
+//   2. Local TripoSR (only if LOCAL_TRIPOSR_ENABLED=true)
+//   3. Local ComfyUI (only if LOCAL_3D_ENABLED=true)
 export const BACKEND_PRESETS: BackendPreset[] = [
   {
-    id: "local3d",
-    label: "ComfyUI / Local 3D server",
-    spaceUrl: "", // empty → server resolves via LOCAL_3D_API_URL / COMFYUI_URL secret
+    id: "auto",
+    label: "Auto Free (Hugging Face TripoSR)",
+    spaceUrl: "https://rbx-creator-3dgentriposr.hf.space",
     apiName: "/generate",
     extraArgs: "",
     notes:
-      "Your own GPU. TRELLIS / TripoSR / Stable-Fast-3D pipeline at /preprocess → /generate. Set the LOCAL_3D_API_URL (or COMFYUI_URL) secret to your live tunnel URL (ngrok / Cloudflare Tunnel).",
+      "Free cloud generation via Hugging Face. No paid APIs, no local PC required. Falls back to local providers only if explicitly enabled in secrets.",
   },
   {
     id: "triposr",
-    label: "Hugging Face TripoSR (AleenDG/3DGenTripoSR)",
-    spaceUrl: "https://aleendg-3dgentriposr.hf.space",
+    label: "Hugging Face TripoSR (RBX-CREATOR/3DGenTripoSR)",
+    spaceUrl: "https://rbx-creator-3dgentriposr.hf.space",
     apiName: "/generate",
     extraArgs: "",
     notes:
-      "Cloud fallback. Hosted Hugging Face Space — slower than local but always available. The Space may need ~30s to wake from sleep.",
+      "Free cloud Space. Image-to-3D only. The Space may need ~30s to wake from sleep on first use.",
+  },
+  {
+    id: "local-triposr",
+    label: "Local TripoSR (optional)",
+    spaceUrl: "",
+    apiName: "/generate",
+    extraArgs: "",
+    notes:
+      "Your own GPU running TripoSR. Only used when LOCAL_TRIPOSR_ENABLED=true. Set LOCAL_TRIPOSR_URL to your tunnel URL.",
+  },
+  {
+    id: "local-comfyui",
+    label: "Local ComfyUI (optional)",
+    spaceUrl: "",
+    apiName: "/generate",
+    extraArgs: "",
+    notes:
+      "Your own ComfyUI server. Only used when LOCAL_3D_ENABLED=true. Set COMFYUI_URL or LOCAL_3D_API_URL.",
   },
 ];
 
@@ -35,8 +57,8 @@ export type BackendConfig = {
   extraArgs: string;
 };
 
-const STORAGE_KEY = "kd_backend_config_v1";
-const DEFAULT_PRESET = BACKEND_PRESETS[0];
+const STORAGE_KEY = "kd_backend_config_v2";
+const DEFAULT_PRESET = BACKEND_PRESETS[0]; // "auto"
 
 function defaults(): BackendConfig {
   return {
@@ -54,13 +76,18 @@ export function getBackendConfig(): BackendConfig {
     if (raw) {
       const parsed = JSON.parse(raw) as Partial<BackendConfig>;
       const known = BACKEND_PRESETS.find((p) => p.id === parsed.presetId);
-      // For the local3d preset, always use the empty spaceUrl so the server
-      // resolves it from the LOCAL_3D_API_URL secret. This also clears any
-      // stale hardcoded URL saved from a previous version.
-      if (known?.id === "local3d") {
+      if (known && (known.id === "local-triposr" || known.id === "local-comfyui")) {
         return {
-          presetId: "local3d",
+          presetId: known.id,
           spaceUrl: "",
+          apiName: known.apiName,
+          extraArgs: known.extraArgs,
+        };
+      }
+      if (known?.id === "auto") {
+        return {
+          presetId: "auto",
+          spaceUrl: known.spaceUrl,
           apiName: known.apiName,
           extraArgs: known.extraArgs,
         };

@@ -123,7 +123,7 @@ export const testLocal3DServer = createServerFn({ method: "POST" })
  */
 export const testGradioSpace = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { spaceUrl: string; apiName?: string }) => input)
+  .inputValidator((input: { spaceUrl: string; apiName?: string; provider?: "hf" | "comfyui" | "local" }) => input)
   .handler(async ({ context, data }) => {
     const { userId } = context;
     const { data: roleRow } = await supabaseAdmin
@@ -140,10 +140,14 @@ export const testGradioSpace = createServerFn({ method: "POST" })
     try { parsed = new URL(base); } catch { return { ok: false as const, error: `Invalid URL: ${base}` }; }
     if (parsed.protocol !== "https:") return { ok: false as const, error: "URL must use https" };
 
+    // Auto-detect provider if not specified
+    const host = parsed.hostname.toLowerCase();
+    const provider: "hf" | "comfyui" | "local" =
+      data.provider ??
+      (host.endsWith(".hf.space") ? "hf" : "local");
+
     const headers = { "ngrok-skip-browser-warning": "true", Accept: "application/json" };
 
-    // Race the request against a 6s hard timeout so the Cloudflare Worker
-    // never hangs waiting on a slow / stuck ngrok tunnel.
     const fetchWithTimeout = (url: string) =>
       Promise.race([
         fetch(url, { headers }).catch((e) => ({ __err: e })),
@@ -151,16 +155,35 @@ export const testGradioSpace = createServerFn({ method: "POST" })
       ]) as Promise<Response | { __err: unknown }>;
 
     try {
-      // Try /gradio_api/info first (HF Spaces), fall back to /config (local Gradio).
-      let res = await fetchWithTimeout(`${base}/gradio_api/info`);
-      let usedPath = "/gradio_api/info";
-      if (!(res instanceof Response) || !res.ok) {
-        usedPath = "/config";
-        res = await fetchWithTimeout(`${base}/config`);
+      // Provider-specific probes:
+      //   HF Spaces  → /gradio_api/info ONLY (never /config — user requirement)
+      //   ComfyUI    → /system_stats, /queue, or /
+      //   Local      → /gradio_api/info → /config (Gradio convention)
+      const probePaths: string[] =
+        provider === "hf"
+          ? ["/gradio_api/info"]
+          : provider === "comfyui"
+          ? ["/system_stats", "/queue", "/"]
+          : ["/gradio_api/info", "/config"];
+
+      let res: Response | { __err: unknown } | null = null;
+      let usedPath = "";
+      for (const p of probePaths) {
+        usedPath = p;
+        const r = await fetchWithTimeout(`${base}${p}`);
+        if (r instanceof Response && r.ok) { res = r; break; }
+        res = r;
       }
+
       if (!(res instanceof Response)) {
-        const e = (res as { __err: unknown }).__err;
+        const e = (res as { __err: unknown } | null)?.__err;
         const msg = e instanceof Error ? e.message : String(e);
+        if (provider === "hf") {
+          return {
+            ok: false as const,
+            error: `Hugging Face Space is starting. Please wait 1–2 minutes and try again. (${msg})`,
+          };
+        }
         return { ok: false as const, error: `Failed to reach ${base}: ${msg}` };
       }
 
@@ -168,13 +191,23 @@ export const testGradioSpace = createServerFn({ method: "POST" })
       if (!res.ok) {
         return { ok: false as const, error: `HTTP ${res.status} from ${base}${usedPath}: ${text.slice(0, 220)}` };
       }
+
+      // ComfyUI probes return JSON for /system_stats and /queue, HTML for /.
+      // We accept any 2xx as a success signal for ComfyUI.
+      if (provider === "comfyui") {
+        return {
+          ok: true as const,
+          message: `ComfyUI reachable at ${usedPath}.`,
+          endpoints: [usedPath],
+        };
+      }
+
       let json: any;
       try { json = JSON.parse(text); } catch {
         return { ok: false as const, error: `Non-JSON response from ${base}${usedPath}` };
       }
 
       const apiName = data.apiName?.trim();
-      // Collect endpoint names from either shape
       const namedEndpoints = json?.named_endpoints && typeof json.named_endpoints === "object"
         ? Object.keys(json.named_endpoints) : [];
       const deps = Array.isArray(json?.dependencies) ? json.dependencies : [];
