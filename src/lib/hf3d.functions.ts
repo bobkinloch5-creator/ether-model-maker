@@ -939,19 +939,19 @@ async function runTrellisPipelineInner(
   console.log(`[HF 3D / TRELLIS] predict /generate`);
   let genOut: unknown[];
   try {
-    const r = await runGradioJob(app, "/generate", [processed]);
+    const r = await runGradioJob(app, "/generate", [processed], { timeoutMs: 600_000 });
     genOut = r;
   } catch (e1) {
     const m1 = e1 instanceof Error ? e1.message : String(e1);
     console.warn(`[HF 3D / TRELLIS] /generate(image) failed, retrying (image, mc):`, m1);
     try {
-      const r = await runGradioJob(app, "/generate", [processed, mc]);
+      const r = await runGradioJob(app, "/generate", [processed, mc], { timeoutMs: 600_000 });
       genOut = r;
     } catch (e2) {
       const m2 = e2 instanceof Error ? e2.message : String(e2);
       console.warn(`[HF 3D / TRELLIS] /generate(image, mc) failed, retrying full sig:`, m2);
       try {
-        const r = await runGradioJob(app, "/generate", [processed, mc, bake, texRes]);
+        const r = await runGradioJob(app, "/generate", [processed, mc, bake, texRes], { timeoutMs: 600_000 });
         genOut = r;
       } catch (e3) {
         const m3 = e3 instanceof Error ? e3.message : String(e3);
