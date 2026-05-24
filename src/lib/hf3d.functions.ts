@@ -1098,9 +1098,10 @@ export const startHF3DJob = createServerFn({ method: "POST" })
       }
     }
 
-    // Image-to-3D pipelines: SF3D (/run_button) and TripoSR/TRELLIS (/generate).
-    const apiLower = apiName.toLowerCase();
-    if (apiLower === "/run_button" || apiLower === "/generate") {
+    // Image-to-3D pipelines. Route SF3D (by Space host) through runStableFast3D
+    // which dynamically resolves the real endpoint name via view_api(); other
+    // hosts (TripoSR/TRELLIS) use the /generate pipeline.
+    {
       try {
         let imageDataUrl: string;
         if (isLocalUrl(spaceUrl)) {
@@ -1118,8 +1119,8 @@ export const startHF3DJob = createServerFn({ method: "POST" })
         }
 
         const qp = resolveQualityParams(data.quality, data.bakeTexture);
-        const { fileUrl } = apiLower === "/run_button"
-          ? await runStableFast3D(spaceUrl, imageDataUrl, token, qp)
+        const { fileUrl } = isSF3D
+          ? await runStableFast3D(spaceUrl, imageDataUrl, token, { ...qp, apiName })
           : await runTrellisPipeline(spaceUrl, imageDataUrl, token, qp);
 
         const fileRes = await fetch(fileUrl, {
