@@ -673,55 +673,16 @@ async function runTrellisPipelineInner(
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 
-  // Pre-flight: hit /config directly so we surface a clear error if the local
-  // server (ngrok / cloudflared / gradio.live tunnel) is unreachable, paused,
-  // OAuth-protected, or returning an HTML interstitial. This runs before we
-  // hand off to the Gradio client so we can give the user a precise reason.
-  try {
-    const ctl = new AbortController();
-    const timer = setTimeout(() => ctl.abort(), 8000);
-    const cfg = await fetch(`${spaceUrl}/config`, {
-      method: "GET",
-      headers: { ...baseHeaders, Accept: "application/json" },
-      signal: ctl.signal,
-      redirect: "manual",
-    });
-    clearTimeout(timer);
-    const ct = cfg.headers.get("content-type") || "";
-    const fullBody = await cfg.text();
-    const preview = fullBody.slice(0, 500);
-    if (!cfg.ok) {
-      throw new Error(
-        `Local 3D /config HTTP ${cfg.status} ${cfg.statusText}. content-type=${ct || "(none)"}. body=${preview}`,
-      );
-    }
-    const trimmed = fullBody.trimStart();
-    if (!trimmed.startsWith("{")) {
-      const hint = /accounts\.google\.com|oauth/i.test(preview)
-        ? "Looks like a Google OAuth login page — disable OAuth on the ngrok tunnel."
-        : /ngrok/i.test(preview)
-        ? "Looks like the ngrok browser interstitial — header was rejected."
-        : "Server returned non-JSON content.";
-      throw new Error(`Local 3D /config returned non-JSON. ${hint} content-type=${ct}. body=${preview}`);
-    }
-    try {
-      JSON.parse(trimmed);
-    } catch (parseErr) {
-      const pmsg = parseErr instanceof Error ? parseErr.message : String(parseErr);
-      throw new Error(`Local 3D /config returned invalid JSON (${pmsg}). content-type=${ct}. body=${preview}`);
-    }
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    if (msg.startsWith("Local 3D /config")) throw e;
-    throw new Error(
-      `Could not reach local 3D server at ${spaceUrl}/config — is your PC on, the Gradio app running, and ngrok forwarding? (${msg})`,
-    );
-  }
-
   // 1) Upload the input image to Supabase Storage (public `models` bucket).
   //    We pass the resulting public URL to Gradio as a FileData object via
   //    `handle_file`; the Gradio server fetches the image over plain HTTPS.
   //    This avoids hitting any /upload route on the local server.
+  //
+  //    NOTE: We skip the dedicated /config preflight here — the Gradio client
+  //    below pings /config itself during Client.connect, so a separate fetch
+  //    just adds 500–2000ms of round-trip latency to every generation. If the
+  //    server is unreachable, Client.connect will throw a clear error which
+  //    we surface to the user.
   const m = imageDataUrl.match(/^data:([^;]+);base64,(.+)$/);
   if (!m) throw new Error("Invalid image data URL");
   const mime = m[1];
@@ -750,42 +711,11 @@ async function runTrellisPipelineInner(
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    throw new Error(`Gradio client connect failed at ${spaceUrl}: ${msg}`);
+    throw new Error(`Could not reach local 3D server at ${spaceUrl} — is your PC on, the Gradio app running, and ngrok forwarding? (${msg})`);
   }
 
-  // 3) Best-effort view_api — log what the Space exposes so failures are easy
-  //    to diagnose. Does not block the run if it 404s on a stripped build.
-  let hasCheck = false;
-  let hasPreprocess = false;
-  let hasGenerate = false;
-  try {
-    const info = await app.view_api();
-    const named = info?.named_endpoints ? Object.keys(info.named_endpoints) : [];
-    console.log(`[HF 3D / TRELLIS] view_api endpoints: ${named.join(", ") || "(none)"}`);
-    hasCheck = named.includes("/check_input_image");
-    hasPreprocess = named.includes("/preprocess");
-    hasGenerate = named.includes("/generate");
-  } catch (e) {
-    console.warn(`[HF 3D / TRELLIS] view_api failed:`, e instanceof Error ? e.message : e);
-  }
-
-  const dataOf = (r: unknown): unknown[] => {
-    if (Array.isArray(r)) return r;
-    if (r && typeof r === "object" && Array.isArray((r as { data?: unknown }).data)) {
-      return (r as { data: unknown[] }).data;
-    }
-    return [r];
-  };
-
-  // 4) Best-effort /check_input_image (TRELLIS-style spaces).
-  if (hasCheck || !hasPreprocess) {
-    try {
-      console.log(`[HF 3D / TRELLIS] predict /check_input_image`);
-      await runGradioJob(app, "/check_input_image", [inputFile]);
-    } catch (e) {
-      console.log(`[HF 3D / TRELLIS] /check_input_image skipped:`, e instanceof Error ? e.message : e);
-    }
-  }
+  // Skip /check_input_image and view_api — they're optional and add 1-2 extra
+  // round trips. /preprocess already validates the image.
 
   // 5) /preprocess(image, remove_bg, foreground_ratio)
   console.log(`[HF 3D / TRELLIS] predict /preprocess`);
@@ -806,7 +736,7 @@ async function runTrellisPipelineInner(
   const mc = opts?.mcResolution ?? 96;
   const bake = !!opts?.bakeTexture;
   const texRes = opts?.textureResolution ?? 0;
-  console.log(`[HF 3D / TRELLIS] predict /generate (hasGenerate=${hasGenerate})`);
+  console.log(`[HF 3D / TRELLIS] predict /generate`);
   let genOut: unknown[];
   try {
     const r = await runGradioJob(app, "/generate", [processed]);
