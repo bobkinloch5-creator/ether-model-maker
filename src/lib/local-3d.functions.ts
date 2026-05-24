@@ -141,18 +141,28 @@ export const testGradioSpace = createServerFn({ method: "POST" })
     if (parsed.protocol !== "https:") return { ok: false as const, error: "URL must use https" };
 
     const headers = { "ngrok-skip-browser-warning": "true", Accept: "application/json" };
-    const ctl = new AbortController();
-    const timer = setTimeout(() => ctl.abort(), 10_000);
+
+    // Race the request against a 6s hard timeout so the Cloudflare Worker
+    // never hangs waiting on a slow / stuck ngrok tunnel.
+    const fetchWithTimeout = (url: string) =>
+      Promise.race([
+        fetch(url, { headers }).catch((e) => ({ __err: e })),
+        new Promise((resolve) => setTimeout(() => resolve({ __err: new Error("timeout after 6s") }), 6_000)),
+      ]) as Promise<Response | { __err: unknown }>;
 
     try {
       // Try /gradio_api/info first (HF Spaces), fall back to /config (local Gradio).
-      let res = await fetch(`${base}/gradio_api/info`, { headers, signal: ctl.signal }).catch(() => null);
+      let res = await fetchWithTimeout(`${base}/gradio_api/info`);
       let usedPath = "/gradio_api/info";
-      if (!res || !res.ok) {
+      if (!(res instanceof Response) || !res.ok) {
         usedPath = "/config";
-        res = await fetch(`${base}/config`, { headers, signal: ctl.signal });
+        res = await fetchWithTimeout(`${base}/config`);
       }
-      clearTimeout(timer);
+      if (!(res instanceof Response)) {
+        const e = (res as { __err: unknown }).__err;
+        const msg = e instanceof Error ? e.message : String(e);
+        return { ok: false as const, error: `Failed to reach ${base}: ${msg}` };
+      }
 
       const text = await res.text();
       if (!res.ok) {
@@ -185,7 +195,6 @@ export const testGradioSpace = createServerFn({ method: "POST" })
       }
       return { ok: true as const, message: `Connected. Found ${endpoints.length} endpoints.`, endpoints };
     } catch (err) {
-      clearTimeout(timer);
       const msg = err instanceof Error ? err.message : String(err);
       return { ok: false as const, error: `Failed to reach ${base}: ${msg}` };
     }
