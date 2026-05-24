@@ -409,8 +409,18 @@ function BackendSettingsPage() {
     setTestResult(null);
     try {
       const { testGradioSpace } = await import("@/lib/local-3d.functions");
+      // Map preset → provider so the test hits the right probe endpoint:
+      //   HF presets → /gradio_api/info only (never /config)
+      //   ComfyUI    → /system_stats / /queue / /
+      //   Local      → /gradio_api/info → /config
+      const provider: "hf" | "comfyui" | "local" =
+        cfg.presetId === "auto" || cfg.presetId === "triposr"
+          ? "hf"
+          : cfg.presetId === "local-comfyui"
+          ? "comfyui"
+          : "local";
       const res = await testGradioSpace({
-        data: { spaceUrl: cfg.spaceUrl, apiName: cfg.apiName },
+        data: { spaceUrl: cfg.spaceUrl, apiName: cfg.apiName, provider },
       });
       if (res.ok) {
         setTestResult({ ok: true, msg: res.message });
