@@ -884,7 +884,18 @@ export const startHF3DJob = createServerFn({ method: "POST" })
     if (apiName.toLowerCase() === "/generate") {
       try {
         let imageDataUrl: string;
-        if (data.kind === "text-to-3d") {
+        if (isLocalUrl(spaceUrl)) {
+          // Local 3D server is image-to-3D only. Never auto-generate from
+          // prompt — require a real uploaded image so the user controls the
+          // input that hits their PC's GPU.
+          if (!data.imageDataUrl) {
+            return {
+              ok: false as const,
+              error: "Please upload an image first. Local 3D generation requires an image.",
+            };
+          }
+          imageDataUrl = data.imageDataUrl;
+        } else if (data.kind === "text-to-3d") {
           if (!data.prompt) return { ok: false as const, error: "No prompt provided for text-to-3D" };
           imageDataUrl = await generateImageFromPrompt(data.prompt);
         } else {
@@ -892,6 +903,7 @@ export const startHF3DJob = createServerFn({ method: "POST" })
           else if (data.prompt) imageDataUrl = await generateImageFromPrompt(data.prompt);
           else return { ok: false as const, error: "No image or prompt provided for 3D generation" };
         }
+
         const qp = resolveQualityParams(data.quality, data.bakeTexture);
         const { fileUrl } = await runTrellisPipeline(spaceUrl, imageDataUrl, token, qp);
         const fileRes = await fetch(fileUrl, {

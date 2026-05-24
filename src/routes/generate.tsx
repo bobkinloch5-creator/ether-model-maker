@@ -371,8 +371,19 @@ function GeneratePage() {
 
       let hfError: string | null = null;
       if (selectedType === "image-to-3d") {
+        if (!imageDataUrl) {
+          const msg = "Please upload an image first. Local 3D generation requires an image.";
+          setError(msg);
+          setHfStatus("error");
+          setHfMessage(msg);
+          toast.error("Image required", { description: msg });
+          setIsGenerating(false);
+          setGenStartedAt(null);
+          return;
+        }
         try {
           let inputImage = imageDataUrl;
+
 
           const { startHF3DJob, pollHF3DJob } = await import("@/lib/hf3d.functions");
           const { getBackendConfig, resolveExtraArgs, BACKEND_PRESETS } = await import("@/lib/backend-settings");
@@ -579,9 +590,10 @@ function GeneratePage() {
         const reason = hfError || "3D generation service is unavailable. Please try again.";
         setError(reason);
         toast.error("3D generation failed", {
-          description: reason.slice(0, 220),
-          duration: 10000,
+          description: reason.slice(0, 600),
+          duration: 12000,
         });
+
       } else {
         if (!gen) {
           gen = await createGeneration(
