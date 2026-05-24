@@ -565,7 +565,7 @@ export const generateHF3D = createServerFn({ method: "POST" })
         try {
           const ctl = new AbortController();
           const t = setTimeout(() => ctl.abort(), 4000);
-          const r = await fetch(`${spaceUrl}${path}`, { signal: ctl.signal });
+          const r = await fetch(`${spaceUrl}${path}`, { signal: ctl.signal, headers: { "ngrok-skip-browser-warning": "true" } });
           clearTimeout(t);
           lastStatus = r.status;
           // For local/ngrok, we allow any response (even 404/config etc.) as long as it's not a server/connection error
