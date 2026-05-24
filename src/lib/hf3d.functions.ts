@@ -381,7 +381,7 @@ async function runGradioJob(
   payload: unknown[],
   opts?: { timeoutMs?: number },
 ): Promise<unknown[]> {
-  const timeoutMs = opts?.timeoutMs ?? 180_000;
+  const timeoutMs = opts?.timeoutMs ?? 600_000;
   console.log(`[HF 3D] Submitting job to ${apiName} with payload size ${payload.length} (timeout ${timeoutMs}ms)`);
   
   const rootUrl = app.config?.root || "";
