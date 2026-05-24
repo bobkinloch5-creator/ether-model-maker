@@ -617,7 +617,11 @@ function GeneratePage() {
             console.error("All HF Spaces failed:", hfError);
           }
         } catch (e: any) {
-          hfError = e?.message || String(e);
+          let msg = e?.message || String(e);
+          if (/internal server error/i.test(msg)) {
+            msg = "The 3D generation server crashed unexpectedly. The configured backend (Hugging Face Space) is likely offline or sleeping. Try a different backend in Settings, or upload an image and retry.";
+          }
+          hfError = msg;
           setHfStatus("error");
           setHfMessage(hfError);
           console.error("3D generation failed:", e);
