@@ -157,7 +157,6 @@ function GeneratePage() {
     const m = qMult[quality] ?? 1;
     return Math.round(b * m);
   })();
-  const remainingMs = Math.max(0, estimatedTotalMs - elapsedMs);
   const estimatedPct = Math.min(99, Math.round((elapsedMs / estimatedTotalMs) * 100));
   // Prefer real HF job progress when we have it, otherwise fall back to time-based estimate
   const progressPct = hfStatus === "complete"
@@ -165,6 +164,23 @@ function GeneratePage() {
     : hfStatus === "queued" || hfStatus === "running"
       ? Math.max(hfProgress, Math.min(estimatedPct, 95))
       : estimatedPct;
+  // Adaptive remaining: project from real progress once it's meaningful, else heuristic
+  const remainingMs = (() => {
+    if (hfStatus === "complete") return 0;
+    if (progressPct >= 99) return 0;
+    if (progressPct >= 5 && elapsedMs > 1500) {
+      const projected = (elapsedMs / progressPct) * (100 - progressPct);
+      // Blend projection with heuristic early on for stability
+      const weight = Math.min(1, (progressPct - 5) / 25);
+      const heuristic = Math.max(0, estimatedTotalMs - elapsedMs);
+      return Math.round(projected * weight + heuristic * (1 - weight));
+    }
+    return Math.max(0, estimatedTotalMs - elapsedMs);
+  })();
+  const doneAt = isGenerating && remainingMs > 0 ? new Date(Date.now() + remainingMs) : null;
+  const fmtClock = (d: Date) =>
+    d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+
 
   // === Meshy-style advanced customization ===
   const [showAdvanced, setShowAdvanced] = useState(false);
