@@ -1354,34 +1354,6 @@ function GeneratePage() {
                       <span className="hidden xs:inline">Prompt Builder</span>
                       <span className="xs:hidden">Builder</span>
                     </button>
-                    {/* Advanced toggle */}
-                    <button
-                      onClick={() => setShowAdvanced(!showAdvanced)}
-                      className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs transition ${
-                        showAdvanced
-                          ? "border-primary/50 bg-primary/10 text-primary-glow"
-                          : "border-white/10 bg-white/5 text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      <Sliders className="h-3.5 w-3.5" />
-                      Advanced
-                      <ChevronDown className={`h-3 w-3 transition-transform ${showAdvanced ? "rotate-180" : ""}`} />
-                    </button>
-                    {/* Second Life optimize toggle */}
-                    <button
-                      onClick={() => setSlOptimize((v) => !v)}
-                      title="Optimize geometry, textures, and prompt for Second Life upload (low LI, single mesh, baked textures)"
-                      className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs transition ${
-                        slOptimize
-                          ? "border-emerald-400/50 bg-emerald-400/10 text-emerald-300"
-                          : "border-white/10 bg-white/5 text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      <span aria-hidden>🌐</span>
-                      <span className="hidden xs:inline">SL Optimize</span>
-                      <span className="xs:hidden">SL</span>
-                      {slOptimize && <span className="text-[10px]">ON</span>}
-                    </button>
                     {/* Random prompt */}
                     <button
                       onClick={() => setPrompt(generateRandomPrompt())}
@@ -1393,6 +1365,34 @@ function GeneratePage() {
                     </button>
                   </>
                 )}
+                {/* Advanced toggle — available for ALL generation types */}
+                <button
+                  onClick={() => setShowAdvanced(!showAdvanced)}
+                  className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs transition ${
+                    showAdvanced
+                      ? "border-primary/50 bg-primary/10 text-primary-glow"
+                      : "border-white/10 bg-white/5 text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Sliders className="h-3.5 w-3.5" />
+                  Advanced
+                  <ChevronDown className={`h-3 w-3 transition-transform ${showAdvanced ? "rotate-180" : ""}`} />
+                </button>
+                {/* Second Life optimize toggle — available for ALL generation types */}
+                <button
+                  onClick={() => setSlOptimize((v) => !v)}
+                  title="Optimize geometry, textures, and prompt for Second Life upload (low LI, single mesh, baked textures)"
+                  className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs transition ${
+                    slOptimize
+                      ? "border-emerald-400/50 bg-emerald-400/10 text-emerald-300"
+                      : "border-white/10 bg-white/5 text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <span aria-hidden>🌐</span>
+                  <span className="hidden xs:inline">SL Optimize</span>
+                  <span className="xs:hidden">SL</span>
+                  {slOptimize && <span className="text-[10px]">ON</span>}
+                </button>
               </div>
               <span className="text-xs text-muted-foreground sm:text-right">
                 Cost: <span className="font-semibold text-foreground">{cost}</span> credits
