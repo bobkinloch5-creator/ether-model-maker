@@ -10,6 +10,27 @@ export function Header() {
   const { t } = useTranslation();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [promoCopied, setPromoCopied] = useState(false);
+  const [promoDismissed, setPromoDismissed] = useState(false);
+
+  useEffect(() => {
+    setPromoDismissed(typeof window !== "undefined" && localStorage.getItem("promo_launch250_dismissed") === "1");
+  }, []);
+
+  const copyPromo = async () => {
+    try {
+      await navigator.clipboard.writeText("LAUNCH250");
+      setPromoCopied(true);
+      setTimeout(() => setPromoCopied(false), 1500);
+    } catch {}
+  };
+
+  const dismissPromo = () => {
+    setPromoDismissed(true);
+    try { localStorage.setItem("promo_launch250_dismissed", "1"); } catch {}
+  };
+
+  const showPromo = !promoDismissed && new Date() < new Date("2026-06-10T23:59:59Z");
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
