@@ -6,10 +6,11 @@ import { ArrowLeft, Layers3 } from "lucide-react";
 export const Route = createFileRoute("/integrations/unreal")({
   head: () => ({
     meta: [
-      { title: "Unreal Engine — Import AI 3D Models with PBR Maps | KingDavez Studios (Beta)" },
+      { title: "Unreal — Import AI 3D Models with PBR | KingDavez" },
       { name: "description", content: "Import KingDavez Studios FBX/GLB exports into Unreal Engine with PBR materials, Nanite-friendly LODs, and Lumen-ready normals." },
       { property: "og:title", content: "Unreal Engine — AI text-to-3D guide" },
       { property: "og:description", content: "FBX with PBR maps for instant use in your level." },
+      { property: "og:url", content: "https://kingdavez.click/integrations/unreal" },
     ],
     links: [{ rel: "canonical", href: "https://kingdavez.click/integrations/unreal" }],
   }),
