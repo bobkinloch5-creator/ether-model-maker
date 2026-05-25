@@ -2,6 +2,7 @@ import heroBg from "@/assets/hero-bg.jpg";
 import { ArrowRight, Wand2, ImageIcon, Box } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { SparkleField } from "@/components/SparkleField";
 import { FloatingOrbs } from "@/components/site/FloatingOrbs";
 
