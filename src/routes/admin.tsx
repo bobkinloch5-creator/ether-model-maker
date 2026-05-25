@@ -126,25 +126,56 @@ function AdminPage() {
 
   const loadData = async () => {
     setLoading(true);
-    const [{ data: profs }, { count: gens }, { count: pchs }, { data: analyticsData }] = await Promise.all([
-      supabase
-        .from("profiles")
-        .select("id,email,display_name,credits,is_owner,is_manager,is_banned,ban_reason,created_at")
-        .order("created_at", { ascending: false })
-        .limit(500),
-      supabase.from("generations").select("*", { count: "exact", head: true }),
-      supabase.from("purchases").select("*", { count: "exact", head: true }),
-      supabase.rpc("admin_get_analytics"),
-    ]);
-    const rows = (profs as AdminProfile[] | null) ?? [];
-    setProfiles(rows);
-    setStats({
-      users: rows.length,
-      generations: gens ?? 0,
-      purchases: pchs ?? 0,
-      credits: rows.reduce((sum, r) => sum + (r.credits ?? 0), 0),
-    });
-    if (analyticsData) setAnalytics(analyticsData as unknown as Analytics);
+    try {
+      const [profsRes, gensRes, pchsRes, analyticsRes] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("id,email,display_name,credits,is_owner,is_manager,is_banned,ban_reason,created_at")
+          .order("created_at", { ascending: false })
+          .limit(500),
+        supabase.from("generations").select("*", { count: "exact", head: true }),
+        supabase.from("purchases").select("*", { count: "exact", head: true }),
+        supabase.rpc("admin_get_analytics"),
+      ]);
+      const rows = (profsRes.data as AdminProfile[] | null) ?? [];
+      setProfiles(rows);
+      setStats({
+        users: rows.length,
+        generations: gensRes.count ?? 0,
+        purchases: pchsRes.count ?? 0,
+        credits: rows.reduce((sum, r) => sum + (r.credits ?? 0), 0),
+      });
+      if (analyticsRes.error) {
+        setMsg(`Analytics error: ${analyticsRes.error.message}`);
+        setAnalytics(null);
+      } else if (analyticsRes.data) {
+        // Defensive: coerce missing arrays/numbers so the UI never crashes.
+        const a = analyticsRes.data as Partial<Analytics> & { totals?: Partial<Analytics["totals"]> };
+        setAnalytics({
+          totals: {
+            users: Number(a.totals?.users ?? 0),
+            managers: Number(a.totals?.managers ?? 0),
+            owners: Number(a.totals?.owners ?? 0),
+            generations: Number(a.totals?.generations ?? 0),
+            credits_circulating: Number(a.totals?.credits_circulating ?? 0),
+            purchases_count: Number(a.totals?.purchases_count ?? 0),
+            revenue_total: Number(a.totals?.revenue_total ?? 0),
+            credits_sold: Number(a.totals?.credits_sold ?? 0),
+            revenue_30d: Number(a.totals?.revenue_30d ?? 0),
+            new_users_30d: Number(a.totals?.new_users_30d ?? 0),
+            generations_30d: Number(a.totals?.generations_30d ?? 0),
+            referrals_count: Number(a.totals?.referrals_count ?? 0),
+          },
+          daily: Array.isArray(a.daily) ? a.daily : [],
+          top_spenders: Array.isArray(a.top_spenders) ? a.top_spenders : [],
+          recent_purchases: Array.isArray(a.recent_purchases) ? a.recent_purchases : [],
+          recent_generations: Array.isArray(a.recent_generations) ? a.recent_generations : [],
+        });
+      }
+    } catch (err) {
+      console.error("[admin] loadData failed", err);
+      setMsg(`Failed to load admin data: ${err instanceof Error ? err.message : String(err)}`);
+    }
     setLoading(false);
   };
 
