@@ -385,6 +385,12 @@ function AdminPage() {
           <div className="mb-4 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm">{msg}</div>
         )}
 
+        {/* Pending purchases — owner approval queue */}
+        <div className="mb-6">
+          <PendingPurchases onChange={loadData} />
+        </div>
+
+
         {/* Charts: 30d sparklines */}
         {analytics && (
           <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
