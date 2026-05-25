@@ -70,7 +70,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "KingDavez Studios — AI 3D Model Generation" },
+      { title: "KingDavez Studios — AI 3D Model Generation (Beta)" },
       { name: "description", content: "Generate game-ready 3D models, PBR textures and animations from text or images. Built for creators." },
       { name: "keywords", content: "AI 3D model generator, text to 3D, image to 3D, Second Life mesh, Second Life AI mesh, SL marketplace mesh, Thranduil Second Life, low LI mesh, full perm mesh, GLB, FBX, PBR texture, AI texture generator, game asset AI, Second Life builder tools" },
       { name: "author", content: "KingDavez Studios" },
