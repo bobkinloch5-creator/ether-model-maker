@@ -55,6 +55,9 @@ export const Route = createFileRoute("/tutorials/")({
         content: "Free guides on AI 3D, Second Life mesh, PBR textures and retexturing.",
       },
       { property: "og:url", content: "https://kingdavez.click/tutorials" },
+    { name: "twitter:card", content: "summary_large_image" },
+    { name: "twitter:title", content: "Tutorials — KingDavez Studios" },
+    { name: "twitter:description", content: "Step-by-step tutorials for AI 3D model generation, Second Life mesh, and game asset workflows." },
     ],
     links: [{ rel: "canonical", href: "https://kingdavez.click/tutorials" }],
     scripts: [

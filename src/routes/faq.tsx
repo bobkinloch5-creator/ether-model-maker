@@ -33,6 +33,9 @@ export const Route = createFileRoute("/faq")({
       { property: "og:title", content: "FAQ — KingDavez Studios" },
       { property: "og:description", content: "Answers about credits, exports, Second Life delivery, and ownership." },
       { property: "og:url", content: "https://kingdavez.click/faq" },
+    { name: "twitter:card", content: "summary_large_image" },
+    { name: "twitter:title", content: "FAQ — KingDavez Studios AI 3D Generator" },
+    { name: "twitter:description", content: "Frequently asked questions about AI 3D model generation, pricing, exports, and Second Life delivery." },
     ],
     links: [{ rel: "canonical", href: "https://kingdavez.click/faq" }],
     scripts: [
