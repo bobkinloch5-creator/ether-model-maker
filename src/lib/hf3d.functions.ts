@@ -1694,21 +1694,27 @@ export const generateLocal3D = createServerFn({ method: "POST" })
       if (!preprocessRes.ok) throw new Error(`Preprocess failed: ${preprocessRes.status}`);
       const preprocessJson = await preprocessRes.json();
       const processedFile = preprocessJson.data[0];
-      console.log("[3D GEN / server] preprocess done");
+      console.log("[3D GEN / server] preprocess output:", JSON.stringify(processedFile));
 
       // Step 2: generate (fn_index 2)
-      console.log("[3D GEN / server] generating…");
+      const generateBody = {
+        fn_index: 2,
+        data: [processedFile, 256],
+      };
+      console.log("[3D GEN / server] generate body:", JSON.stringify(generateBody));
       const generateRes = await fetch(`${spaceUrl}/run/predict`, {
         method: "POST",
         headers: { ...headers, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fn_index: 2,
-          data: [processedFile, 256],
-        }),
+        body: JSON.stringify(generateBody),
         signal: AbortSignal.timeout(300_000),
       });
-      if (!generateRes.ok) throw new Error(`Generate failed: ${generateRes.status}`);
+      if (!generateRes.ok) {
+        const errBody = await generateRes.text().catch(() => "");
+        console.error("[3D GEN / server] generate error body:", errBody.slice(0, 1000));
+        throw new Error(`Generate failed: ${generateRes.status} ${errBody.slice(0, 300)}`);
+      }
       const generateJson = await generateRes.json();
+      console.log("[3D GEN / server] generate response:", JSON.stringify(generateJson).slice(0, 500));
       const glbFile = generateJson.data[1];
       const modelUrl = `${spaceUrl}/file=${glbFile.path}`;
       console.log("[3D GEN / server] modelUrl:", modelUrl);
