@@ -349,12 +349,12 @@ function PaypalCheckout({
       </div>
 
       {granted ? (
-        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-center">
-          <div className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-400">
-            <Check className="h-4 w-4" /> Credits added automatically
+        <div className="rounded-xl border border-amber-400/20 bg-amber-500/10 p-4 text-center">
+          <div className="inline-flex items-center gap-2 text-sm font-semibold text-amber-300">
+            <Check className="h-4 w-4" /> Payment submitted for review
           </div>
           <p className="mt-1 text-xs text-muted-foreground">
-            Your balance has been updated. Refresh the dashboard to see it.
+            We've recorded your transaction. An owner will verify it and credits will be added to your balance shortly.
           </p>
         </div>
       ) : (
