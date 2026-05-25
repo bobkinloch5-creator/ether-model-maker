@@ -15,6 +15,7 @@ const SUGGESTIONS = [
 
 export function Hero() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [value, setValue] = useState("An ornate elven longbow with glowing runes");
   const [mode, setMode] = useState<"text-to-image" | "image-to-3d">("text-to-image");
 
