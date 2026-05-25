@@ -155,16 +155,28 @@ function ProfilePage() {
   };
 
   const handleApplyReferral = async () => {
-    if (!refCodeInput.trim()) return;
+    const code = refCodeInput.trim();
+    if (!code) return;
     setRefApplying(true);
     setRefMsg(null);
-    const res = await applyReferralCode(refCodeInput.trim());
+    // Try referral first
+    const res = await applyReferralCode(code);
     if (res.success) {
       setRefMsg({ kind: "ok", text: `Code applied — +${res.bonus ?? 50} credits!` });
       setRefCodeInput("");
       await refreshProfile();
+      setRefApplying(false);
+      return;
+    }
+    // Fallback: try as a promo code
+    const { data, error } = await supabase.rpc("redeem_promo", { _code: code });
+    if (!error && data) {
+      const r = data as { credits: number; code: string };
+      setRefMsg({ kind: "ok", text: `Promo redeemed — +${r.credits} credits!` });
+      setRefCodeInput("");
+      await refreshProfile();
     } else {
-      setRefMsg({ kind: "err", text: res.error || "Could not apply code" });
+      setRefMsg({ kind: "err", text: error?.message || res.error || "Invalid code" });
     }
     setRefApplying(false);
   };
