@@ -83,14 +83,15 @@ function LoginPage() {
       setError(msg);
       setLoading(false);
     } else {
-      // Persist or clear remembered credentials
+      // Persist email only (never the password) or clear
       try {
         if (rememberMe) {
-          localStorage.setItem("kd_remember", JSON.stringify({ email, password }));
+          localStorage.setItem("kd_remember", JSON.stringify({ email }));
         } else {
           localStorage.removeItem("kd_remember");
         }
       } catch {}
+
       navigate({ to: "/dashboard" });
     }
   };
