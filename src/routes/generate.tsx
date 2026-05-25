@@ -1111,7 +1111,12 @@ function GeneratePage() {
                   selectedType === t.key ? "text-primary-glow" : "text-muted-foreground"
                 }`}
               />
-              <h3 className="mt-3 font-display text-sm font-semibold">{t.label}</h3>
+              <div className="mt-3 flex items-center gap-2">
+                <h3 className="font-display text-sm font-semibold">{t.label}</h3>
+                <span className="inline-flex items-center rounded-full bg-primary/15 border border-primary/30 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-primary-glow">
+                  Beta
+                </span>
+              </div>
               <p className="mt-1 text-xs text-muted-foreground">{t.desc}</p>
               <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
                 <Coins className="h-3 w-3 text-amber-400" />
