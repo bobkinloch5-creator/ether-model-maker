@@ -440,8 +440,8 @@ function AdminPage() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-mono font-semibold text-emerald-300">${Number(s.spent).toFixed(2)}</div>
-                        <div className="text-xs text-muted-foreground">{s.credits.toLocaleString()} cr</div>
+                        <div className="font-mono font-semibold text-emerald-300">${Number(s?.spent ?? 0).toFixed(2)}</div>
+                        <div className="text-xs text-muted-foreground">{Number(s?.credits ?? 0).toLocaleString()} cr</div>
                       </div>
                     </li>
                   ))}
