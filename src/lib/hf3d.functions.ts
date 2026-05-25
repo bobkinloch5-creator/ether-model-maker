@@ -1706,17 +1706,17 @@ export const generateLocal3D = createServerFn({ method: "POST" })
       const processedFile = preprocessJson.data[0];
       console.log("[3D GEN / server] preprocess output:", JSON.stringify(processedFile));
 
-      // Step 2: generate (fn_index 3)
+      // Step 2: generate (fn_index 3) — mc_resolution 320 for higher-detail meshes.
       const generateBody = {
         fn_index: 3,
-        data: [processedFile, 256],
+        data: [processedFile, 320],
       };
       console.log("[3D GEN / server] generate body:", JSON.stringify(generateBody));
       const generateRes = await fetch(`${spaceUrl}/run/predict`, {
         method: "POST",
         headers: { ...headers, "Content-Type": "application/json" },
         body: JSON.stringify(generateBody),
-        signal: AbortSignal.timeout(300_000),
+        signal: AbortSignal.timeout(420_000),
       });
       if (!generateRes.ok) {
         const errBody = await generateRes.text().catch(() => "");
@@ -1726,7 +1726,33 @@ export const generateLocal3D = createServerFn({ method: "POST" })
       const generateJson = await generateRes.json();
       console.log("[3D GEN / server] generate response:", JSON.stringify(generateJson).slice(0, 500));
       const glbFile = generateJson.data[1];
-      const modelUrl = `${spaceUrl}/file=${glbFile.path}`;
+      const sourceModelUrl = `${spaceUrl}/file=${glbFile.path}`;
+
+      // Persist the GLB to Supabase storage so the asset survives ngrok
+      // restarts and loads faster from a CDN.
+      let modelUrl = sourceModelUrl;
+      try {
+        const glbRes = await fetch(sourceModelUrl, { headers, signal: AbortSignal.timeout(120_000) });
+        if (glbRes.ok) {
+          const glbBuf = Buffer.from(await glbRes.arrayBuffer());
+          const storagePath = `local-triposr-outputs/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.glb`;
+          const { error: upErr } = await supabaseAdmin.storage.from("models").upload(storagePath, glbBuf, {
+            contentType: "model/gltf-binary",
+            upsert: false,
+          });
+          if (!upErr) {
+            const { data: pub } = supabaseAdmin.storage.from("models").getPublicUrl(storagePath);
+            if (pub.publicUrl) modelUrl = pub.publicUrl;
+          } else {
+            console.warn("[3D GEN / server] storage upload failed, falling back to source URL:", upErr.message);
+          }
+        } else {
+          console.warn("[3D GEN / server] glb fetch failed, keeping source URL:", glbRes.status);
+        }
+      } catch (rehostErr) {
+        console.warn("[3D GEN / server] rehost threw, keeping source URL:", rehostErr);
+      }
+
       console.log("[3D GEN / server] modelUrl:", modelUrl);
       return { ok: true as const, modelUrl };
     } catch (err) {
