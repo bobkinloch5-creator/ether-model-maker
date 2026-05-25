@@ -27,6 +27,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { PromoManager } from "@/components/admin/PromoManager";
+import { PendingPurchases } from "@/components/admin/PendingPurchases";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
