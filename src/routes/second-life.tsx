@@ -4,7 +4,7 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { SL_LINKS } from "@/lib/second-life";
 
-const TITLE = "Second Life AI 3D Mesh, Textures & Builder Tools — KingDavez Studios";
+const TITLE = "Second Life AI 3D Mesh, Textures & Builder Tools — KingDavez Studios (Beta)";
 const DESCRIPTION =
   "AI-generated mesh, textures, and full-perm builder kits for Second Life. Visit the KingDavez Studios SL Marketplace store, our in-world shop on Thranduil, and join the SL group for freebies, notices and member perks.";
 
