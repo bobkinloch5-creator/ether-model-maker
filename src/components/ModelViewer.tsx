@@ -54,7 +54,12 @@ function enhanceSceneQuality(scene: THREE.Object3D, anisotropy: number, wirefram
           tex.needsUpdate = true;
         }
       });
-      if (m.envMapIntensity !== undefined) m.envMapIntensity = 1.1;
+      // Punch up PBR look: stronger env reflections, crisper normals, gentler
+      // roughness so albedo textures (like fur) read sharper instead of muddy.
+      if (m.envMapIntensity !== undefined) m.envMapIntensity = 1.45;
+      if (m.normalScale && m.normalScale.set) m.normalScale.set(1.15, 1.15);
+      if (typeof m.roughness === "number") m.roughness = Math.max(0.35, Math.min(m.roughness, 0.92));
+      if (m.aoMapIntensity !== undefined) m.aoMapIntensity = 1.1;
       m.needsUpdate = true;
     });
   });
@@ -74,7 +79,7 @@ function Model({
   const { actions, names } = useAnimations(animations, group);
   const { gl } = useThree();
   // Cap anisotropy at 8 — visually indistinguishable from 16 but cheaper on the GPU
-  const anisotropy = useMemo(() => Math.min(gl.capabilities.getMaxAnisotropy() || 8, 8), [gl]);
+  const anisotropy = useMemo(() => Math.min(gl.capabilities.getMaxAnisotropy() || 16, 16), [gl]);
 
   useEffect(() => {
     if (scene) enhanceSceneQuality(scene, anisotropy, wireframe);
@@ -97,7 +102,7 @@ function ProceduralWrapper({ prompt, wireframe }: { prompt: string; wireframe: b
   const groupRef = useRef<any>(null);
   const group = useMemo(() => buildProceduralMesh(prompt), [prompt]);
   const { gl } = useThree();
-  const anisotropy = useMemo(() => Math.min(gl.capabilities.getMaxAnisotropy() || 8, 8), [gl]);
+  const anisotropy = useMemo(() => Math.min(gl.capabilities.getMaxAnisotropy() || 16, 16), [gl]);
 
   useEffect(() => {
     if (group) enhanceSceneQuality(group, anisotropy, wireframe);
@@ -172,13 +177,15 @@ export function ModelViewer({ url, prompt }: ModelViewerProps) {
             powerPreference: "high-performance",
             preserveDrawingBuffer: false,
             toneMapping: THREE.ACESFilmicToneMapping,
-            toneMappingExposure: 1.05,
+            toneMappingExposure: 1.18,
           }}
           camera={{ position: [2.4, 1.6, 3.4], fov: 38, near: 0.05, far: 100 }}
           onCreated={({ gl, scene }) => {
             gl.shadowMap.enabled = true;
             gl.shadowMap.type = THREE.PCFSoftShadowMap;
             gl.outputColorSpace = THREE.SRGBColorSpace;
+            // Crisper IBL — boosts reflection sharpness on PBR surfaces.
+            (scene as any).environmentIntensity = 1.15;
             scene.background = null;
           }}
         >
