@@ -235,15 +235,16 @@ function CreditsPage() {
               </p>
             ) : success ? (
               <div className="py-6 text-center space-y-4">
-                <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-emerald-500/20 text-emerald-400">
+                <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-amber-500/20 text-amber-300">
                   <Check className="h-6 w-6" />
                 </div>
-                <h3 className="font-display text-xl font-semibold text-emerald-400">Payment successful</h3>
+                <h3 className="font-display text-xl font-semibold text-amber-300">Payment submitted</h3>
                 <p className="text-sm text-muted-foreground">
-                  Added <span className="font-semibold text-foreground">{success.credits}</span> credits to your account.
+                  Your payment for <span className="font-semibold text-foreground">{success.credits}</span> credits is awaiting owner approval.
+                  Credits will appear in your balance once we confirm the PayPal transaction (usually within a few hours).
                 </p>
-                <p className="text-sm text-muted-foreground">
-                  New balance: <span className="font-semibold text-foreground">{profile?.is_owner ? "∞" : (profile?.credits ?? 0).toLocaleString()}</span> credits
+                <p className="text-xs text-muted-foreground">
+                  You can track this purchase under <Link to="/credits/history" className="underline hover:text-foreground">Credits history</Link>.
                 </p>
                 <div className="flex justify-center gap-2 pt-2">
                   <button
@@ -253,10 +254,10 @@ function CreditsPage() {
                     Buy more
                   </button>
                   <Link
-                    to="/generate"
+                    to="/dashboard"
                     className="rounded-xl bg-[var(--gradient-primary)] px-4 py-2 text-sm font-semibold text-white hover:opacity-95"
                   >
-                    Start generating
+                    Back to dashboard
                   </Link>
                 </div>
               </div>
