@@ -92,7 +92,7 @@ export function Header() {
                   to="/login"
                   className="hidden sm:inline-flex h-10 items-center rounded-full px-4 text-sm text-muted-foreground hover:text-foreground transition"
                 >
-                  Sign in
+                  {t("nav.signIn")}
                 </Link>
                 <Link
                   to="/signup"
