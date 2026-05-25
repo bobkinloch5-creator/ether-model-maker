@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Sparkles, User, Coins, Users, Menu, X, Home } from "lucide-react";
+import { Sparkles, User, Coins, Users, Menu, X, Home, Gift, Copy, Check } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -10,6 +10,27 @@ export function Header() {
   const { t } = useTranslation();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [promoCopied, setPromoCopied] = useState(false);
+  const [promoDismissed, setPromoDismissed] = useState(false);
+
+  useEffect(() => {
+    setPromoDismissed(typeof window !== "undefined" && localStorage.getItem("promo_launch250_dismissed") === "1");
+  }, []);
+
+  const copyPromo = async () => {
+    try {
+      await navigator.clipboard.writeText("LAUNCH250");
+      setPromoCopied(true);
+      setTimeout(() => setPromoCopied(false), 1500);
+    } catch {}
+  };
+
+  const dismissPromo = () => {
+    setPromoDismissed(true);
+    try { localStorage.setItem("promo_launch250_dismissed", "1"); } catch {}
+  };
+
+  const showPromo = !promoDismissed && new Date() < new Date("2026-06-10T23:59:59Z");
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -28,6 +49,36 @@ export function Header() {
 
   return (
     <header className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${scrolled ? "py-2" : "py-4"}`}>
+      {showPromo && (
+        <div className="mx-auto max-w-6xl px-3 sm:px-4 mb-2">
+          <div className="flex items-center justify-between gap-2 rounded-full border border-primary/30 bg-[var(--gradient-primary)]/15 backdrop-blur px-3 sm:px-4 py-2 text-xs sm:text-sm">
+            <div className="flex items-center gap-2 min-w-0">
+              <Gift className="h-4 w-4 text-primary-glow shrink-0" />
+              <span className="truncate">
+                <span className="font-semibold text-foreground">+250 free credits</span>
+                <span className="text-muted-foreground hidden sm:inline"> — use code</span>
+              </span>
+              <button
+                onClick={copyPromo}
+                className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/10 px-2 py-0.5 font-mono text-[11px] sm:text-xs font-bold tracking-wider hover:bg-white/20 transition"
+                title="Copy code"
+              >
+                LAUNCH250
+                {promoCopied ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3 opacity-70" />}
+              </button>
+              <span className="text-muted-foreground hidden md:inline">· ends Jun 10</span>
+            </div>
+            <div className="flex items-center gap-1 shrink-0">
+              <Link to="/credits" className="hidden sm:inline-flex h-7 items-center rounded-full bg-[var(--gradient-primary)] px-3 text-xs font-medium text-white hover:opacity-95 transition">
+                Redeem
+              </Link>
+              <button onClick={dismissPromo} aria-label="Dismiss" className="grid h-7 w-7 place-items-center rounded-full hover:bg-white/10 transition">
+                <X className="h-3.5 w-3.5 text-muted-foreground" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="mx-auto max-w-6xl px-3 sm:px-4">
         <div className={`glass flex h-14 items-center justify-between rounded-full pl-4 pr-2 sm:pl-5 transition-all duration-300 ${scrolled ? "shadow-lg shadow-black/20" : ""}`}>
           <Link to="/" className="flex items-center gap-2 min-w-0" onClick={closeMenu}>
