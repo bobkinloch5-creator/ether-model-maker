@@ -40,10 +40,11 @@ function clientIpFromHeaders(req: Request): string | null {
 export const checkSignupAllowed = createServerFn({ method: "POST" })
   .inputValidator((input) =>
     z.object({
-      fingerprint: z.string().min(8).max(128),
+      fingerprint: z.string().regex(/^[a-zA-Z0-9+/=_-]{8,128}$/),
       email: z.string().email().optional(),
     }).parse(input),
   )
+
   .handler(async ({ data }) => {
     // Admin emails always allowed
     if (data.email && getAdminEmails().includes(data.email.toLowerCase())) {
