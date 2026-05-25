@@ -7,7 +7,7 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/integrations/roblox")({
   head: () => ({
     meta: [
-      { title: "Generate AI 3D Models inside Roblox Studio — KingDavez Studios" },
+      { title: "Generate AI 3D Models inside Roblox Studio — KingDavez Studios (Beta)" },
       {
         name: "description",
         content:

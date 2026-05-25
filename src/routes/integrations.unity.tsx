@@ -7,7 +7,7 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/integrations/unity")({
   head: () => ({
     meta: [
-      { title: "Unity — Import AI-Generated 3D Models | KingDavez Studios" },
+      { title: "Unity — Import AI-Generated 3D Models | KingDavez Studios (Beta)" },
       { name: "description", content: "Drop GLB or FBX exports from KingDavez Studios straight into your Unity Assets folder. Materials, normals, and AO maps wire up automatically." },
       { property: "og:title", content: "Unity — AI text-to-3D import guide" },
       { property: "og:description", content: "Use AI-generated GLB / FBX models in Unity in seconds." },

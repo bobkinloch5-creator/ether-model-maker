@@ -6,7 +6,7 @@ import { ArrowLeft, Package } from "lucide-react";
 export const Route = createFileRoute("/integrations/anywhere")({
   head: () => ({
     meta: [
-      { title: "Use AI 3D Models Anywhere — Maya, 3ds Max, Houdini, Sketchfab | KingDavez Studios" },
+      { title: "Use AI 3D Models Anywhere — Maya, 3ds Max, Houdini, Sketchfab | KingDavez Studios (Beta)" },
       { name: "description", content: "Every KingDavez Studios generation exports as standard GLB / OBJ / FBX / DAE — open it in any DCC, engine, or marketplace." },
       { property: "og:title", content: "AI 3D for any DCC or engine" },
       { property: "og:description", content: "GLB · OBJ · FBX · DAE — no vendor lock-in." },

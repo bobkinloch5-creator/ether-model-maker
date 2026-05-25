@@ -7,7 +7,7 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/integrations/blender")({
   head: () => ({
     meta: [
-      { title: "Blender add-on — Generate AI 3D Models in Blender | KingDavez Studios" },
+      { title: "Blender add-on — Generate AI 3D Models in Blender | KingDavez Studios (Beta)" },
       {
         name: "description",
         content:

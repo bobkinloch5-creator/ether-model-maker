@@ -41,7 +41,7 @@ type LoadedComment = {
 export const Route = createFileRoute("/community/$postId")({
   head: () => ({
     meta: [
-      { title: "Community Post — KingDavez Studios" },
+      { title: "Community Post — KingDavez Studios (Beta)" },
       { name: "robots", content: "noindex" },
     ],
   }),

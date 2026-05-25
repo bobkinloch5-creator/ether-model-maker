@@ -6,7 +6,7 @@ import { ArrowLeft, Sparkles } from "lucide-react";
 export const Route = createFileRoute("/integrations/godot")({
   head: () => ({
     meta: [
-      { title: "Godot — Import AI 3D Models (GLB) | KingDavez Studios" },
+      { title: "Godot — Import AI 3D Models (GLB) | KingDavez Studios (Beta)" },
       { name: "description", content: "Native GLB import for Godot 4. Drop AI-generated models into your project — zero conversion needed." },
       { property: "og:title", content: "Godot — AI text-to-3D guide" },
       { property: "og:description", content: "Native GLB for indie & open-source pipelines." },

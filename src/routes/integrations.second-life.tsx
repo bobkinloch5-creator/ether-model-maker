@@ -6,7 +6,7 @@ import { ArrowLeft, Box } from "lucide-react";
 export const Route = createFileRoute("/integrations/second-life")({
   head: () => ({
     meta: [
-      { title: "Second Life — SL-Optimized AI Mesh (DAE/COLLADA) | KingDavez Studios" },
+      { title: "Second Life — SL-Optimized AI Mesh (DAE/COLLADA) | KingDavez Studios (Beta)" },
       { name: "description", content: "SL-ready pipeline: low Land Impact, watertight mesh, DAE/COLLADA export, in-world delivery. Generate, optimize, and upload to Second Life." },
       { property: "og:title", content: "Second Life — AI mesh upload guide" },
       { property: "og:description", content: "Low-LI, watertight mesh, DAE export." },
