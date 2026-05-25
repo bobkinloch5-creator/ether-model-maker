@@ -159,24 +159,57 @@ export const publishCommunityPost = createServerFn({ method: "POST" })
       .single();
     if (error) return { ok: false as const, error: error.message };
 
-    // Reward credits for sharing to community
+    // Reward credits for sharing to community — only once per generation
     const REWARD_CREDITS = 25;
-    const { data: profile } = await supabaseAdmin.from("profiles").select("credits").eq("id", userId).single();
-    const newBalance = (profile?.credits ?? 0) + REWARD_CREDITS;
-    await supabaseAdmin
-      .from("profiles")
-      .update({ credits: newBalance })
-      .eq("id", userId);
-    await supabaseAdmin.rpc("log_credit_change", {
-      _user_id: userId,
-      _amount: REWARD_CREDITS,
-      _kind: "community_publish",
-      _reason: `Earned ${REWARD_CREDITS} credits for publishing to community`,
-      _reference_id: row.id,
-      _metadata: JSON.stringify({ post_id: row.id }),
-    });
+    let creditsEarned = 0;
 
-    return { ok: true as const, postId: row.id, creditsEarned: REWARD_CREDITS };
+    if (data.generationId) {
+      // Check if user already published this generation
+      const { data: existingPost } = await supabaseAdmin
+        .from("community_posts")
+        .select("id")
+        .eq("generation_id", data.generationId)
+        .eq("user_id", userId)
+        .neq("id", row.id) // exclude the one we just created
+        .maybeSingle();
+
+      if (!existingPost) {
+        const { data: profile } = await supabaseAdmin.from("profiles").select("credits").eq("id", userId).single();
+        const newBalance = (profile?.credits ?? 0) + REWARD_CREDITS;
+        await supabaseAdmin
+          .from("profiles")
+          .update({ credits: newBalance })
+          .eq("id", userId);
+        await supabaseAdmin.rpc("log_credit_change", {
+          _user_id: userId,
+          _amount: REWARD_CREDITS,
+          _kind: "community_publish",
+          _reason: `Earned ${REWARD_CREDITS} credits for publishing to community`,
+          _reference_id: row.id,
+          _metadata: JSON.stringify({ post_id: row.id }),
+        });
+        creditsEarned = REWARD_CREDITS;
+      }
+    } else {
+      // No generationId tied — still award credits (standalone upload/share)
+      const { data: profile } = await supabaseAdmin.from("profiles").select("credits").eq("id", userId).single();
+      const newBalance = (profile?.credits ?? 0) + REWARD_CREDITS;
+      await supabaseAdmin
+        .from("profiles")
+        .update({ credits: newBalance })
+        .eq("id", userId);
+      await supabaseAdmin.rpc("log_credit_change", {
+        _user_id: userId,
+        _amount: REWARD_CREDITS,
+        _kind: "community_publish",
+        _reason: `Earned ${REWARD_CREDITS} credits for publishing to community`,
+        _reference_id: row.id,
+        _metadata: JSON.stringify({ post_id: row.id }),
+      });
+      creditsEarned = REWARD_CREDITS;
+    }
+
+    return { ok: true as const, postId: row.id, creditsEarned };
   });
 
 // ============= Delete own post =============
