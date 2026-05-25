@@ -97,7 +97,7 @@ function ProceduralWrapper({ prompt, wireframe }: { prompt: string; wireframe: b
   const groupRef = useRef<any>(null);
   const group = useMemo(() => buildProceduralMesh(prompt), [prompt]);
   const { gl } = useThree();
-  const anisotropy = useMemo(() => Math.min(gl.capabilities.getMaxAnisotropy() || 8, 8), [gl]);
+  const anisotropy = useMemo(() => Math.min(gl.capabilities.getMaxAnisotropy() || 16, 16), [gl]);
 
   useEffect(() => {
     if (group) enhanceSceneQuality(group, anisotropy, wireframe);
