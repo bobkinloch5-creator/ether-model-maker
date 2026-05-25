@@ -121,6 +121,33 @@ function AutoFrame({ trigger }: { trigger: any }) {
   return null;
 }
 
+type PerfTier = "high" | "medium" | "low";
+
+/** Detect baseline GPU tier once per page-load. */
+function detectInitialTier(): { tier: PerfTier; webgl: boolean; reason: string } {
+  if (typeof window === "undefined") return { tier: "medium", webgl: true, reason: "ssr" };
+  try {
+    const c = document.createElement("canvas");
+    const gl = (c.getContext("webgl2") || c.getContext("webgl")) as WebGLRenderingContext | null;
+    if (!gl) return { tier: "low", webgl: false, reason: "no-webgl" };
+    const ext = gl.getExtension("WEBGL_debug_renderer_info");
+    const renderer = (ext && gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)) || "";
+    const r = String(renderer).toLowerCase();
+    const cores = (navigator as any).hardwareConcurrency ?? 4;
+    const mem = (navigator as any).deviceMemory ?? 4;
+    const mobile = window.matchMedia("(max-width: 768px)").matches;
+    const isLowGpu = /(swiftshader|llvmpipe|software|microsoft basic)/.test(r);
+    const isIntegrated = /(intel|iris|uhd|hd graphics|mali|adreno 3|adreno 4|adreno 5|powervr|videocore|apple gpu)/.test(r);
+    const isHighEnd = /(rtx|radeon rx|geforce gtx 1[06-9]|geforce gtx 2|geforce rtx|m1 max|m1 pro|m2|m3|m4|apple m)/.test(r);
+    if (isLowGpu || cores <= 2 || mem <= 2) return { tier: "low", webgl: true, reason: "weak-gpu" };
+    if (mobile || isIntegrated) return { tier: "medium", webgl: true, reason: "integrated" };
+    if (isHighEnd && cores >= 6) return { tier: "high", webgl: true, reason: "high-end" };
+    return { tier: "medium", webgl: true, reason: "default" };
+  } catch {
+    return { tier: "medium", webgl: true, reason: "detect-failed" };
+  }
+}
+
 export function ModelViewer({ url, prompt }: ModelViewerProps) {
   const [autoRotate, setAutoRotate] = useState(true);
   const [playAnims, setPlayAnims] = useState(true);
@@ -128,13 +155,19 @@ export function ModelViewer({ url, prompt }: ModelViewerProps) {
   const [envPreset, setEnvPreset] = useState<EnvPreset>("studio");
   const [dark, setDark] = useState(false);
   const controlsRef = useRef<any>(null);
-  const [perfTier, setPerfTier] = useState<"high" | "low">("high");
+  const initial = useMemo(() => detectInitialTier(), []);
+  const [perfTier, setPerfTier] = useState<PerfTier>(initial.tier);
+  const [contextLost, setContextLost] = useState(false);
 
-  // Tune DPR + shadow budget per device. Desktop caps at 1.75x DPR (sweet spot
-  // for 4K-ish sharpness without melting a 4070), mobile caps at 1.5x.
   const isMobile = typeof window !== "undefined" && window.matchMedia("(max-width: 768px)").matches;
-  const dpr: [number, number] = isMobile ? [1, 1.5] : [1, perfTier === "high" ? 1.75 : 1.25];
-  const shadowMapSize = isMobile ? 1024 : perfTier === "high" ? 2048 : 1024;
+
+  // Per-tier budgets — low end disables shadows entirely and caps DPR at 1.0.
+  const dpr: [number, number] =
+    perfTier === "low" ? [0.75, 1] : perfTier === "medium" ? [1, isMobile ? 1.25 : 1.5] : [1, isMobile ? 1.5 : 1.75];
+  const shadowsEnabled = perfTier !== "low";
+  const shadowMapSize = perfTier === "high" ? (isMobile ? 1024 : 2048) : perfTier === "medium" ? 1024 : 512;
+  const contactShadowRes = perfTier === "high" ? (isMobile ? 384 : 768) : perfTier === "medium" ? 512 : 256;
+  const antialias = perfTier !== "low" && !isMobile;
 
   const isProcedural = url === "__procedural__" || url === "/demo-model.glb" || url.includes("demo-model");
   const isRealModel = !isProcedural && (url.startsWith("blob:") || url.startsWith("http") || url.startsWith("/"));
