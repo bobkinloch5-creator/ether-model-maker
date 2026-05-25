@@ -177,13 +177,15 @@ export function ModelViewer({ url, prompt }: ModelViewerProps) {
             powerPreference: "high-performance",
             preserveDrawingBuffer: false,
             toneMapping: THREE.ACESFilmicToneMapping,
-            toneMappingExposure: 1.05,
+            toneMappingExposure: 1.18,
           }}
           camera={{ position: [2.4, 1.6, 3.4], fov: 38, near: 0.05, far: 100 }}
           onCreated={({ gl, scene }) => {
             gl.shadowMap.enabled = true;
             gl.shadowMap.type = THREE.PCFSoftShadowMap;
             gl.outputColorSpace = THREE.SRGBColorSpace;
+            // Crisper IBL — boosts reflection sharpness on PBR surfaces.
+            (scene as any).environmentIntensity = 1.15;
             scene.background = null;
           }}
         >
