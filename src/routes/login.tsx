@@ -38,18 +38,21 @@ function LoginPage() {
     }
   }, []);
 
-  // Restore remembered credentials on mount
+  // Restore remembered email on mount (never the password)
   useEffect(() => {
     try {
       const saved = localStorage.getItem("kd_remember");
       if (saved) {
-        const { email: e, password: p } = JSON.parse(saved);
-        if (e) setEmail(e);
-        if (p) setPassword(p);
-        setRememberMe(true);
+        const parsed = JSON.parse(saved);
+        const e = typeof parsed?.email === "string" ? parsed.email : "";
+        if (e) {
+          setEmail(e);
+          setRememberMe(true);
+        }
       }
     } catch {}
   }, []);
+
 
   // Redirect if already logged in
   if (!authLoading && user) {
