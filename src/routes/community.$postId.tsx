@@ -43,6 +43,11 @@ export const Route = createFileRoute("/community/$postId")({
     meta: [
       { title: "Community Post — KingDavez Studios (Beta)" },
       { name: "robots", content: "noindex" },
+    { name: "twitter:description", content: "Community showcase post on KingDavez Studios." },
+    { name: "twitter:title", content: "Community Post — KingDavez Studios" },
+    { name: "twitter:card", content: "summary" },
+    { property: "og:description", content: "Community showcase post on KingDavez Studios." },
+    { property: "og:title", content: "Community Post — KingDavez Studios" },
     ],
   }),
   component: PostPage,

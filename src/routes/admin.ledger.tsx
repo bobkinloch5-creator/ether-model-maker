@@ -28,7 +28,14 @@ export const Route = createFileRoute("/admin/ledger")({
     meta: [
       { title: "Credit Ledger — Admin" },
       { name: "robots", content: "noindex,nofollow" },
+    { name: "twitter:description", content: "Owner-only credit ledger and transaction history." },
+    { name: "twitter:title", content: "Credit Ledger — KingDavez Studios" },
+    { name: "twitter:card", content: "summary" },
+    { property: "og:url", content: "https://kingdavez.click/admin/ledger" },
+    { property: "og:description", content: "Owner-only credit ledger and transaction history." },
+    { property: "og:title", content: "Credit Ledger — KingDavez Studios" },
     ],
+  links: [{ rel: "canonical", href: "https://kingdavez.click/admin/ledger" }],
   }),
   component: AdminLedgerPage,
 });
