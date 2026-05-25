@@ -403,8 +403,8 @@ function PaypalCheckout({
                 className="w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/40 disabled:opacity-50"
               />
               {autoGranting && (
-                <div className="mt-2 flex items-center gap-2 text-xs text-emerald-400">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Verifying and adding credits…
+                <div className="mt-2 flex items-center gap-2 text-xs text-amber-300">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Submitting for verification…
                 </div>
               )}
             </div>
