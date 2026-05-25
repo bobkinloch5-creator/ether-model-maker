@@ -345,7 +345,8 @@ function GeneratePage() {
         created_at: new Date().toISOString(),
       };
 
-      if (selectedType === "image-to-3d") {
+      if (selectedType === "image-to-3d" || selectedType === "text-to-image") {
+        // Defer credit deduction until the AI service actually succeeds.
         setCurrentGen(tempGenerationBase);
       } else {
         gen = await createGeneration(
@@ -360,6 +361,7 @@ function GeneratePage() {
 
         setCurrentGen(gen);
       }
+
 
       // Step 3: Call AI services
       let modelUrl = "__procedural__";
