@@ -45,6 +45,9 @@ export function Hero() {
           href="#features"
           className="glass inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs text-muted-foreground hover:text-foreground transition animate-fade-in"
         >
+          <span className="inline-flex items-center rounded-full bg-primary/15 border border-primary/30 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-primary-glow mr-1">
+            Beta
+          </span>
           <span className="relative flex h-2 w-2">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
