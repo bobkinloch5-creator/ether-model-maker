@@ -92,26 +92,6 @@ const sections: Section[] = [
     ),
   },
   {
-    id: "text-to-image",
-    title: "Text → Image",
-    icon: Sparkles,
-    blurb: "Generate concept art and textures from a single prompt.",
-    body: (
-      <div className="space-y-3 text-sm text-muted-foreground">
-        <p>
-          Write a clear, descriptive prompt. Mention <b>style</b> (stylized,
-          realistic, low-poly), <b>material</b> (metal, wood, fabric) and{" "}
-          <b>lighting</b> for best results.
-        </p>
-        <div className="rounded-xl border border-white/10 bg-black/30 p-4 font-mono text-xs text-foreground/80">
-          stylized fantasy potion bottle, glowing teal liquid, brass cap,
-          carved wooden base, product photography, plain background
-        </div>
-        <p>Outputs a high-res concept image you can use directly or send to Image → 3D.</p>
-      </div>
-    ),
-  },
-  {
     id: "image-to-3d",
     title: "Image → 3D",
     icon: ImageIcon,

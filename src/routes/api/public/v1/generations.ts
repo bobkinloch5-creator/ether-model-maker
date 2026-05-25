@@ -6,13 +6,11 @@ const ALLOWED_TYPES = new Set([
   "text-to-3d",
   "image-to-3d",
   "retexture",
-  "text-to-image",
 ]);
 
 const CREDIT_COSTS: Record<string, number> = {
   "text-to-3d": 2,
   "image-to-3d": 3,
-  "text-to-image": 1,
   retexture: 1,
 };
 

@@ -51,7 +51,7 @@ export async function assistantChat(userMessage: string, history: ChatMessage[] 
       {
         role: "system",
         content:
-          "You are the KingDavez Studios.pro AI assistant. Keep replies to 1-2 short sentences. Costs: text-to-3D 2 credits, image-to-3D 3, retexture 1, text-to-image 1. New accounts get 25 free credits. Buy credits via PayPal.",
+          "You are the KingDavez Studios.pro AI assistant. Keep replies to 1-2 short sentences. Costs: text-to-3D 2 credits, image-to-3D 3, retexture 1. New accounts get 25 free credits. Buy credits via PayPal.",
       },
       ...history,
       { role: "user", content: userMessage },

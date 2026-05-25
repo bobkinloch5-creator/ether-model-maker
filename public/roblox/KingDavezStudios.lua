@@ -113,7 +113,7 @@ label("Prompt")
 local promptBox = input("an ornate elven longbow with glowing runes", 90, true)
 
 label("Type")
-local typeBox = input("text-to-3d  |  image-to-3d  |  text-to-image", 28)
+local typeBox = input("text-to-3d  |  image-to-3d", 28)
 typeBox.Text = "text-to-3d"
 
 local btn = Instance.new("TextButton")

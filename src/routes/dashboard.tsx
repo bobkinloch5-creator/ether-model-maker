@@ -80,7 +80,6 @@ export const Route = createFileRoute("/dashboard")({
 
 const TYPE_LABELS: Record<string, { label: string; icon: typeof Box; color: string }> = {
   "image-to-3d": { label: "Image → 3D", icon: ImageIcon, color: "text-blue-400" },
-  "text-to-image": { label: "Text → Image", icon: Sparkles, color: "text-amber-400" },
   retexture: { label: "Re-texture", icon: Palette, color: "text-pink-400" },
 };
 
@@ -770,13 +769,6 @@ function DashboardPage() {
                 cost: CREDIT_COSTS["image-to-3d"],
               },
               {
-                type: "text-to-image" as const,
-                title: "Text to Image",
-                desc: "Generate concept art and textures from a prompt",
-                icon: Sparkles,
-                cost: CREDIT_COSTS["text-to-image"],
-              },
-              {
                 type: "retexture" as const,
                 title: "AI Re-texture",
                 desc: "Re-texture a model with AI-driven PBR materials",
@@ -1381,13 +1373,7 @@ function DashboardPage() {
 
             {/* 3D Viewer Container */}
             <div className="relative aspect-video w-full rounded-xl border border-white/10 bg-black/40 overflow-hidden flex items-center justify-center">
-              {previewGen.generation_type === "text-to-image" ? (
-                <img 
-                  src={(previewGen.result_data?.image_url as string) || "/demo-image.jpg"} 
-                  alt="Generated Image" 
-                  className="w-full h-full object-contain"
-                />
-              ) : previewGen.result_data?.model_url ? (
+              {previewGen.result_data?.model_url ? (
                 <ModelViewer url={previewGen.result_data.model_url as string} prompt={previewGen.prompt} />
               ) : (
                 <div className="flex flex-col items-center justify-center text-muted-foreground">

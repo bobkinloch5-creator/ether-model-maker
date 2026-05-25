@@ -50,7 +50,7 @@ import { ModelViewer } from "@/components/ModelViewer";
 import { toast } from "sonner";
 import { normalizeImageToJpeg } from "@/lib/normalize-image";
 
-type GenType = "image-to-3d" | "retexture" | "text-to-image" | "manual-upload";
+type GenType = "image-to-3d" | "retexture" | "manual-upload";
 
 export const Route = createFileRoute("/generate")({
   head: () => ({
@@ -69,7 +69,7 @@ export const Route = createFileRoute("/generate")({
   }),
   validateSearch: (search: Record<string, unknown>): { type?: GenType; prompt?: string } => {
     const rawType = search.type as string;
-    const validType: GenType | undefined = ["image-to-3d", "retexture", "text-to-image", "manual-upload"].includes(rawType)
+    const validType: GenType | undefined = ["image-to-3d", "retexture", "manual-upload"].includes(rawType)
       ? (rawType as GenType)
       : undefined;
     return {
@@ -157,7 +157,6 @@ function GeneratePage() {
     const base: Record<string, number> = {
       "image-to-3d": 22000,
       "text-to-texture": 14000,
-      "ai-image": 8000,
     };
     const qMult: Record<string, number> = { fast: 0.6, balanced: 1, hd: 1.8 };
     const b = base[selectedType as string] ?? 18000;
@@ -343,7 +342,7 @@ function GeneratePage() {
         created_at: new Date().toISOString(),
       };
 
-      if (selectedType === "image-to-3d" || selectedType === "text-to-image") {
+      if (selectedType === "image-to-3d") {
         // Defer credit deduction until the AI service actually succeeds.
         setCurrentGen(tempGenerationBase);
       } else {
@@ -395,24 +394,6 @@ function GeneratePage() {
       const positiveTail = [styleHints[artStyle], symHint, polyHint, richnessHint, slHints].filter(Boolean).join(", ");
       const negativeTail = combinedNegatives ? ` --no ${combinedNegatives}` : "";
       const composedPrompt = `${finalEnhanced || prompt.trim()}, ${positiveTail}${negativeTail}`;
-
-      if (selectedType === "text-to-image") {
-        try {
-          const { generateAIImage } = await import("@/lib/ai-image.functions");
-          const res = await generateAIImage({
-            data: { prompt: composedPrompt },
-          });
-          if (res.ok) {
-            imageUrl = res.imageUrl;
-            generationMethod = "lovable-ai";
-          } else {
-            setError(res.error);
-          }
-        } catch (e: any) {
-          console.warn("AI image gen failed:", e);
-          setError(`Image generation failed: ${e.message || e}`);
-        }
-      }
 
       let hfError: string | null = null;
       if (selectedType === "image-to-3d") {
@@ -493,15 +474,6 @@ function GeneratePage() {
         const reason = hfError || "3D generation service is unavailable. Please try again.";
         setError(reason);
         toast.error("3D generation failed", {
-          description: reason.slice(0, 600),
-          duration: 12000,
-        });
-
-      } else if (selectedType === "text-to-image" && !imageUrl) {
-        // AI image generation failed — do not charge, do not create a row.
-        setCurrentGen(null);
-        const reason = error || "Image generation service is unavailable. Please try again.";
-        toast.error("Image generation failed", {
           description: reason.slice(0, 600),
           duration: 12000,
         });
@@ -2036,8 +2008,7 @@ function GeneratePage() {
                         <Sparkles className="h-3.5 w-3.5" /> Details
                       </button>
                     </div>
-                    {currentGen.generation_type !== "text-to-image" && (
-                      <div className="flex gap-1">
+                    <div className="flex gap-1">
                         <button
                           onClick={() => setIsRotating(!isRotating)}
                           className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground transition"
@@ -2052,20 +2023,13 @@ function GeneratePage() {
                           <ZoomIn className="h-4 w-4" />
                         </button>
                       </div>
-                    )}
                   </div>
 
                   {/* Preview content */}
                   <div className="relative aspect-video flex items-center justify-center bg-black/40">
                     {previewMode === "3d" ? (
                       <div className="absolute inset-0 flex items-center justify-center">
-                        {currentGen.generation_type === "text-to-image" ? (
-                           <img 
-                             src={(currentGen.result_data?.image_url as string) || "/demo-image.jpg"} 
-                             alt="Generated Image" 
-                             className="w-full h-full object-contain"
-                           />
-                        ) : currentGen.result_data?.model_url || currentGen.status === "completed" ? (
+                        {currentGen.result_data?.model_url || currentGen.status === "completed" ? (
                           <ModelViewer url={(currentGen.result_data?.model_url as string) || "__procedural__"} prompt={currentGen.prompt} />
                         ) : (
                           <div className="flex h-full items-center justify-center text-muted-foreground">
@@ -2119,22 +2083,7 @@ function GeneratePage() {
 
                 {/* Action buttons with multiple format options */}
                 <div className="mt-4 space-y-3">
-                  {currentGen.generation_type === "text-to-image" ? (
-                    <>
-                      <button
-                        onClick={downloadImage}
-                        className="flex w-full items-center justify-center gap-2 h-11 rounded-xl bg-[var(--gradient-primary)] text-sm font-medium text-white transition hover:opacity-95"
-                      >
-                        <Download className="h-4 w-4" /> Download Image
-                      </button>
-                      <button
-                        onClick={downloadTexture}
-                        className="flex w-full items-center justify-center gap-2 h-9 rounded-xl border border-white/10 bg-white/5 text-xs font-medium text-muted-foreground transition hover:bg-white/10"
-                      >
-                        <Layers className="h-3.5 w-3.5" /> Download as Texture
-                      </button>
-                    </>
-                  ) : currentGen.generation_type === "manual-upload" ? (
+                  {currentGen.generation_type === "manual-upload" ? (
                     <div className="space-y-3">
                       <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Imported Colab Files:</div>
                       {((currentGen.result_data as any)?.files || []).map((file: { name: string; url: string }) => (
@@ -2393,7 +2342,7 @@ function GeneratePage() {
               <h3 className="font-display text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
                 Credit costs
               </h3>
-              <div className="grid gap-3 grid-cols-3">
+              <div className="grid gap-3 grid-cols-2">
                 <div className="flex items-center gap-2.5">
                   <div className="grid h-9 w-9 place-items-center rounded-lg bg-blue-400/10 border border-blue-400/20">
                     <ImageIcon className="h-4 w-4 text-blue-400" />
@@ -2409,15 +2358,6 @@ function GeneratePage() {
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs font-medium truncate">Re-texture</p>
-                    <p className="text-[11px] text-muted-foreground">1 credit</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <div className="grid h-9 w-9 place-items-center rounded-lg bg-amber-400/10 border border-amber-400/20">
-                    <Sparkles className="h-4 w-4 text-amber-400" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-medium truncate">Text → Image</p>
                     <p className="text-[11px] text-muted-foreground">1 credit</p>
                   </div>
                 </div>
