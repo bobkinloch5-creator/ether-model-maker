@@ -222,116 +222,132 @@ export function ModelViewer({ url, prompt }: ModelViewerProps) {
             scene.background = null;
           }}
         >
-          <PerformanceMonitor
-            onIncline={() => setPerfTier("high")}
-            onDecline={() => setPerfTier("low")}
-            flipflops={3}
-          />
-          <AdaptiveDpr pixelated />
-          <AdaptiveEvents />
-          {/* Bake static shadows once instead of recomputing every frame */}
-          <BakeShadows />
-          {/* Studio key + fill + rim, dialled to flatter PBR materials */}
-          <ambientLight intensity={0.35} />
-          <directionalLight
-            castShadow
-            position={[4, 6, 3]}
-            intensity={2.2}
-            shadow-mapSize-width={shadowMapSize}
-            shadow-mapSize-height={shadowMapSize}
-            shadow-bias={-0.0001}
-            shadow-camera-near={0.5}
-            shadow-camera-far={20}
-            shadow-camera-left={-5}
-            shadow-camera-right={5}
-            shadow-camera-top={5}
-            shadow-camera-bottom={-5}
-          />
-          <directionalLight position={[-4, 3, -2]} intensity={0.7} color="#a5c4ff" />
-          <directionalLight position={[0, 2, -5]} intensity={0.5} color="#ffd1a8" />
+      {!initial.webgl || contextLost ? (
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/75 backdrop-blur-sm p-6 text-center">
+          <AlertTriangle className="h-10 w-10 text-amber-300 mb-3" />
+          <h3 className="font-semibold text-foreground text-sm tracking-wide">3D preview unavailable</h3>
+          <p className="mt-1.5 text-xs text-muted-foreground max-w-xs leading-relaxed">
+            {contextLost
+              ? "Your GPU dropped the 3D context. Refresh the page or download the model to view it locally."
+              : "Your browser/device doesn't support WebGL. Try a different browser or download the model file."}
+          </p>
+        </div>
+      ) : (
+        <Suspense
+          fallback={
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/20 backdrop-blur-sm">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <p className="mt-2 text-xs text-muted-foreground">Loading 3D model…</p>
+            </div>
+          }
+        >
+          <Canvas
+            shadows={shadowsEnabled}
+            dpr={dpr}
+            frameloop={autoRotate ? "always" : "demand"}
+            gl={{
+              antialias,
+              alpha: true,
+              powerPreference: perfTier === "low" ? "low-power" : "high-performance",
+              preserveDrawingBuffer: false,
+              toneMapping: THREE.ACESFilmicToneMapping,
+              toneMappingExposure: 1.18,
+              failIfMajorPerformanceCaveat: false,
+            }}
+            camera={{ position: [2.4, 1.6, 3.4], fov: 38, near: 0.05, far: 100 }}
+            onCreated={({ gl, scene }) => {
+              if (shadowsEnabled) {
+                gl.shadowMap.enabled = true;
+                gl.shadowMap.type = THREE.PCFSoftShadowMap;
+              } else {
+                gl.shadowMap.enabled = false;
+              }
+              gl.outputColorSpace = THREE.SRGBColorSpace;
+              (scene as any).environmentIntensity = 1.15;
+              scene.background = null;
+              const canvas = gl.domElement;
+              const onLost = (e: Event) => {
+                e.preventDefault();
+                setContextLost(true);
+              };
+              canvas.addEventListener("webglcontextlost", onLost as any, false);
+            }}
+          >
+            <PerformanceMonitor
+              onIncline={() => setPerfTier((t) => (t === "low" ? "medium" : "high"))}
+              onDecline={() => setPerfTier((t) => (t === "high" ? "medium" : "low"))}
+              flipflops={3}
+            />
+            <AdaptiveDpr pixelated />
+            <AdaptiveEvents />
+            {shadowsEnabled && <BakeShadows />}
+            <ambientLight intensity={perfTier === "low" ? 0.55 : 0.35} />
+            <directionalLight
+              castShadow={shadowsEnabled}
+              position={[4, 6, 3]}
+              intensity={2.2}
+              shadow-mapSize-width={shadowMapSize}
+              shadow-mapSize-height={shadowMapSize}
+              shadow-bias={-0.0001}
+              shadow-camera-near={0.5}
+              shadow-camera-far={20}
+              shadow-camera-left={-5}
+              shadow-camera-right={5}
+              shadow-camera-top={5}
+              shadow-camera-bottom={-5}
+            />
+            <directionalLight position={[-4, 3, -2]} intensity={0.7} color="#a5c4ff" />
+            {perfTier !== "low" && (
+              <directionalLight position={[0, 2, -5]} intensity={0.5} color="#ffd1a8" />
+            )}
 
-          <Environment preset={envPreset} background={false} />
+            <Environment
+              preset={envPreset}
+              background={false}
+              resolution={perfTier === "high" ? 256 : perfTier === "medium" ? 128 : 64}
+            />
 
-          <Bounds fit clip observe margin={1.2}>
-            <Center>
-              {isProcedural && prompt ? (
-                <ProceduralWrapper prompt={prompt} wireframe={wireframe} />
-              ) : isRealModel && isGltf ? (
-                <Model url={url} playAnimations={playAnims} wireframe={wireframe} />
-              ) : prompt ? (
-                <ProceduralWrapper prompt={prompt} wireframe={wireframe} />
-              ) : null}
-            </Center>
-            <AutoFrame trigger={`${url}|${prompt}`} />
-          </Bounds>
+            <Bounds fit clip observe margin={1.2}>
+              <Center>
+                {isProcedural && prompt ? (
+                  <ProceduralWrapper prompt={prompt} wireframe={wireframe} />
+                ) : isRealModel && isGltf ? (
+                  <Model url={url} playAnimations={playAnims} wireframe={wireframe} />
+                ) : prompt ? (
+                  <ProceduralWrapper prompt={prompt} wireframe={wireframe} />
+                ) : null}
+              </Center>
+              <AutoFrame trigger={`${url}|${prompt}`} />
+            </Bounds>
 
-          {/* Soft grounded contact shadow — single pass, GPU-cheap */}
-          <ContactShadows
-            position={[0, -1.0, 0]}
-            opacity={0.6}
-            scale={10}
-            blur={2.4}
-            far={4}
-            resolution={isMobile ? 384 : perfTier === "high" ? 768 : 512}
-            color="#000000"
-            frames={1}
-          />
+            <ContactShadows
+              position={[0, -1.0, 0]}
+              opacity={perfTier === "low" ? 0.35 : 0.6}
+              scale={10}
+              blur={2.4}
+              far={4}
+              resolution={contactShadowRes}
+              color="#000000"
+              frames={1}
+            />
 
-
-          <OrbitControls
-            ref={controlsRef}
-            makeDefault
-            autoRotate={autoRotate}
-            autoRotateSpeed={1.4}
-            enablePan
-            enableDamping
-            dampingFactor={0.08}
-            minDistance={0.5}
-            maxDistance={20}
-            zoomSpeed={0.8}
-            rotateSpeed={0.9}
-            touches={{ ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN }}
-          />
-        </Canvas>
-      </Suspense>
-
-      {/* Controls Overlay — desktop top-right, mobile glassy bottom dock */}
-      <div className="absolute top-3 right-3 z-10 hidden sm:flex flex-col gap-2">
-        <ViewerBtn active={wireframe} onClick={() => setWireframe(!wireframe)} title="Wireframe">
-          <Grid className="h-4 w-4" />
-        </ViewerBtn>
-        <ViewerBtn active={autoRotate} onClick={() => setAutoRotate(!autoRotate)} title="Auto-rotate">
-          <RotateCw className={`h-4 w-4 ${autoRotate ? "animate-spin" : ""}`} style={{ animationDuration: "4s" }} />
-        </ViewerBtn>
-        <ViewerBtn onClick={cycleEnv} title={`Lighting: ${envPreset}`}>
-          <Aperture className="h-4 w-4" />
-        </ViewerBtn>
-        <ViewerBtn active={dark} onClick={() => setDark(!dark)} title="Backdrop">
-          {dark ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-        </ViewerBtn>
-        <ViewerBtn onClick={recenter} title="Recenter">
-          <Maximize2 className="h-4 w-4" />
-        </ViewerBtn>
-      </div>
-
-      {/* Mobile bottom dock */}
-      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex sm:hidden gap-1.5 rounded-2xl border border-white/15 bg-black/55 backdrop-blur-xl px-2 py-1.5 shadow-2xl">
-        <ViewerBtn active={wireframe} onClick={() => setWireframe(!wireframe)} title="Wireframe" small>
-          <Grid className="h-4 w-4" />
-        </ViewerBtn>
-        <ViewerBtn active={autoRotate} onClick={() => setAutoRotate(!autoRotate)} title="Auto-rotate" small>
-          <RotateCw className="h-4 w-4" />
-        </ViewerBtn>
-        <ViewerBtn onClick={cycleEnv} title="Lighting" small>
-          <Aperture className="h-4 w-4" />
-        </ViewerBtn>
-        <ViewerBtn active={dark} onClick={() => setDark(!dark)} title="Backdrop" small>
-          {dark ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-        </ViewerBtn>
-        <ViewerBtn onClick={recenter} title="Recenter" small>
-          <Maximize2 className="h-4 w-4" />
-        </ViewerBtn>
-      </div>
+            <OrbitControls
+              ref={controlsRef}
+              makeDefault
+              autoRotate={autoRotate}
+              autoRotateSpeed={1.4}
+              enablePan
+              enableDamping
+              dampingFactor={0.08}
+              minDistance={0.5}
+              maxDistance={20}
+              zoomSpeed={0.8}
+              rotateSpeed={0.9}
+              touches={{ ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN }}
+            />
+          </Canvas>
+        </Suspense>
+      )}
 
       {/* Desktop interaction hint */}
       <div className="absolute bottom-3 left-0 right-0 hidden sm:flex justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300">
