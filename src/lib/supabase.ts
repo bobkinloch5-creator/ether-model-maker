@@ -83,7 +83,7 @@ export interface Generation {
   project_id: string | null;
   prompt: string;
   enhanced_prompt: string | null;
-  generation_type: "image-to-3d" | "retexture" | "text-to-image";
+  generation_type: "image-to-3d" | "retexture";
   status: "pending" | "processing" | "completed" | "failed";
   result_data: Record<string, unknown>;
   credits_used: number;
@@ -102,7 +102,6 @@ export interface ApiKey {
 
 export const CREDIT_COSTS: Record<string, number> = {
   "image-to-3d": 3,
-  "text-to-image": 1,
   retexture: 1,
   "manual-upload": 0,
 };

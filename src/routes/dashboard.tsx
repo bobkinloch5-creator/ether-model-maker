@@ -80,7 +80,6 @@ export const Route = createFileRoute("/dashboard")({
 
 const TYPE_LABELS: Record<string, { label: string; icon: typeof Box; color: string }> = {
   "image-to-3d": { label: "Image → 3D", icon: ImageIcon, color: "text-blue-400" },
-  "text-to-image": { label: "Text → Image", icon: Sparkles, color: "text-amber-400" },
   retexture: { label: "Re-texture", icon: Palette, color: "text-pink-400" },
 };
 

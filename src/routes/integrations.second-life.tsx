@@ -82,7 +82,6 @@ default {
         owner_say("  /key <API_KEY>            — set your API key");
         owner_say("  /3d <prompt>              — text-to-3D");
         owner_say("  /img <URL> | <prompt>     — image-to-3D (paste an https image URL)");
-        owner_say("  /tex <prompt>             — text-to-image");
         owner_say("  /balance                  — show your credit balance");
         owner_say("  /history                  — list recent generations");
     }
@@ -113,12 +112,6 @@ default {
         if (llSubStringIndex(msg, "/3d ") == 0) {
             string p = llGetSubString(msg, 4, -1);
             post_create("text-to-3d", p, "");
-            return;
-        }
-
-        if (llSubStringIndex(msg, "/tex ") == 0) {
-            string p = llGetSubString(msg, 5, -1);
-            post_create("text-to-image", p, "");
             return;
         }
 
@@ -248,7 +241,7 @@ function SecondLifePage() {
             <p>2. Generate from text: <code className="text-foreground">/42 /3d a stone gargoyle</code></p>
             <p>3. Generate from an image (paste any https URL): <code className="text-foreground">/42 /img https://i.imgur.com/abc.jpg | gothic gargoyle</code></p>
             <p>4. Check balance / history: <code className="text-foreground">/42 /balance</code> · <code className="text-foreground">/42 /history</code></p>
-            <p className="pt-2 text-xs">Credits are deducted exactly as they are on the website (image-to-3D = 3, text-to-3D = 2, text-to-image = 1). Owners are unlimited.</p>
+            <p className="pt-2 text-xs">Credits are deducted exactly as they are on the website (image-to-3D = 3, text-to-3D = 2). Owners are unlimited.</p>
           </div>
         </section>
 

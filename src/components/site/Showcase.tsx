@@ -37,8 +37,8 @@ export function Showcase() {
           {items.map((it, i) => (
             <Link
               key={i}
-              to="/generate"
-              search={{ type: "text-to-image", prompt: it.prompt } as never}
+            to="/generate"
+              search={{ type: "image-to-3d", prompt: it.prompt } as never}
               className="group relative block overflow-hidden rounded-2xl border border-white/10 bg-card aspect-square focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               aria-label={`Try this prompt: ${it.prompt}`}
             >
