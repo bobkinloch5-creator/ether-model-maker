@@ -1028,6 +1028,9 @@ function GeneratePage() {
         <div className="mb-8">
           <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground backdrop-blur">
             <Zap className="h-3 w-3 text-primary-glow" /> AI-Powered Workspace
+            <span className="inline-flex items-center rounded-full bg-primary/15 border border-primary/30 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-primary-glow ml-1">
+              Beta
+            </span>
           </div>
           <h1 className="mt-3 font-display text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.05]">
             <span className="gradient-text">Generate</span> a 3D asset
