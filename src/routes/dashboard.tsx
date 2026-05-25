@@ -543,6 +543,9 @@ function DashboardPage() {
               <span className="font-display text-base font-semibold tracking-tight">
                 KingDavez<span className="text-muted-foreground">.studio</span>
               </span>
+              <span className="inline-flex items-center rounded-full bg-primary/15 border border-primary/30 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-primary-glow">
+                Beta
+              </span>
             </Link>
 
             <div className="flex items-center gap-3">
