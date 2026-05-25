@@ -20,15 +20,15 @@ import {
 export const Route = createFileRoute("/signup")({
   head: () => ({
     meta: [
-      { title: "Sign Up — Get 25 Free Credits for AI 3D Generation | KingDavez Studios (Beta)" },
+      { title: "Sign Up — 25 Free AI 3D Credits | KingDavez" },
       {
         name: "description",
         content:
-          "Create your free KingDavez Studios account and get 25 free credits to start generating AI 3D models, PBR textures, and game-ready meshes instantly.",
+          "Create a free KingDavez Studios account and get 25 credits to generate AI 3D models, PBR textures, and game-ready meshes.",
       },
       { name: "keywords", content: "AI 3D generator free trial, free 3D model generator, text to 3D free, Second Life mesh creator, PBR texture AI" },
-      { property: "og:title", content: "Sign Up — Get 25 Free Credits for AI 3D Generation | KingDavez Studios" },
-      { property: "og:description", content: "Create a free account and get 25 credits to generate AI 3D models and textures." },
+      { property: "og:title", content: "Sign Up — 25 Free AI 3D Credits" },
+      { property: "og:description", content: "Free account, 25 credits to generate AI 3D models and textures." },
       { property: "og:url", content: "https://kingdavez.click/signup" },
       { name: "robots", content: "noindex,nofollow" },
     ],
