@@ -1680,14 +1680,18 @@ export const generateLocal3D = createServerFn({ method: "POST" })
       const uploadedPath = uploadJson[0];
       console.log("[3D GEN / server] uploaded path:", uploadedPath);
 
-      // Step 1: preprocess (fn_index 1)
+      // Step 1: preprocess (fn_index 2)
       console.log("[3D GEN / server] preprocessing…");
       const preprocessRes = await fetch(`${spaceUrl}/run/predict`, {
         method: "POST",
         headers: { ...headers, "Content-Type": "application/json" },
         body: JSON.stringify({
-          fn_index: 1,
-          data: [{ path: uploadedPath }, true, 0.85],
+          fn_index: 2,
+          data: [
+            { path: uploadedPath, url: null, size: null, orig_name: "image.png", mime_type: mimeType },
+            true,
+            0.85,
+          ],
         }),
         signal: AbortSignal.timeout(120_000),
       });
@@ -1699,7 +1703,7 @@ export const generateLocal3D = createServerFn({ method: "POST" })
       // Step 2: generate (fn_index 3)
       const generateBody = {
         fn_index: 3,
-        data: [processedFile, 256.0],
+        data: [processedFile, 256],
       };
       console.log("[3D GEN / server] generate body:", JSON.stringify(generateBody));
       const generateRes = await fetch(`${spaceUrl}/run/predict`, {
