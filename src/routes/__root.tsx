@@ -147,6 +147,38 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  // Auto-recover from stale deploy chunks ("Failed to fetch dynamically imported module").
+  // After a deploy, the user's open tab references hashed chunks that no longer exist.
+  // We reload once (guarded by sessionStorage) so the user gets the fresh bundle.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const isChunkError = (msg: string) =>
+      /Failed to fetch dynamically imported module|Importing a module script failed|ChunkLoadError|error loading dynamically imported module/i.test(
+        msg,
+      );
+    const reloadOnce = () => {
+      const key = "kd_chunk_reload_ts";
+      const last = Number(sessionStorage.getItem(key) ?? 0);
+      if (Date.now() - last < 10_000) return; // avoid loops
+      sessionStorage.setItem(key, String(Date.now()));
+      window.location.reload();
+    };
+    const onRej = (e: PromiseRejectionEvent) => {
+      const msg = String(e.reason?.message ?? e.reason ?? "");
+      if (isChunkError(msg)) reloadOnce();
+    };
+    const onErr = (e: ErrorEvent) => {
+      if (isChunkError(e.message)) reloadOnce();
+    };
+    window.addEventListener("unhandledrejection", onRej);
+    window.addEventListener("error", onErr);
+    return () => {
+      window.removeEventListener("unhandledrejection", onRej);
+      window.removeEventListener("error", onErr);
+    };
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
