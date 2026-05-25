@@ -92,12 +92,6 @@ const TYPES: { key: GenType; label: string; icon: typeof Box; desc: string }[] =
     icon: Palette,
     desc: "Re-texture an existing model with AI",
   },
-  {
-    key: "retexture",
-    label: "Re-texture",
-    icon: Palette,
-    desc: "Re-texture an existing model with AI",
-  },
 ];
 
 function GeneratePage() {
