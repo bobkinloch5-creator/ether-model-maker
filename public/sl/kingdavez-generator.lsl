@@ -79,7 +79,6 @@ string modeLabel()
 {
     if (GEN_TYPE == "text-to-3d")    return "Text -> 3D";
     if (GEN_TYPE == "image-to-3d")   return "Image -> 3D";
-    if (GEN_TYPE == "text-to-image") return "Text -> Image";
     if (GEN_TYPE == "retexture")     return "Retexture";
     return GEN_TYPE;
 }
@@ -126,7 +125,7 @@ showModeMenu(key user)
     dlgListen = llListen(DLG_CHAN, "", user, "");
     llDialog(user,
         "Pick generation mode:",
-        ["Text->3D", "Image->3D", "Text->Img", "Retex", "<- Back"],
+        ["Text->3D", "Image->3D", "Retex", "<- Back"],
         DLG_CHAN);
 }
 
@@ -242,7 +241,6 @@ default
             else if (msg == "<- Back")   { showMenu(id); return; }
             else if (msg == "Text->3D")  { GEN_TYPE = "text-to-3d";    updateHover(); llInstantMessage(id, "[KingDavez] Mode: Text -> 3D"); }
             else if (msg == "Image->3D") { GEN_TYPE = "image-to-3d";   updateHover(); llInstantMessage(id, "[KingDavez] Mode: Image -> 3D"); }
-            else if (msg == "Text->Img") { GEN_TYPE = "text-to-image"; updateHover(); llInstantMessage(id, "[KingDavez] Mode: Text -> Image"); }
             else if (msg == "Retex")     { GEN_TYPE = "retexture";     updateHover(); llInstantMessage(id, "[KingDavez] Mode: Retexture"); }
             cleanupListens();
             return;
