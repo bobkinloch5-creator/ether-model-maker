@@ -16,7 +16,7 @@ import {
 } from "@react-three/drei";
 import * as THREE from "three";
 import { Suspense, useState, useEffect, useRef, useMemo } from "react";
-import { Loader2, RotateCw, Grid, Maximize2, Sun, Moon, Aperture, UploadCloud } from "lucide-react";
+import { Loader2, RotateCw, Grid, Maximize2, Sun, Moon, Aperture, UploadCloud, AlertTriangle } from "lucide-react";
 import { buildProceduralMesh } from "@/lib/procedural";
 
 interface ModelViewerProps {
