@@ -22,7 +22,6 @@ import { Route as GenerateRouteImport } from './routes/generate'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as DocsRouteImport } from './routes/docs'
-import { Route as DiagRouteImport } from './routes/diag'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CreditsRouteImport } from './routes/credits'
 import { Route as CommunityRouteImport } from './routes/community'
@@ -108,11 +107,6 @@ const FaqRoute = FaqRouteImport.update({
 const DocsRoute = DocsRouteImport.update({
   id: '/docs',
   path: '/docs',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DiagRoute = DiagRouteImport.update({
-  id: '/diag',
-  path: '/diag',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -228,7 +222,6 @@ export interface FileRoutesByFullPath {
   '/community': typeof CommunityRouteWithChildren
   '/credits': typeof CreditsRouteWithChildren
   '/dashboard': typeof DashboardRoute
-  '/diag': typeof DiagRoute
   '/docs': typeof DocsRoute
   '/faq': typeof FaqRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -265,7 +258,6 @@ export interface FileRoutesByTo {
   '/community': typeof CommunityRouteWithChildren
   '/credits': typeof CreditsRouteWithChildren
   '/dashboard': typeof DashboardRoute
-  '/diag': typeof DiagRoute
   '/docs': typeof DocsRoute
   '/faq': typeof FaqRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -303,7 +295,6 @@ export interface FileRoutesById {
   '/community': typeof CommunityRouteWithChildren
   '/credits': typeof CreditsRouteWithChildren
   '/dashboard': typeof DashboardRoute
-  '/diag': typeof DiagRoute
   '/docs': typeof DocsRoute
   '/faq': typeof FaqRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -342,7 +333,6 @@ export interface FileRouteTypes {
     | '/community'
     | '/credits'
     | '/dashboard'
-    | '/diag'
     | '/docs'
     | '/faq'
     | '/forgot-password'
@@ -379,7 +369,6 @@ export interface FileRouteTypes {
     | '/community'
     | '/credits'
     | '/dashboard'
-    | '/diag'
     | '/docs'
     | '/faq'
     | '/forgot-password'
@@ -416,7 +405,6 @@ export interface FileRouteTypes {
     | '/community'
     | '/credits'
     | '/dashboard'
-    | '/diag'
     | '/docs'
     | '/faq'
     | '/forgot-password'
@@ -454,7 +442,6 @@ export interface RootRouteChildren {
   CommunityRoute: typeof CommunityRouteWithChildren
   CreditsRoute: typeof CreditsRouteWithChildren
   DashboardRoute: typeof DashboardRoute
-  DiagRoute: typeof DiagRoute
   DocsRoute: typeof DocsRoute
   FaqRoute: typeof FaqRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
@@ -573,13 +560,6 @@ declare module '@tanstack/react-router' {
       path: '/docs'
       fullPath: '/docs'
       preLoaderRoute: typeof DocsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/diag': {
-      id: '/diag'
-      path: '/diag'
-      fullPath: '/diag'
-      preLoaderRoute: typeof DiagRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -772,7 +752,6 @@ const rootRouteChildren: RootRouteChildren = {
   CommunityRoute: CommunityRouteWithChildren,
   CreditsRoute: CreditsRouteWithChildren,
   DashboardRoute: DashboardRoute,
-  DiagRoute: DiagRoute,
   DocsRoute: DocsRoute,
   FaqRoute: FaqRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,

@@ -38,18 +38,21 @@ function LoginPage() {
     }
   }, []);
 
-  // Restore remembered credentials on mount
+  // Restore remembered email on mount (never the password)
   useEffect(() => {
     try {
       const saved = localStorage.getItem("kd_remember");
       if (saved) {
-        const { email: e, password: p } = JSON.parse(saved);
-        if (e) setEmail(e);
-        if (p) setPassword(p);
-        setRememberMe(true);
+        const parsed = JSON.parse(saved);
+        const e = typeof parsed?.email === "string" ? parsed.email : "";
+        if (e) {
+          setEmail(e);
+          setRememberMe(true);
+        }
       }
     } catch {}
   }, []);
+
 
   // Redirect if already logged in
   if (!authLoading && user) {
@@ -80,14 +83,15 @@ function LoginPage() {
       setError(msg);
       setLoading(false);
     } else {
-      // Persist or clear remembered credentials
+      // Persist email only (never the password) or clear
       try {
         if (rememberMe) {
-          localStorage.setItem("kd_remember", JSON.stringify({ email, password }));
+          localStorage.setItem("kd_remember", JSON.stringify({ email }));
         } else {
           localStorage.removeItem("kd_remember");
         }
       } catch {}
+
       navigate({ to: "/dashboard" });
     }
   };

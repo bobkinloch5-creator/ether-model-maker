@@ -40,10 +40,11 @@ function clientIpFromHeaders(req: Request): string | null {
 export const checkSignupAllowed = createServerFn({ method: "POST" })
   .inputValidator((input) =>
     z.object({
-      fingerprint: z.string().min(8).max(128),
+      fingerprint: z.string().regex(/^[a-zA-Z0-9+/=_-]{8,128}$/),
       email: z.string().email().optional(),
     }).parse(input),
   )
+
   .handler(async ({ data }) => {
     // Admin emails always allowed
     if (data.email && getAdminEmails().includes(data.email.toLowerCase())) {
@@ -86,8 +87,9 @@ export const checkSignupAllowed = createServerFn({ method: "POST" })
 // runtime errors when called before the session has fully hydrated.
 export const recordSignupFingerprint = createServerFn({ method: "POST" })
   .inputValidator((input) =>
-    z.object({ fingerprint: z.string().min(8).max(128) }).parse(input),
+    z.object({ fingerprint: z.string().regex(/^[a-zA-Z0-9+/=_-]{8,128}$/) }).parse(input),
   )
+
   .handler(async ({ data }) => {
     // Resolve userId from the bearer token if present; otherwise no-op.
     let userId: string | null = null;
