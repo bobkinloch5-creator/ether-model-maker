@@ -47,7 +47,7 @@ export const generateAIImage = createServerFn({ method: "POST" })
       if (!res.ok) {
         const txt = await res.text();
         if (res.status === 429) return { ok: false as const, error: "Rate limit reached. Please try again shortly." };
-        if (res.status === 402) return { ok: false as const, error: "AI credits exhausted. Add funds in workspace settings." };
+        if (res.status === 402) return { ok: false as const, error: "The site's AI image service is temporarily out of funds. Your credits weren't used — please try again later." };
         return { ok: false as const, error: `AI gateway error ${res.status}: ${txt.slice(0, 200)}` };
       }
 
