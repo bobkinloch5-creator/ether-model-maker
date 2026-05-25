@@ -1,5 +1,5 @@
 import heroBg from "@/assets/hero-bg.jpg";
-import { ArrowRight, Wand2, ImageIcon, Box } from "lucide-react";
+import { ArrowRight, ImageIcon, Box } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -17,7 +17,7 @@ export function Hero() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [value, setValue] = useState("An ornate elven longbow with glowing runes");
-  const [mode, setMode] = useState<"text-to-image" | "image-to-3d">("text-to-image");
+  const [mode] = useState<"image-to-3d">("image-to-3d");
 
   const go = (prompt?: string) => {
     const p = (prompt ?? value).trim();
@@ -80,30 +80,9 @@ export function Hero() {
           <div className="glass rounded-2xl p-2 shadow-[var(--shadow-elegant)]">
             <div className="flex flex-col items-stretch gap-2 rounded-xl bg-black/40 p-2 sm:flex-row sm:items-center">
               <div className="flex items-center gap-1 rounded-lg bg-white/5 p-1 text-xs self-start sm:self-auto">
-                <button
-                  type="button"
-                  onClick={() => setMode("text-to-image")}
-                  aria-pressed={mode === "text-to-image"}
-                  className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 font-medium transition ${
-                    mode === "text-to-image"
-                      ? "bg-[var(--gradient-primary)] text-white"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <Wand2 className="h-3.5 w-3.5" /> {t("hero.text")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setMode("image-to-3d")}
-                  aria-pressed={mode === "image-to-3d"}
-                  className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 font-medium transition ${
-                    mode === "image-to-3d"
-                      ? "bg-[var(--gradient-primary)] text-white"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
+                <span className="inline-flex items-center gap-1.5 rounded-md bg-[var(--gradient-primary)] px-3 py-1.5 font-medium text-white">
                   <ImageIcon className="h-3.5 w-3.5" /> {t("hero.image")}
-                </button>
+                </span>
               </div>
               <input
                 value={value}
