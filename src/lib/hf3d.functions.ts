@@ -1652,22 +1652,33 @@ export const generateLocal3D = createServerFn({ method: "POST" })
     console.log("[3D GEN / server] generateLocal3D entry", {
       hasLOCAL_3D_API_URL: !!localUrl,
       LOCAL_3D_API_URL_prefix: localUrl?.slice(0, 40) || null,
-      hasLocalKey: !!(process.env.LOCAL_3D_API_KEY || process.env.LOCAL_3D_API_PASSWORD),
       userId,
     });
     if (!localUrl) {
       return { ok: false as const, error: "Local 3D URL is not configured (LOCAL_3D_API_URL)." };
     }
     try {
-      const spaceUrl = assertSafeSpaceUrl(normalizeSpaceUrl(localUrl));
-      const localKey = process.env.LOCAL_3D_API_KEY?.trim() || process.env.LOCAL_3D_API_PASSWORD?.trim() || undefined;
-      console.log("[3D GEN / server] calling runTrellisPipeline at", spaceUrl, "withKey=", !!localKey);
-      const result = await runTrellisPipeline(spaceUrl, data.imageDataUrl, localKey, { mcResolution: 256 });
-      console.log("[3D GEN / server] runTrellisPipeline returned fileUrl=", result.fileUrl);
-      return { ok: true as const, modelUrl: result.fileUrl };
+      const spaceUrl = localUrl.replace(/\/$/, "");
+      const base64Image = data.imageDataUrl.split(",")[1] ?? data.imageDataUrl;
+
+      console.log("[3D GEN / server] POST", `${spaceUrl}/run/predict`, "fn_index=1");
+      const response = await fetch(`${spaceUrl}/run/predict`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true",
+        },
+        body: JSON.stringify({ fn_index: 1, data: [base64Image] }),
+        signal: AbortSignal.timeout(300_000),
+      });
+      if (!response.ok) throw new Error(`TripoSR responded with ${response.status}`);
+      const json = await response.json();
+      const modelUrl = json?.data?.[1];
+      if (!modelUrl) throw new Error("TripoSR returned no model URL");
+      return { ok: true as const, modelUrl };
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      console.error("[3D GEN / server] runTrellisPipeline threw:", message);
+      console.error("[3D GEN / server] generateLocal3D threw:", message);
       return { ok: false as const, error: message };
     }
   });
