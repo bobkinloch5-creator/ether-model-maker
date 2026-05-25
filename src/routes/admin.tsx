@@ -552,9 +552,9 @@ function AdminPage() {
                     {visible.map((r) => (
                       <tr key={r.user_id} className={`border-b border-white/5 ${r.diff !== 0 ? "bg-amber-400/[0.04]" : ""}`}>
                         <td className="py-3 pr-4"><div className="font-medium">{r.display_name || "—"}</div><div className="text-xs text-muted-foreground">{r.email}</div></td>
-                        <td className="py-3 pr-4 text-right font-mono">{r.profile_credits.toLocaleString()}</td>
-                        <td className="py-3 pr-4 text-right font-mono">{r.ledger_sum.toLocaleString()}</td>
-                        <td className={`py-3 pr-4 text-right font-mono font-semibold ${r.diff !== 0 ? "text-amber-300" : "text-emerald-400"}`}>{r.diff > 0 ? "+" : ""}{r.diff.toLocaleString()}</td>
+                        <td className="py-3 pr-4 text-right font-mono">{Number(r?.profile_credits ?? 0).toLocaleString()}</td>
+                        <td className="py-3 pr-4 text-right font-mono">{Number(r?.ledger_sum ?? 0).toLocaleString()}</td>
+                        <td className={`py-3 pr-4 text-right font-mono font-semibold ${r.diff !== 0 ? "text-amber-300" : "text-emerald-400"}`}>{r.diff > 0 ? "+" : ""}{Number(r?.diff ?? 0).toLocaleString()}</td>
                       </tr>
                     ))}
                     {visible.length === 0 && (<tr><td colSpan={4} className="py-8 text-center text-sm text-muted-foreground">No mismatches.</td></tr>)}
