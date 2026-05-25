@@ -20,7 +20,7 @@ import {
 export const Route = createFileRoute("/docs")({
   head: () => ({
     meta: [
-      { title: "Docs — AI 3D Generation Guides & API Reference | KingDavez Studios" },
+      { title: "Docs — AI 3D Generation Guides & API Reference | KingDavez Studios (Beta)" },
       {
         name: "description",
         content:
