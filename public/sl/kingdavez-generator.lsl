@@ -5,12 +5,12 @@
 // a vendor, a prim. Touch it to open a menu. From the menu
 // you can:
 //
-//   - Generate     -- type a prompt, queue a 3D / image job
+//   - Generate     -- type a prompt, queue a 3D job
 //   - Set API Key  -- paste your key right from inside SL
 //   - Balance      -- see how many credits you have left
 //   - Sign In      -- opens the KingDavez login page in browser
 //   - Mode         -- switch between text-to-3d, image-to-3d,
-//                     text-to-image, retexture
+//                     retexture
 //   - Help         -- opens the docs page
 //   - Website      -- opens https://www.kingdavez.click
 //
