@@ -9,10 +9,11 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/integrations/second-life")({
   head: () => ({
     meta: [
-      { title: "Second Life — SL-Optimized AI Mesh (DAE/COLLADA) | KingDavez Studios (Beta)" },
-      { name: "description", content: "SL-ready pipeline: low Land Impact, watertight mesh, DAE/COLLADA export, in-world delivery and an in-world LSL HUD that mirrors the website." },
+      { title: "Second Life — AI Mesh & DAE Export | KingDavez" },
+      { name: "description", content: "SL-ready pipeline: low Land Impact, watertight mesh, DAE/COLLADA export, in-world delivery and an LSL HUD that mirrors the website." },
       { property: "og:title", content: "Second Life — AI mesh upload guide" },
       { property: "og:description", content: "Generate 3D models from text or images directly inside Second Life with our LSL HUD." },
+      { property: "og:url", content: "https://kingdavez.click/integrations/second-life" },
     ],
     links: [{ rel: "canonical", href: "https://kingdavez.click/integrations/second-life" }],
   }),
