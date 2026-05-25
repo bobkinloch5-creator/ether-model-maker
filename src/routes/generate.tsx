@@ -87,10 +87,10 @@ const TYPES: { key: GenType; label: string; icon: typeof Box; desc: string }[] =
     desc: "Upload a reference image to reconstruct 3D",
   },
   {
-    key: "text-to-image",
-    label: "Text → Image",
-    icon: ImageIcon,
-    desc: "Generate 2D concept art or textures",
+    key: "retexture",
+    label: "Re-texture",
+    icon: Palette,
+    desc: "Re-texture an existing model with AI",
   },
   {
     key: "retexture",
