@@ -100,7 +100,7 @@ function LocalServerPanel() {
 export const Route = createFileRoute("/settings/backend")({
   head: () => ({
     meta: [
-      { title: "3D Backend Settings — KingDavez Studios" },
+      { title: "3D Backend Settings — KingDavez Studios (Beta)" },
       { name: "description", content: "Switch between TripoSR, TRELLIS, Hunyuan3D, and other AI 3D generation backends. Owner-only infrastructure configuration panel." },
       { name: "robots", content: "noindex,nofollow" },
     ],
