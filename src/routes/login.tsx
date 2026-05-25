@@ -6,7 +6,7 @@ import { Sparkles, Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
 export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
-      { title: "Sign In — KingDavez Studios AI 3D Generator" },
+      { title: "Sign In — KingDavez Studios AI 3D Generator (Beta)" },
       { name: "description", content: "Sign in to your KingDavez Studios account to generate AI 3D models, manage credits, and deliver mesh to Second Life." },
       { property: "og:title", content: "Sign In — KingDavez Studios AI 3D Generator" },
       { property: "og:description", content: "Access your KingDavez Studios account to create AI 3D models and textures." },
