@@ -48,6 +48,7 @@ import {
 } from "lucide-react";
 import { ModelViewer } from "@/components/ModelViewer";
 import { toast } from "sonner";
+import { normalizeImageToJpeg } from "@/lib/normalize-image";
 
 type GenType = "image-to-3d" | "retexture" | "text-to-image" | "manual-upload";
 
