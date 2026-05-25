@@ -54,7 +54,12 @@ function enhanceSceneQuality(scene: THREE.Object3D, anisotropy: number, wirefram
           tex.needsUpdate = true;
         }
       });
-      if (m.envMapIntensity !== undefined) m.envMapIntensity = 1.1;
+      // Punch up PBR look: stronger env reflections, crisper normals, gentler
+      // roughness so albedo textures (like fur) read sharper instead of muddy.
+      if (m.envMapIntensity !== undefined) m.envMapIntensity = 1.45;
+      if (m.normalScale && m.normalScale.set) m.normalScale.set(1.15, 1.15);
+      if (typeof m.roughness === "number") m.roughness = Math.max(0.35, Math.min(m.roughness, 0.92));
+      if (m.aoMapIntensity !== undefined) m.aoMapIntensity = 1.1;
       m.needsUpdate = true;
     });
   });
