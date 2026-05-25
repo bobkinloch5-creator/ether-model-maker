@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
-import { updateProfile, getPurchases, getUserStats, getMyReferrals, applyReferralCode, type Purchase, type ReferralRow } from "@/lib/supabase";
+import { updateProfile, getPurchases, getUserStats, getMyReferrals, applyReferralCode, supabase, type Purchase, type ReferralRow } from "@/lib/supabase";
 import {
   ArrowLeft,
   User,
