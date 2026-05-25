@@ -53,7 +53,7 @@ export function PendingPurchases({ onChange }: { onChange?: () => void }) {
     if (note === null) return;
     setBusyId(p.id);
     setMsg(null);
-    const { error } = await supabase.rpc("admin_reject_purchase", { _purchase_id: p.id, _note: note || null });
+    const { error } = await supabase.rpc("admin_reject_purchase", { _purchase_id: p.id, _note: note || undefined });
     if (error) setMsg(`Error: ${error.message}`);
     else {
       setMsg(`Rejected purchase from ${p.email}`);
