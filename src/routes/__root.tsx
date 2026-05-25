@@ -14,6 +14,8 @@ import { AssistantChat } from "@/components/AssistantChat";
 import { Onboarding } from "@/components/Onboarding";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { Toaster } from "@/components/ui/sonner";
+import "@/lib/i18n";
+import { useEffect } from "react";
 
 import appCss from "../styles.css?url";
 
