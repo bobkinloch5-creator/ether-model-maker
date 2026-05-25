@@ -204,6 +204,12 @@ async function generateImageFromPrompt(prompt: string): Promise<string> {
     }),
   });
   if (!res.ok) {
+    if (res.status === 402) {
+      throw new Error("BACKEND_AI_OUT_OF_FUNDS: The site's AI image service is temporarily out of funds. This is on us, not you — your credits have not been used. Please try again later or contact support.");
+    }
+    if (res.status === 429) {
+      throw new Error("Too many requests right now. Please wait a minute and try again.");
+    }
     throw new Error(`Image generation failed: ${res.status} ${(await res.text()).slice(0, 200)}`);
   }
   const json = (await res.json()) as {
