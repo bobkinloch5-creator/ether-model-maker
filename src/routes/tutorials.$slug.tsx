@@ -281,7 +281,7 @@ function TutorialPage() {
         <p className="mt-4 text-lg text-muted-foreground">{guide.intro}</p>
 
         <div className="mt-12 space-y-10">
-          {guide.sections.map((s) => (
+          {guide.sections.map((s: Guide["sections"][number]) => (
             <section key={s.h}>
               <h2 className="font-display text-2xl font-semibold tracking-tight">{s.h}</h2>
               <p className="mt-3 text-muted-foreground leading-relaxed">{s.body}</p>
@@ -292,7 +292,7 @@ function TutorialPage() {
         <section className="mt-16">
           <h2 className="font-display text-2xl font-semibold tracking-tight">Frequently asked</h2>
           <div className="mt-4 space-y-4">
-            {guide.faqs.map((f) => (
+            {guide.faqs.map((f: Guide["faqs"][number]) => (
               <details key={f.q} className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-sm">
                 <summary className="cursor-pointer font-semibold text-foreground">{f.q}</summary>
                 <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{f.a}</p>

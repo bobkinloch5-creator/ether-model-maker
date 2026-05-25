@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TutorialsRouteImport } from './routes/tutorials'
 import { Route as TosRouteImport } from './routes/tos'
 import { Route as TeamsRouteImport } from './routes/teams'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
@@ -28,6 +29,8 @@ import { Route as CommunityRouteImport } from './routes/community'
 import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TutorialsIndexRouteImport } from './routes/tutorials.index'
+import { Route as TutorialsSlugRouteImport } from './routes/tutorials.$slug'
 import { Route as SettingsBackendRouteImport } from './routes/settings.backend'
 import { Route as IntegrationsWebRouteImport } from './routes/integrations.web'
 import { Route as IntegrationsUnrealRouteImport } from './routes/integrations.unreal'
@@ -44,6 +47,11 @@ import { Route as ApiPublicV1MeRouteImport } from './routes/api/public/v1/me'
 import { Route as ApiPublicV1GenerationsRouteImport } from './routes/api/public/v1/generations'
 import { Route as ApiPublicV1SlUploadRouteImport } from './routes/api/public/v1/sl/upload'
 
+const TutorialsRoute = TutorialsRouteImport.update({
+  id: '/tutorials',
+  path: '/tutorials',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TosRoute = TosRouteImport.update({
   id: '/tos',
   path: '/tos',
@@ -138,6 +146,16 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const TutorialsIndexRoute = TutorialsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => TutorialsRoute,
+} as any)
+const TutorialsSlugRoute = TutorialsSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => TutorialsRoute,
 } as any)
 const SettingsBackendRoute = SettingsBackendRouteImport.update({
   id: '/settings/backend',
@@ -235,6 +253,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/teams': typeof TeamsRoute
   '/tos': typeof TosRoute
+  '/tutorials': typeof TutorialsRouteWithChildren
   '/admin/ledger': typeof AdminLedgerRoute
   '/community/$postId': typeof CommunityPostIdRoute
   '/credits/history': typeof CreditsHistoryRoute
@@ -247,6 +266,8 @@ export interface FileRoutesByFullPath {
   '/integrations/unreal': typeof IntegrationsUnrealRoute
   '/integrations/web': typeof IntegrationsWebRoute
   '/settings/backend': typeof SettingsBackendRoute
+  '/tutorials/$slug': typeof TutorialsSlugRoute
+  '/tutorials/': typeof TutorialsIndexRoute
   '/api/public/v1/generations': typeof ApiPublicV1GenerationsRoute
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
   '/api/public/v1/sl/upload': typeof ApiPublicV1SlUploadRoute
@@ -283,6 +304,8 @@ export interface FileRoutesByTo {
   '/integrations/unreal': typeof IntegrationsUnrealRoute
   '/integrations/web': typeof IntegrationsWebRoute
   '/settings/backend': typeof SettingsBackendRoute
+  '/tutorials/$slug': typeof TutorialsSlugRoute
+  '/tutorials': typeof TutorialsIndexRoute
   '/api/public/v1/generations': typeof ApiPublicV1GenerationsRoute
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
   '/api/public/v1/sl/upload': typeof ApiPublicV1SlUploadRoute
@@ -308,6 +331,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/teams': typeof TeamsRoute
   '/tos': typeof TosRoute
+  '/tutorials': typeof TutorialsRouteWithChildren
   '/admin/ledger': typeof AdminLedgerRoute
   '/community/$postId': typeof CommunityPostIdRoute
   '/credits/history': typeof CreditsHistoryRoute
@@ -320,6 +344,8 @@ export interface FileRoutesById {
   '/integrations/unreal': typeof IntegrationsUnrealRoute
   '/integrations/web': typeof IntegrationsWebRoute
   '/settings/backend': typeof SettingsBackendRoute
+  '/tutorials/$slug': typeof TutorialsSlugRoute
+  '/tutorials/': typeof TutorialsIndexRoute
   '/api/public/v1/generations': typeof ApiPublicV1GenerationsRoute
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
   '/api/public/v1/sl/upload': typeof ApiPublicV1SlUploadRoute
@@ -346,6 +372,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/teams'
     | '/tos'
+    | '/tutorials'
     | '/admin/ledger'
     | '/community/$postId'
     | '/credits/history'
@@ -358,6 +385,8 @@ export interface FileRouteTypes {
     | '/integrations/unreal'
     | '/integrations/web'
     | '/settings/backend'
+    | '/tutorials/$slug'
+    | '/tutorials/'
     | '/api/public/v1/generations'
     | '/api/public/v1/me'
     | '/api/public/v1/sl/upload'
@@ -394,6 +423,8 @@ export interface FileRouteTypes {
     | '/integrations/unreal'
     | '/integrations/web'
     | '/settings/backend'
+    | '/tutorials/$slug'
+    | '/tutorials'
     | '/api/public/v1/generations'
     | '/api/public/v1/me'
     | '/api/public/v1/sl/upload'
@@ -418,6 +449,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/teams'
     | '/tos'
+    | '/tutorials'
     | '/admin/ledger'
     | '/community/$postId'
     | '/credits/history'
@@ -430,6 +462,8 @@ export interface FileRouteTypes {
     | '/integrations/unreal'
     | '/integrations/web'
     | '/settings/backend'
+    | '/tutorials/$slug'
+    | '/tutorials/'
     | '/api/public/v1/generations'
     | '/api/public/v1/me'
     | '/api/public/v1/sl/upload'
@@ -455,6 +489,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TeamsRoute: typeof TeamsRoute
   TosRoute: typeof TosRoute
+  TutorialsRoute: typeof TutorialsRouteWithChildren
   IntegrationsAnywhereRoute: typeof IntegrationsAnywhereRoute
   IntegrationsBlenderRoute: typeof IntegrationsBlenderRoute
   IntegrationsGodotRoute: typeof IntegrationsGodotRoute
@@ -471,6 +506,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tutorials': {
+      id: '/tutorials'
+      path: '/tutorials'
+      fullPath: '/tutorials'
+      preLoaderRoute: typeof TutorialsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tos': {
       id: '/tos'
       path: '/tos'
@@ -603,6 +645,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/tutorials/': {
+      id: '/tutorials/'
+      path: '/'
+      fullPath: '/tutorials/'
+      preLoaderRoute: typeof TutorialsIndexRouteImport
+      parentRoute: typeof TutorialsRoute
+    }
+    '/tutorials/$slug': {
+      id: '/tutorials/$slug'
+      path: '/$slug'
+      fullPath: '/tutorials/$slug'
+      preLoaderRoute: typeof TutorialsSlugRouteImport
+      parentRoute: typeof TutorialsRoute
     }
     '/settings/backend': {
       id: '/settings/backend'
@@ -745,6 +801,20 @@ const CreditsRouteChildren: CreditsRouteChildren = {
 const CreditsRouteWithChildren =
   CreditsRoute._addFileChildren(CreditsRouteChildren)
 
+interface TutorialsRouteChildren {
+  TutorialsSlugRoute: typeof TutorialsSlugRoute
+  TutorialsIndexRoute: typeof TutorialsIndexRoute
+}
+
+const TutorialsRouteChildren: TutorialsRouteChildren = {
+  TutorialsSlugRoute: TutorialsSlugRoute,
+  TutorialsIndexRoute: TutorialsIndexRoute,
+}
+
+const TutorialsRouteWithChildren = TutorialsRoute._addFileChildren(
+  TutorialsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
@@ -765,6 +835,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TeamsRoute: TeamsRoute,
   TosRoute: TosRoute,
+  TutorialsRoute: TutorialsRouteWithChildren,
   IntegrationsAnywhereRoute: IntegrationsAnywhereRoute,
   IntegrationsBlenderRoute: IntegrationsBlenderRoute,
   IntegrationsGodotRoute: IntegrationsGodotRoute,
