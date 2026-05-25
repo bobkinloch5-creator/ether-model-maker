@@ -44,6 +44,7 @@ export function Header() {
             <Link to="/community" className="hover:text-foreground transition">Community</Link>
             <Link to="/second-life" className="hover:text-foreground transition">Second Life</Link>
             <Link to="/" hash="integrations" className="hover:text-foreground transition">Integrations</Link>
+            <Link to="/tutorials" className="hover:text-foreground transition">Tutorials</Link>
             <Link to="/docs" className="hover:text-foreground transition">Docs</Link>
             <Link to="/roadmap" className="hover:text-foreground transition">Roadmap</Link>
             <Link to="/changelog" className="hover:text-foreground transition">What's New</Link>
@@ -128,6 +129,7 @@ export function Header() {
                 <MobileLink to="/credits" onClick={closeMenu} icon={<Coins className="h-4 w-4" />} label="Credits" />
                 <MobileLink to="/teams" onClick={closeMenu} icon={<Users className="h-4 w-4" />} label="Teams" />
                 <MobileLink to="/profile" onClick={closeMenu} icon={<User className="h-4 w-4" />} label="Profile" />
+                <MobileLink to="/tutorials" onClick={closeMenu} icon={<Sparkles className="h-4 w-4" />} label="Tutorials" />
                 <MobileLink to="/second-life" onClick={closeMenu} icon={<Sparkles className="h-4 w-4" />} label="Second Life" />
                 <MobileLink to="/integrations/blender" onClick={closeMenu} icon={<Sparkles className="h-4 w-4" />} label="Blender add-on" />
                 <MobileLink to="/integrations/roblox" onClick={closeMenu} icon={<Sparkles className="h-4 w-4" />} label="Roblox plugin" />
