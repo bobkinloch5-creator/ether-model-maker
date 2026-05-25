@@ -14,16 +14,16 @@ import { Footer } from "@/components/site/Footer";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "KingDavez Studios — AI 3D Model & Texture Generator for Blender, Unity, Roblox & More (Beta)" },
+      { title: "KingDavez Studios — AI 3D Model & Texture Generator" },
       {
         name: "description",
         content:
-          "AI text-to-3D, image-to-3D, and PBR texture generation. Export GLB / OBJ / FBX / DAE to Blender, Unity, Unreal, Godot, Roblox, Three.js, and Second Life — anywhere you build.",
+          "AI text-to-3D, image-to-3D and PBR textures. Export GLB/OBJ/FBX to Blender, Unity, Unreal, Godot, Roblox and Second Life.",
       },
-      { property: "og:title", content: "KingDavez Studios — AI 3D for Blender, Unity, Roblox, Second Life & more" },
+      { property: "og:title", content: "KingDavez Studios — AI 3D Model & Texture Generator" },
       {
         property: "og:description",
-        content: "Text-to-3D, image-to-3D, and PBR textures in seconds. Plug straight into Blender, Unity, Unreal, Godot, Roblox, Three.js, Second Life.",
+        content: "Text-to-3D, image-to-3D and PBR textures in seconds. Export to Blender, Unity, Unreal, Godot, Roblox and Second Life.",
       },
       { property: "og:url", content: "https://kingdavez.click/" },
       { name: "twitter:title", content: "KingDavez Studios — AI 3D for every engine" },

@@ -20,14 +20,14 @@ import {
 export const Route = createFileRoute("/docs")({
   head: () => ({
     meta: [
-      { title: "Docs — AI 3D Generation Guides & API Reference | KingDavez Studios (Beta)" },
+      { title: "Docs — AI 3D Generation Guides & API Reference" },
       {
         name: "description",
         content:
           "Complete documentation for KingDavez Studios: text-to-3D, image-to-3D, PBR textures, REST API, Second Life integration, credits, teams and more.",
       },
       { name: "keywords", content: "AI 3D documentation, text to 3D guide, image to 3D tutorial, PBR texture guide, Second Life API, 3D model API reference, GLB export guide" },
-      { property: "og:title", content: "Docs — AI 3D Generation Guides & API Reference | KingDavez Studios" },
+      { property: "og:title", content: "Docs — AI 3D Generation Guides & API Reference" },
       {
         property: "og:description",
         content:

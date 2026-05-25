@@ -12,6 +12,7 @@ export const Route = createFileRoute("/community")({
       { name: "description", content: "Browse 3D models, textures, and concept art shared by the KingDavez community. Like, comment, and remix." },
       { property: "og:title", content: "Community Showcase — KingDavez Studios" },
       { property: "og:description", content: "Browse 3D models and concept art shared by the community." },
+      { property: "og:url", content: "https://kingdavez.click/community" },
     ],
     links: [{ rel: "canonical", href: "https://kingdavez.click/community" }],
   }),
