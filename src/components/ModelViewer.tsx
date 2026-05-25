@@ -225,31 +225,18 @@ export function ModelViewer({ url, prompt }: ModelViewerProps) {
             <AutoFrame trigger={`${url}|${prompt}`} />
           </Bounds>
 
-          {/* Soft grounded contact shadow */}
+          {/* Soft grounded contact shadow — single pass, GPU-cheap */}
           <ContactShadows
             position={[0, -1.0, 0]}
-            opacity={0.55}
+            opacity={0.6}
             scale={10}
-            blur={2.6}
+            blur={2.4}
             far={4}
-            resolution={isMobile ? 512 : 1024}
+            resolution={isMobile ? 384 : perfTier === "high" ? 768 : 512}
             color="#000000"
+            frames={1}
           />
 
-          {/* Stacked accumulative shadow for premium feel on desktop only */}
-          {!isMobile && (
-            <AccumulativeShadows
-              temporal
-              frames={60}
-              alphaTest={0.85}
-              scale={10}
-              position={[0, -0.99, 0]}
-              color="#1a1a2e"
-              opacity={0.5}
-            >
-              <RandomizedLight amount={6} radius={5} intensity={1.1} ambient={0.25} position={[4, 6, 3]} />
-            </AccumulativeShadows>
-          )}
 
           <OrbitControls
             ref={controlsRef}
