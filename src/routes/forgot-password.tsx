@@ -6,7 +6,7 @@ import { Sparkles, Mail, ArrowRight, Loader2, CheckCircle2 } from "lucide-react"
 export const Route = createFileRoute("/forgot-password")({
   head: () => ({
     meta: [
-      { title: "Forgot Password — KingDavez Studios" },
+      { title: "Forgot Password — KingDavez Studios (Beta)" },
       { name: "description", content: "Reset your KingDavez Studios account password securely. We'll send you an email with instructions to get back into your AI 3D generation dashboard." },
       { property: "og:title", content: "Forgot Password — KingDavez Studios" },
       { property: "og:description", content: "Reset your KingDavez Studios account password." },

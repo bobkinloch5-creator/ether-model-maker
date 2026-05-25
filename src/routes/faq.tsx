@@ -28,7 +28,7 @@ const FAQS = [
 export const Route = createFileRoute("/faq")({
   head: () => ({
     meta: [
-      { title: "FAQ — KingDavez Studios AI 3D Generator" },
+      { title: "FAQ — KingDavez Studios AI 3D Generator (Beta)" },
       { name: "description", content: "How AI 3D generation, credits, exports, and Second Life delivery work at KingDavez Studios." },
       { property: "og:title", content: "FAQ — KingDavez Studios" },
       { property: "og:description", content: "Answers about credits, exports, Second Life delivery, and ownership." },

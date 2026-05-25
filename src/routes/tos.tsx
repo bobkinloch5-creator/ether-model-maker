@@ -5,7 +5,7 @@ import { Footer } from "@/components/site/Footer";
 export const Route = createFileRoute("/tos")({
   head: () => ({
     meta: [
-      { title: "Terms of Service — KingDavez Studios" },
+      { title: "Terms of Service — KingDavez Studios (Beta)" },
       { name: "description", content: "Terms of service for KingDavez Studios — usage rights, ownership, and account policies for AI 3D generation." },
       { property: "og:title", content: "Terms of Service — KingDavez Studios" },
       { property: "og:description", content: "Usage, ownership, and account policies." },

@@ -31,7 +31,7 @@ import { PromoManager } from "@/components/admin/PromoManager";
 export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
-      { title: "Admin Panel — KingDavez Studios" },
+      { title: "Admin Panel — KingDavez Studios (Beta)" },
       { name: "description", content: "Owner-only admin control panel." },
       { name: "robots", content: "noindex,nofollow" },
     ],
