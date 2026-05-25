@@ -2008,8 +2008,7 @@ function GeneratePage() {
                         <Sparkles className="h-3.5 w-3.5" /> Details
                       </button>
                     </div>
-                    {currentGen.generation_type !== "text-to-image" && (
-                      <div className="flex gap-1">
+                    <div className="flex gap-1">
                         <button
                           onClick={() => setIsRotating(!isRotating)}
                           className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground transition"
@@ -2024,20 +2023,13 @@ function GeneratePage() {
                           <ZoomIn className="h-4 w-4" />
                         </button>
                       </div>
-                    )}
                   </div>
 
                   {/* Preview content */}
                   <div className="relative aspect-video flex items-center justify-center bg-black/40">
                     {previewMode === "3d" ? (
                       <div className="absolute inset-0 flex items-center justify-center">
-                        {currentGen.generation_type === "text-to-image" ? (
-                           <img 
-                             src={(currentGen.result_data?.image_url as string) || "/demo-image.jpg"} 
-                             alt="Generated Image" 
-                             className="w-full h-full object-contain"
-                           />
-                        ) : currentGen.result_data?.model_url || currentGen.status === "completed" ? (
+                        {currentGen.result_data?.model_url || currentGen.status === "completed" ? (
                           <ModelViewer url={(currentGen.result_data?.model_url as string) || "__procedural__"} prompt={currentGen.prompt} />
                         ) : (
                           <div className="flex h-full items-center justify-center text-muted-foreground">
@@ -2091,22 +2083,7 @@ function GeneratePage() {
 
                 {/* Action buttons with multiple format options */}
                 <div className="mt-4 space-y-3">
-                  {currentGen.generation_type === "text-to-image" ? (
-                    <>
-                      <button
-                        onClick={downloadImage}
-                        className="flex w-full items-center justify-center gap-2 h-11 rounded-xl bg-[var(--gradient-primary)] text-sm font-medium text-white transition hover:opacity-95"
-                      >
-                        <Download className="h-4 w-4" /> Download Image
-                      </button>
-                      <button
-                        onClick={downloadTexture}
-                        className="flex w-full items-center justify-center gap-2 h-9 rounded-xl border border-white/10 bg-white/5 text-xs font-medium text-muted-foreground transition hover:bg-white/10"
-                      >
-                        <Layers className="h-3.5 w-3.5" /> Download as Texture
-                      </button>
-                    </>
-                  ) : currentGen.generation_type === "manual-upload" ? (
+                  {currentGen.generation_type === "manual-upload" ? (
                     <div className="space-y-3">
                       <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Imported Colab Files:</div>
                       {((currentGen.result_data as any)?.files || []).map((file: { name: string; url: string }) => (
@@ -2365,7 +2342,7 @@ function GeneratePage() {
               <h3 className="font-display text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
                 Credit costs
               </h3>
-              <div className="grid gap-3 grid-cols-3">
+              <div className="grid gap-3 grid-cols-2">
                 <div className="flex items-center gap-2.5">
                   <div className="grid h-9 w-9 place-items-center rounded-lg bg-blue-400/10 border border-blue-400/20">
                     <ImageIcon className="h-4 w-4 text-blue-400" />
@@ -2381,15 +2358,6 @@ function GeneratePage() {
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs font-medium truncate">Re-texture</p>
-                    <p className="text-[11px] text-muted-foreground">1 credit</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <div className="grid h-9 w-9 place-items-center rounded-lg bg-amber-400/10 border border-amber-400/20">
-                    <Sparkles className="h-4 w-4 text-amber-400" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-medium truncate">Text → Image</p>
                     <p className="text-[11px] text-muted-foreground">1 credit</p>
                   </div>
                 </div>
