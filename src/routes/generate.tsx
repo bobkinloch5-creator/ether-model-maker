@@ -54,7 +54,7 @@ type GenType = "image-to-3d" | "retexture" | "text-to-image" | "manual-upload";
 export const Route = createFileRoute("/generate")({
   head: () => ({
     meta: [
-      { title: "Generate 3D Models from Text or Image — KingDavez Studios (Beta)" },
+      { title: "Generate AI 3D Models — KingDavez Studios" },
       { name: "description", content: "Turn a prompt or reference photo into a downloadable 3D model with PBR textures. Export GLB, OBJ, STL, or FBX in seconds." },
       { name: "keywords", content: "AI 3D model generator, text to 3D online, image to 3D converter, AI mesh generator, PBR texture generator, GLB exporter, OBJ exporter, FBX exporter, STL exporter, Second Life mesh creator, game asset generator, AI retexturing" },
       { property: "og:title", content: "AI 3D Model Generator — KingDavez Studios" },
