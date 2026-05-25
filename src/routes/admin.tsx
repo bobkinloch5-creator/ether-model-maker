@@ -461,8 +461,8 @@ function AdminPage() {
                         <div className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()} · {r.payment_method}</div>
                       </div>
                       <div className="ml-3 shrink-0 text-right">
-                        <div className="font-mono font-semibold text-emerald-300">${Number(r.amount_paid).toFixed(2)}</div>
-                        <div className="text-xs text-muted-foreground">+{r.credits.toLocaleString()} cr</div>
+                        <div className="font-mono font-semibold text-emerald-300">${Number(r?.amount_paid ?? 0).toFixed(2)}</div>
+                        <div className="text-xs text-muted-foreground">+{Number(r?.credits ?? 0).toLocaleString()} cr</div>
                       </div>
                     </li>
                   ))}
