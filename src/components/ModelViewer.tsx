@@ -123,11 +123,13 @@ export function ModelViewer({ url, prompt }: ModelViewerProps) {
   const [envPreset, setEnvPreset] = useState<EnvPreset>("studio");
   const [dark, setDark] = useState(false);
   const controlsRef = useRef<any>(null);
+  const [perfTier, setPerfTier] = useState<"high" | "low">("high");
 
-  // Detect device once to tune DPR + shadow budget for mobile without killing quality
+  // Tune DPR + shadow budget per device. Desktop caps at 1.75x DPR (sweet spot
+  // for 4K-ish sharpness without melting a 4070), mobile caps at 1.5x.
   const isMobile = typeof window !== "undefined" && window.matchMedia("(max-width: 768px)").matches;
-  const dpr: [number, number] = isMobile ? [1, 2] : [1.25, 2.5];
-  const shadowMapSize = isMobile ? 1024 : 2048;
+  const dpr: [number, number] = isMobile ? [1, 1.5] : [1, perfTier === "high" ? 1.75 : 1.25];
+  const shadowMapSize = isMobile ? 1024 : perfTier === "high" ? 2048 : 1024;
 
   const isProcedural = url === "__procedural__" || url === "/demo-model.glb" || url.includes("demo-model");
   const isRealModel = !isProcedural && (url.startsWith("blob:") || url.startsWith("http") || url.startsWith("/"));
