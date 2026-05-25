@@ -280,8 +280,8 @@ function GeneratePage() {
   }, [user]);
 
   const cost = profile?.is_owner ? 0 : (CREDIT_COSTS[selectedType] ?? 2);
-  // Credit gate temporarily disabled (display is reading wrong source).
-  const hasEnoughCredits = true;
+  const hasEnoughCredits = (profile?.is_owner ?? false) || (profile?.credits ?? 0) >= cost;
+
 
   const isProceduralPreview = currentGen?.result_data?.generation_method === "procedural";
 
@@ -300,9 +300,12 @@ function GeneratePage() {
 
   const handleGenerate = async () => {
     if (!prompt.trim() || !user) return;
-    // Credit gate temporarily disabled — credit display is reading the wrong source.
-    // TODO: re-enable once credit display is fixed.
-
+    if (!hasEnoughCredits) {
+      toast.error("Not enough credits", {
+        description: `${selectedType.replace(/-/g, " ")} costs ${cost} credits. You have ${profile?.credits ?? 0}.`,
+      });
+      return;
+    }
 
     setIsGenerating(true);
     setGenStartedAt(Date.now());
@@ -312,6 +315,7 @@ function GeneratePage() {
     setHfStatus("idle");
     setHfProgress(0);
     setHfMessage("");
+
 
     // Step 1: Auto-enhance if not already done
     let finalEnhanced = enhancedPromptText;
@@ -341,7 +345,8 @@ function GeneratePage() {
         created_at: new Date().toISOString(),
       };
 
-      if (selectedType === "image-to-3d") {
+      if (selectedType === "image-to-3d" || selectedType === "text-to-image") {
+        // Defer credit deduction until the AI service actually succeeds.
         setCurrentGen(tempGenerationBase);
       } else {
         gen = await createGeneration(
@@ -356,6 +361,7 @@ function GeneratePage() {
 
         setCurrentGen(gen);
       }
+
 
       // Step 3: Call AI services
       let modelUrl = "__procedural__";
@@ -493,7 +499,17 @@ function GeneratePage() {
           duration: 12000,
         });
 
+      } else if (selectedType === "text-to-image" && !imageUrl) {
+        // AI image generation failed — do not charge, do not create a row.
+        setCurrentGen(null);
+        const reason = error || "Image generation service is unavailable. Please try again.";
+        toast.error("Image generation failed", {
+          description: reason.slice(0, 600),
+          duration: 12000,
+        });
+
       } else {
+
         if (!gen) {
           gen = await createGeneration(
             user.id,
