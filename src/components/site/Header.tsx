@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Sparkles, User, Coins, Users, Menu, X, Home } from "lucide-react";
+import { Sparkles, User, Coins, Users, Menu, X, Home, Gift, Copy, Check } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
