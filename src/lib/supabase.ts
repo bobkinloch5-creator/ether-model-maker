@@ -199,22 +199,28 @@ export async function markGenerationUploaded(generationId: string, isUploaded = 
   return true;
 }
 
+/**
+ * Submit a PayPal payment claim for owner approval. Does NOT grant credits.
+ * Credits are added only after an owner approves the pending purchase from the admin panel.
+ * Returns the new purchase id, or null on error.
+ */
 export async function purchaseCredits(
-  userId: string,
+  _userId: string,
   amount: number,
   paymentMethod = "paypal",
   transactionId?: string,
   amountPaid = 0
-): Promise<number | null> {
-  const { data, error } = await supabase.rpc("add_credits", {
-    user_uuid: userId,
-    amount,
-    payment_method: paymentMethod,
-    transaction_id: transactionId ?? undefined,
-    amount_paid: amountPaid,
+): Promise<string | null> {
+  const txid = (transactionId ?? "").trim();
+  if (!txid) { console.error("purchaseCredits: transaction id required"); return null; }
+  const { data, error } = await supabase.rpc("submit_purchase_request", {
+    _credits: amount,
+    _amount: amountPaid,
+    _transaction_id: txid,
+    _payment_method: paymentMethod,
   });
   if (error) { console.error("purchaseCredits error:", error); return null; }
-  return data as number;
+  return data as string;
 }
 
 // ----- Projects -----

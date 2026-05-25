@@ -714,6 +714,7 @@ export type Database = {
         Args: { delta: number; note?: string; target_user_id: string }
         Returns: number
       }
+      admin_approve_purchase: { Args: { _purchase_id: string }; Returns: Json }
       admin_create_promo: {
         Args: {
           _code?: string
@@ -744,6 +745,24 @@ export type Database = {
       admin_delete_generation: { Args: { gen_id: string }; Returns: boolean }
       admin_delete_promo: { Args: { _id: string }; Returns: boolean }
       admin_get_analytics: { Args: never; Returns: Json }
+      admin_list_pending_purchases: {
+        Args: never
+        Returns: {
+          amount_paid: number
+          created_at: string
+          credits: number
+          display_name: string
+          email: string
+          id: string
+          payment_method: string
+          transaction_id: string
+          user_id: string
+        }[]
+      }
+      admin_reject_purchase: {
+        Args: { _note?: string; _purchase_id: string }
+        Returns: boolean
+      }
       admin_set_banned: {
         Args: { reason?: string; target_user_id: string; value: boolean }
         Returns: boolean
@@ -852,6 +871,15 @@ export type Database = {
       redeem_promo: { Args: { _code: string }; Returns: Json }
       regenerate_api_key_for: {
         Args: { target_user_id: string }
+        Returns: string
+      }
+      submit_purchase_request: {
+        Args: {
+          _amount: number
+          _credits: number
+          _payment_method?: string
+          _transaction_id: string
+        }
         Returns: string
       }
     }

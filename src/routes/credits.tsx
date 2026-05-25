@@ -78,13 +78,12 @@ function CreditsPage() {
     if (!user) return;
     setProcessing(true);
     try {
-      const newCredits = await purchaseCredits(user.id, pack.credits, "paypal", transactionId, pack.cost);
-      if (newCredits !== null) {
-        await refreshProfile();
+      const purchaseId = await purchaseCredits(user.id, pack.credits, "paypal", transactionId, pack.cost);
+      if (purchaseId !== null) {
         setSuccess({ credits: pack.credits });
-        toast.success(`+${pack.credits} credits added`);
+        toast.success("Payment submitted — awaiting owner approval");
       } else {
-        toast.error("Payment captured but credit grant failed. Contact support with your PayPal receipt.");
+        toast.error("Could not submit payment. Make sure you pasted a valid PayPal transaction ID, then try again.");
       }
     } finally {
       setProcessing(false);
@@ -236,15 +235,16 @@ function CreditsPage() {
               </p>
             ) : success ? (
               <div className="py-6 text-center space-y-4">
-                <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-emerald-500/20 text-emerald-400">
+                <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-amber-500/20 text-amber-300">
                   <Check className="h-6 w-6" />
                 </div>
-                <h3 className="font-display text-xl font-semibold text-emerald-400">Payment successful</h3>
+                <h3 className="font-display text-xl font-semibold text-amber-300">Payment submitted</h3>
                 <p className="text-sm text-muted-foreground">
-                  Added <span className="font-semibold text-foreground">{success.credits}</span> credits to your account.
+                  Your payment for <span className="font-semibold text-foreground">{success.credits}</span> credits is awaiting owner approval.
+                  Credits will appear in your balance once we confirm the PayPal transaction (usually within a few hours).
                 </p>
-                <p className="text-sm text-muted-foreground">
-                  New balance: <span className="font-semibold text-foreground">{profile?.is_owner ? "∞" : (profile?.credits ?? 0).toLocaleString()}</span> credits
+                <p className="text-xs text-muted-foreground">
+                  You can track this purchase under <Link to="/credits/history" className="underline hover:text-foreground">Credits history</Link>.
                 </p>
                 <div className="flex justify-center gap-2 pt-2">
                   <button
@@ -254,10 +254,10 @@ function CreditsPage() {
                     Buy more
                   </button>
                   <Link
-                    to="/generate"
+                    to="/dashboard"
                     className="rounded-xl bg-[var(--gradient-primary)] px-4 py-2 text-sm font-semibold text-white hover:opacity-95"
                   >
-                    Start generating
+                    Back to dashboard
                   </Link>
                 </div>
               </div>
@@ -349,12 +349,12 @@ function PaypalCheckout({
       </div>
 
       {granted ? (
-        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-center">
-          <div className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-400">
-            <Check className="h-4 w-4" /> Credits added automatically
+        <div className="rounded-xl border border-amber-400/20 bg-amber-500/10 p-4 text-center">
+          <div className="inline-flex items-center gap-2 text-sm font-semibold text-amber-300">
+            <Check className="h-4 w-4" /> Payment submitted for review
           </div>
           <p className="mt-1 text-xs text-muted-foreground">
-            Your balance has been updated. Refresh the dashboard to see it.
+            We've recorded your transaction. An owner will verify it and credits will be added to your balance shortly.
           </p>
         </div>
       ) : (
@@ -380,7 +380,7 @@ function PaypalCheckout({
           <li className={`rounded-xl border p-4 transition ${opened ? "border-white/10 bg-white/5" : "border-white/5 bg-white/[0.02] opacity-60"}`}>
             <div className="font-semibold text-foreground">2. Paste your PayPal transaction ID</div>
             <p className="mt-1">
-              After paying, copy your PayPal transaction / receipt ID and paste it here. Credits will be added instantly.
+              After paying, copy your PayPal transaction / receipt ID and paste it here. We'll verify the payment and add credits to your account once an owner approves it.
             </p>
             <div className="mt-3">
               <input
@@ -403,8 +403,8 @@ function PaypalCheckout({
                 className="w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/40 disabled:opacity-50"
               />
               {autoGranting && (
-                <div className="mt-2 flex items-center gap-2 text-xs text-emerald-400">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Verifying and adding credits…
+                <div className="mt-2 flex items-center gap-2 text-xs text-amber-300">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Submitting for verification…
                 </div>
               )}
             </div>

@@ -458,10 +458,9 @@ function DashboardPage() {
   const handleCompletePayment = async (details?: any) => {
     if (!user || !selectedPackage) return;
     setCheckoutStep("pay");
-    const transactionId = details?.id;
-    const newCredits = await purchaseCredits(user.id, selectedPackage.credits, "paypal", transactionId);
-    if (newCredits !== null) {
-      await refreshProfile();
+    const transactionId = details?.id ?? details?.purchase_units?.[0]?.payments?.captures?.[0]?.id;
+    const purchaseId = await purchaseCredits(user.id, selectedPackage.credits, "paypal", transactionId, selectedPackage.cost);
+    if (purchaseId !== null) {
       setCheckoutStep("success");
     }
   };
@@ -1217,12 +1216,12 @@ function DashboardPage() {
 
               {checkoutStep === "success" && selectedPackage && (
                 <div className="text-center py-6 space-y-4">
-                  <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-emerald-500/20 text-emerald-400">
+                  <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-amber-500/20 text-amber-300">
                     <Check className="h-6 w-6" />
                   </div>
-                  <h4 className="font-display text-lg font-semibold text-emerald-400">Payment Successful!</h4>
+                  <h4 className="font-display text-lg font-semibold text-amber-300">Payment submitted</h4>
                   <p className="text-sm text-muted-foreground">
-                    Successfully added {selectedPackage.credits} credits to your account.
+                    Your payment for {selectedPackage.credits} credits is awaiting owner approval. Credits will appear in your balance once we verify the PayPal transaction.
                   </p>
                   <button
                     onClick={() => {

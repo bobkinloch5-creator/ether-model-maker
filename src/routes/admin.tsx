@@ -27,6 +27,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { PromoManager } from "@/components/admin/PromoManager";
+import { PendingPurchases } from "@/components/admin/PendingPurchases";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -383,6 +384,12 @@ function AdminPage() {
         {msg && (
           <div className="mb-4 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm">{msg}</div>
         )}
+
+        {/* Pending purchases — owner approval queue */}
+        <div className="mb-6">
+          <PendingPurchases onChange={loadData} />
+        </div>
+
 
         {/* Charts: 30d sparklines */}
         {analytics && (
