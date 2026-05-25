@@ -48,6 +48,7 @@ import {
 } from "lucide-react";
 import { ModelViewer } from "@/components/ModelViewer";
 import { toast } from "sonner";
+import { normalizeImageToJpeg } from "@/lib/normalize-image";
 
 type GenType = "image-to-3d" | "retexture" | "text-to-image" | "manual-upload";
 
@@ -1141,26 +1142,44 @@ function GeneratePage() {
                   <>
                     <ImageIcon className="h-6 w-6 text-muted-foreground mb-2" />
                     <p className="text-sm text-muted-foreground">Click to upload or drag and drop</p>
-                    <p className="text-xs text-muted-foreground/50 mt-1">PNG, JPG up to 10MB</p>
+                    <p className="text-xs text-muted-foreground/50 mt-1">PNG, JPG, WEBP, GIF, HEIC up to 20MB</p>
                   </>
                 )}
                 <input 
                   type="file" 
-                  accept="image/png, image/jpeg" 
+                  accept="image/*,.heic,.heif,.webp,.avif,.bmp,.tiff" 
                   className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
-                  onChange={(e) => {
+                  onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (!file) return;
-                    if (file.size > 10 * 1024 * 1024) {
-                      setError("Image too large (max 10MB)");
+                    if (file.size > 20 * 1024 * 1024) {
+                      setError("Image too large (max 20MB)");
+                      toast.error("Image too large", { description: "Please upload an image under 20MB." });
                       return;
                     }
-                    const reader = new FileReader();
-                    reader.onload = () => {
-                      setImageDataUrl(reader.result as string);
+                    try {
+                      const dataUrl = await normalizeImageToJpeg(file);
+                      setImageDataUrl(dataUrl);
                       setPrompt(`Reference: ${file.name}`);
-                    };
-                    reader.readAsDataURL(file);
+                      setError(null);
+                    } catch (err: any) {
+                      console.error("Image preprocess failed:", err);
+                      try {
+                        const raw = await new Promise<string>((resolve, reject) => {
+                          const r = new FileReader();
+                          r.onload = () => resolve(r.result as string);
+                          r.onerror = () => reject(r.error);
+                          r.readAsDataURL(file);
+                        });
+                        setImageDataUrl(raw);
+                        setPrompt(`Reference: ${file.name}`);
+                        setError(null);
+                        toast.warning("Used original image", { description: "Couldn't preprocess but uploaded anyway." });
+                      } catch {
+                        setError("Could not read this image. Try saving it as JPG or PNG.");
+                        toast.error("Image read failed", { description: "Try saving the file as JPG or PNG and re-upload." });
+                      }
+                    }
                   }}
                 />
               </div>
