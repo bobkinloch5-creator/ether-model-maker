@@ -6,8 +6,10 @@ import {
   useAnimations,
   Environment,
   ContactShadows,
-  AccumulativeShadows,
-  RandomizedLight,
+  AdaptiveDpr,
+  AdaptiveEvents,
+  BakeShadows,
+  PerformanceMonitor,
   Center,
   Bounds,
   useBounds,
@@ -71,7 +73,8 @@ function Model({
   const { scene, animations } = useGLTF(url);
   const { actions, names } = useAnimations(animations, group);
   const { gl } = useThree();
-  const anisotropy = useMemo(() => gl.capabilities.getMaxAnisotropy() || 8, [gl]);
+  // Cap anisotropy at 8 — visually indistinguishable from 16 but cheaper on the GPU
+  const anisotropy = useMemo(() => Math.min(gl.capabilities.getMaxAnisotropy() || 8, 8), [gl]);
 
   useEffect(() => {
     if (scene) enhanceSceneQuality(scene, anisotropy, wireframe);
@@ -94,7 +97,7 @@ function ProceduralWrapper({ prompt, wireframe }: { prompt: string; wireframe: b
   const groupRef = useRef<any>(null);
   const group = useMemo(() => buildProceduralMesh(prompt), [prompt]);
   const { gl } = useThree();
-  const anisotropy = useMemo(() => gl.capabilities.getMaxAnisotropy() || 8, [gl]);
+  const anisotropy = useMemo(() => Math.min(gl.capabilities.getMaxAnisotropy() || 8, 8), [gl]);
 
   useEffect(() => {
     if (group) enhanceSceneQuality(group, anisotropy, wireframe);
@@ -120,11 +123,13 @@ export function ModelViewer({ url, prompt }: ModelViewerProps) {
   const [envPreset, setEnvPreset] = useState<EnvPreset>("studio");
   const [dark, setDark] = useState(false);
   const controlsRef = useRef<any>(null);
+  const [perfTier, setPerfTier] = useState<"high" | "low">("high");
 
-  // Detect device once to tune DPR + shadow budget for mobile without killing quality
+  // Tune DPR + shadow budget per device. Desktop caps at 1.75x DPR (sweet spot
+  // for 4K-ish sharpness without melting a 4070), mobile caps at 1.5x.
   const isMobile = typeof window !== "undefined" && window.matchMedia("(max-width: 768px)").matches;
-  const dpr: [number, number] = isMobile ? [1, 2] : [1.25, 2.5];
-  const shadowMapSize = isMobile ? 1024 : 2048;
+  const dpr: [number, number] = isMobile ? [1, 1.5] : [1, perfTier === "high" ? 1.75 : 1.25];
+  const shadowMapSize = isMobile ? 1024 : perfTier === "high" ? 2048 : 1024;
 
   const isProcedural = url === "__procedural__" || url === "/demo-model.glb" || url.includes("demo-model");
   const isRealModel = !isProcedural && (url.startsWith("blob:") || url.startsWith("http") || url.startsWith("/"));
@@ -160,8 +165,9 @@ export function ModelViewer({ url, prompt }: ModelViewerProps) {
         <Canvas
           shadows
           dpr={dpr}
+          frameloop={autoRotate ? "always" : "demand"}
           gl={{
-            antialias: true,
+            antialias: !isMobile,
             alpha: true,
             powerPreference: "high-performance",
             preserveDrawingBuffer: false,
@@ -176,6 +182,15 @@ export function ModelViewer({ url, prompt }: ModelViewerProps) {
             scene.background = null;
           }}
         >
+          <PerformanceMonitor
+            onIncline={() => setPerfTier("high")}
+            onDecline={() => setPerfTier("low")}
+            flipflops={3}
+          />
+          <AdaptiveDpr pixelated />
+          <AdaptiveEvents />
+          {/* Bake static shadows once instead of recomputing every frame */}
+          <BakeShadows />
           {/* Studio key + fill + rim, dialled to flatter PBR materials */}
           <ambientLight intensity={0.35} />
           <directionalLight
@@ -210,31 +225,18 @@ export function ModelViewer({ url, prompt }: ModelViewerProps) {
             <AutoFrame trigger={`${url}|${prompt}`} />
           </Bounds>
 
-          {/* Soft grounded contact shadow */}
+          {/* Soft grounded contact shadow — single pass, GPU-cheap */}
           <ContactShadows
             position={[0, -1.0, 0]}
-            opacity={0.55}
+            opacity={0.6}
             scale={10}
-            blur={2.6}
+            blur={2.4}
             far={4}
-            resolution={isMobile ? 512 : 1024}
+            resolution={isMobile ? 384 : perfTier === "high" ? 768 : 512}
             color="#000000"
+            frames={1}
           />
 
-          {/* Stacked accumulative shadow for premium feel on desktop only */}
-          {!isMobile && (
-            <AccumulativeShadows
-              temporal
-              frames={60}
-              alphaTest={0.85}
-              scale={10}
-              position={[0, -0.99, 0]}
-              color="#1a1a2e"
-              opacity={0.5}
-            >
-              <RandomizedLight amount={6} radius={5} intensity={1.1} ambient={0.25} position={[4, 6, 3]} />
-            </AccumulativeShadows>
-          )}
 
           <OrbitControls
             ref={controlsRef}
