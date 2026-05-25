@@ -126,25 +126,56 @@ function AdminPage() {
 
   const loadData = async () => {
     setLoading(true);
-    const [{ data: profs }, { count: gens }, { count: pchs }, { data: analyticsData }] = await Promise.all([
-      supabase
-        .from("profiles")
-        .select("id,email,display_name,credits,is_owner,is_manager,is_banned,ban_reason,created_at")
-        .order("created_at", { ascending: false })
-        .limit(500),
-      supabase.from("generations").select("*", { count: "exact", head: true }),
-      supabase.from("purchases").select("*", { count: "exact", head: true }),
-      supabase.rpc("admin_get_analytics"),
-    ]);
-    const rows = (profs as AdminProfile[] | null) ?? [];
-    setProfiles(rows);
-    setStats({
-      users: rows.length,
-      generations: gens ?? 0,
-      purchases: pchs ?? 0,
-      credits: rows.reduce((sum, r) => sum + (r.credits ?? 0), 0),
-    });
-    if (analyticsData) setAnalytics(analyticsData as unknown as Analytics);
+    try {
+      const [profsRes, gensRes, pchsRes, analyticsRes] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("id,email,display_name,credits,is_owner,is_manager,is_banned,ban_reason,created_at")
+          .order("created_at", { ascending: false })
+          .limit(500),
+        supabase.from("generations").select("*", { count: "exact", head: true }),
+        supabase.from("purchases").select("*", { count: "exact", head: true }),
+        supabase.rpc("admin_get_analytics"),
+      ]);
+      const rows = (profsRes.data as AdminProfile[] | null) ?? [];
+      setProfiles(rows);
+      setStats({
+        users: rows.length,
+        generations: gensRes.count ?? 0,
+        purchases: pchsRes.count ?? 0,
+        credits: rows.reduce((sum, r) => sum + (r.credits ?? 0), 0),
+      });
+      if (analyticsRes.error) {
+        setMsg(`Analytics error: ${analyticsRes.error.message}`);
+        setAnalytics(null);
+      } else if (analyticsRes.data) {
+        // Defensive: coerce missing arrays/numbers so the UI never crashes.
+        const a = analyticsRes.data as Partial<Analytics> & { totals?: Partial<Analytics["totals"]> };
+        setAnalytics({
+          totals: {
+            users: Number(a.totals?.users ?? 0),
+            managers: Number(a.totals?.managers ?? 0),
+            owners: Number(a.totals?.owners ?? 0),
+            generations: Number(a.totals?.generations ?? 0),
+            credits_circulating: Number(a.totals?.credits_circulating ?? 0),
+            purchases_count: Number(a.totals?.purchases_count ?? 0),
+            revenue_total: Number(a.totals?.revenue_total ?? 0),
+            credits_sold: Number(a.totals?.credits_sold ?? 0),
+            revenue_30d: Number(a.totals?.revenue_30d ?? 0),
+            new_users_30d: Number(a.totals?.new_users_30d ?? 0),
+            generations_30d: Number(a.totals?.generations_30d ?? 0),
+            referrals_count: Number(a.totals?.referrals_count ?? 0),
+          },
+          daily: Array.isArray(a.daily) ? a.daily : [],
+          top_spenders: Array.isArray(a.top_spenders) ? a.top_spenders : [],
+          recent_purchases: Array.isArray(a.recent_purchases) ? a.recent_purchases : [],
+          recent_generations: Array.isArray(a.recent_generations) ? a.recent_generations : [],
+        });
+      }
+    } catch (err) {
+      console.error("[admin] loadData failed", err);
+      setMsg(`Failed to load admin data: ${err instanceof Error ? err.message : String(err)}`);
+    }
     setLoading(false);
   };
 
@@ -285,8 +316,12 @@ function AdminPage() {
     );
   }
 
-  const maxRevenue = analytics ? Math.max(1, ...analytics.daily.map((d) => Number(d.revenue))) : 1;
-  const maxGens = analytics ? Math.max(1, ...analytics.daily.map((d) => d.generations)) : 1;
+  const maxRevenue = analytics && analytics.daily.length > 0
+    ? Math.max(1, ...analytics.daily.map((d) => Number(d?.revenue ?? 0)))
+    : 1;
+  const maxGens = analytics && analytics.daily.length > 0
+    ? Math.max(1, ...analytics.daily.map((d) => Number(d?.generations ?? 0)))
+    : 1;
 
   return (
     <div className="min-h-screen px-4 py-24">
@@ -405,8 +440,8 @@ function AdminPage() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-mono font-semibold text-emerald-300">${Number(s.spent).toFixed(2)}</div>
-                        <div className="text-xs text-muted-foreground">{s.credits.toLocaleString()} cr</div>
+                        <div className="font-mono font-semibold text-emerald-300">${Number(s?.spent ?? 0).toFixed(2)}</div>
+                        <div className="text-xs text-muted-foreground">{Number(s?.credits ?? 0).toLocaleString()} cr</div>
                       </div>
                     </li>
                   ))}
@@ -426,8 +461,8 @@ function AdminPage() {
                         <div className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()} · {r.payment_method}</div>
                       </div>
                       <div className="ml-3 shrink-0 text-right">
-                        <div className="font-mono font-semibold text-emerald-300">${Number(r.amount_paid).toFixed(2)}</div>
-                        <div className="text-xs text-muted-foreground">+{r.credits.toLocaleString()} cr</div>
+                        <div className="font-mono font-semibold text-emerald-300">${Number(r?.amount_paid ?? 0).toFixed(2)}</div>
+                        <div className="text-xs text-muted-foreground">+{Number(r?.credits ?? 0).toLocaleString()} cr</div>
                       </div>
                     </li>
                   ))}
@@ -517,9 +552,9 @@ function AdminPage() {
                     {visible.map((r) => (
                       <tr key={r.user_id} className={`border-b border-white/5 ${r.diff !== 0 ? "bg-amber-400/[0.04]" : ""}`}>
                         <td className="py-3 pr-4"><div className="font-medium">{r.display_name || "—"}</div><div className="text-xs text-muted-foreground">{r.email}</div></td>
-                        <td className="py-3 pr-4 text-right font-mono">{r.profile_credits.toLocaleString()}</td>
-                        <td className="py-3 pr-4 text-right font-mono">{r.ledger_sum.toLocaleString()}</td>
-                        <td className={`py-3 pr-4 text-right font-mono font-semibold ${r.diff !== 0 ? "text-amber-300" : "text-emerald-400"}`}>{r.diff > 0 ? "+" : ""}{r.diff.toLocaleString()}</td>
+                        <td className="py-3 pr-4 text-right font-mono">{Number(r?.profile_credits ?? 0).toLocaleString()}</td>
+                        <td className="py-3 pr-4 text-right font-mono">{Number(r?.ledger_sum ?? 0).toLocaleString()}</td>
+                        <td className={`py-3 pr-4 text-right font-mono font-semibold ${r.diff !== 0 ? "text-amber-300" : "text-emerald-400"}`}>{r.diff > 0 ? "+" : ""}{Number(r?.diff ?? 0).toLocaleString()}</td>
                       </tr>
                     ))}
                     {visible.length === 0 && (<tr><td colSpan={4} className="py-8 text-center text-sm text-muted-foreground">No mismatches.</td></tr>)}
@@ -564,7 +599,7 @@ function AdminPage() {
                         <div className="font-medium">{p.display_name || "—"}</div>
                         <div className="text-xs text-muted-foreground">{p.email}</div>
                       </td>
-                      <td className="py-3 pr-4 font-mono">{p.credits.toLocaleString()}</td>
+                      <td className="py-3 pr-4 font-mono">{Number(p?.credits ?? 0).toLocaleString()}</td>
                       <td className="py-3 pr-4">
                         <div className="flex flex-wrap gap-1">
                           {p.is_owner && (
