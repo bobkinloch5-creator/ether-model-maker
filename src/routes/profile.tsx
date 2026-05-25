@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
-import { updateProfile, getPurchases, getUserStats, getMyReferrals, applyReferralCode, type Purchase, type ReferralRow } from "@/lib/supabase";
+import { updateProfile, getPurchases, getUserStats, getMyReferrals, applyReferralCode, supabase, type Purchase, type ReferralRow } from "@/lib/supabase";
 import {
   ArrowLeft,
   User,
@@ -155,16 +155,28 @@ function ProfilePage() {
   };
 
   const handleApplyReferral = async () => {
-    if (!refCodeInput.trim()) return;
+    const code = refCodeInput.trim();
+    if (!code) return;
     setRefApplying(true);
     setRefMsg(null);
-    const res = await applyReferralCode(refCodeInput.trim());
+    // Try referral first
+    const res = await applyReferralCode(code);
     if (res.success) {
       setRefMsg({ kind: "ok", text: `Code applied — +${res.bonus ?? 50} credits!` });
       setRefCodeInput("");
       await refreshProfile();
+      setRefApplying(false);
+      return;
+    }
+    // Fallback: try as a promo code
+    const { data, error } = await supabase.rpc("redeem_promo", { _code: code });
+    if (!error && data) {
+      const r = data as { credits: number; code: string };
+      setRefMsg({ kind: "ok", text: `Promo redeemed — +${r.credits} credits!` });
+      setRefCodeInput("");
+      await refreshProfile();
     } else {
-      setRefMsg({ kind: "err", text: res.error || "Could not apply code" });
+      setRefMsg({ kind: "err", text: error?.message || res.error || "Invalid code" });
     }
     setRefApplying(false);
   };
@@ -614,7 +626,7 @@ function ProfilePage() {
           {!profile?.referred_by && (
             <div className="mt-5 rounded-xl border border-white/10 bg-white/[0.02] p-4">
               <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5">
-                <Ticket className="h-3.5 w-3.5" /> Got a friend's code?
+                <Ticket className="h-3.5 w-3.5" /> Got a friend's code or promo?
               </p>
               <div className="flex flex-col sm:flex-row gap-2">
                 <input
@@ -622,7 +634,7 @@ function ProfilePage() {
                   value={refCodeInput}
                   onChange={(e) => setRefCodeInput(e.target.value.toUpperCase())}
                   placeholder="ENTER CODE"
-                  maxLength={16}
+                  maxLength={32}
                   className="flex-1 h-10 rounded-xl border border-white/10 bg-black/30 px-4 text-sm uppercase tracking-[0.15em] placeholder:text-muted-foreground placeholder:tracking-normal focus:border-primary/50 focus:outline-none"
                 />
                 <button
