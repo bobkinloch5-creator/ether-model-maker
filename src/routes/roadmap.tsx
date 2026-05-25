@@ -34,7 +34,7 @@ function slugify(s: string) {
 export const Route = createFileRoute("/roadmap")({
   head: () => ({
     meta: [
-      { title: "Roadmap — KingDavez Studios" },
+      { title: "Roadmap — KingDavez Studios (Beta)" },
       {
         name: "description",
         content:

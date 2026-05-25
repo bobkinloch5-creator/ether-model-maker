@@ -31,7 +31,7 @@ import {
 export const Route = createFileRoute("/profile")({
   head: () => ({
     meta: [
-      { title: "Profile Settings — KingDavez Studios" },
+      { title: "Profile Settings — KingDavez Studios (Beta)" },
       { name: "description", content: "Customize your KingDavez Studios profile, avatar, display name, bio, theme preferences, API keys, and referral code." },
       { name: "keywords", content: "3D creator profile, AI generator account, avatar generator, API key manager, referral program" },
       { property: "og:title", content: "Profile Settings — KingDavez Studios" },
