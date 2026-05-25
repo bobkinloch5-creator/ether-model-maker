@@ -599,7 +599,7 @@ function AdminPage() {
                         <div className="font-medium">{p.display_name || "—"}</div>
                         <div className="text-xs text-muted-foreground">{p.email}</div>
                       </td>
-                      <td className="py-3 pr-4 font-mono">{p.credits.toLocaleString()}</td>
+                      <td className="py-3 pr-4 font-mono">{Number(p?.credits ?? 0).toLocaleString()}</td>
                       <td className="py-3 pr-4">
                         <div className="flex flex-wrap gap-1">
                           {p.is_owner && (
