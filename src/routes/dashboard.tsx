@@ -458,10 +458,9 @@ function DashboardPage() {
   const handleCompletePayment = async (details?: any) => {
     if (!user || !selectedPackage) return;
     setCheckoutStep("pay");
-    const transactionId = details?.id;
-    const newCredits = await purchaseCredits(user.id, selectedPackage.credits, "paypal", transactionId);
-    if (newCredits !== null) {
-      await refreshProfile();
+    const transactionId = details?.id ?? details?.purchase_units?.[0]?.payments?.captures?.[0]?.id;
+    const purchaseId = await purchaseCredits(user.id, selectedPackage.credits, "paypal", transactionId, selectedPackage.cost);
+    if (purchaseId !== null) {
       setCheckoutStep("success");
     }
   };
