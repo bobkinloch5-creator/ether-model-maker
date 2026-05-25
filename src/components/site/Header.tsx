@@ -147,7 +147,7 @@ export function Header() {
                   onClick={closeMenu}
                   className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-center text-sm text-foreground"
                 >
-                  Sign in
+                  {t("nav.signIn")}
                 </Link>
                 <Link
                   to="/signup"
