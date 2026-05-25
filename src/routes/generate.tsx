@@ -689,38 +689,33 @@ function GeneratePage() {
     try {
       const basePrompt = currentGen.prompt || "model";
       const composedPrompt = styleAddendum
-        ? `${basePrompt}, retextured: ${styleAddendum}, new materials and surface look, same shape and silhouette`
-        : `${basePrompt}, alternate textures and materials, fresh color pass`;
+        ? `Restyle/retexture this object: ${styleAddendum}. Keep the exact same shape, silhouette, pose, framing and background. Only change materials, colors and surface finish.`
+        : `Apply alternate textures and materials to this object — fresh color pass. Keep the exact same shape, silhouette, pose, framing and background.`;
 
-      const { generateHF3D } = await import("@/lib/hf3d.functions");
-      const { getBackendConfig, resolveExtraArgs } = await import("@/lib/backend-settings");
-      const userBackend = getBackendConfig();
-      // Local-only: no Hugging Face / cloud fallbacks. If the local server
-      // fails, surface the error instead of silently retrying elsewhere.
-      const attempts = [
-        { spaceUrl: userBackend.spaceUrl, apiName: userBackend.apiName, extraArgs: resolveExtraArgs(userBackend.extraArgs), label: "Local backend" },
-      ];
+      // Step 1: AI-restyle the source image (TripoSR has no text input, so we
+      // produce a new reference image and then run image-to-3D on that).
+      const { editAIImage } = await import("@/lib/ai-image.functions");
+      const restyle = await editAIImage({
+        data: { prompt: composedPrompt, imageDataUrl: sourceImg },
+      });
+      if (!restyle.ok || !restyle.imageUrl) {
+        const msg = (restyle as { error?: string }).error || "Failed to restyle image";
+        toast.error("Retexture failed", { description: msg.slice(0, 220) });
+        setError(msg);
+        return;
+      }
+      const restyledImg = restyle.imageUrl;
+
+      // Step 2: run local TripoSR on the restyled image.
+      const { generateLocal3D } = await import("@/lib/hf3d.functions");
+      const res = await generateLocal3D({ data: { imageDataUrl: restyledImg } });
 
       let finalUrl: string | null = null;
       let lastErr: string | null = null;
-      for (const a of attempts) {
-        if (!a.spaceUrl || !a.apiName) continue;
-        const res = await generateHF3D({
-          data: {
-            kind: "image-to-3d",
-            prompt: composedPrompt,
-            imageDataUrl: sourceImg,
-            spaceUrl: a.spaceUrl,
-            apiName: a.apiName,
-            extraArgs: a.extraArgs,
-          },
-        });
-        if (res.ok && res.modelUrl) {
-          finalUrl = res.modelUrl;
-          break;
-        } else {
-          lastErr = res.error || "Retexture failed";
-        }
+      if (res.ok && res.modelUrl) {
+        finalUrl = res.modelUrl;
+      } else {
+        lastErr = (res as { error?: string }).error || "Retexture failed";
       }
 
       if (!finalUrl) {
@@ -728,6 +723,7 @@ function GeneratePage() {
         setError(lastErr || "Retexture failed — no credits charged.");
         return;
       }
+
 
       // Only charge after success. Create a new generation row for audit/history.
       const gen = await createGeneration(
