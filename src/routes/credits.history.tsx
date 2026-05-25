@@ -11,7 +11,7 @@ import {
 export const Route = createFileRoute("/credits/history")({
   head: () => ({
     meta: [
-      { title: "Credit History — KingDavez Studios" },
+      { title: "Credit History — KingDavez Studios (Beta)" },
       { name: "description", content: "Full audit log of every credit grant, PayPal purchase, generation deduction, and referral bonus on your KingDavez Studios account." },
       { property: "og:title", content: "Credit History — KingDavez Studios" },
       { property: "og:description", content: "Audit log of every credit grant, purchase, and deduction on your account." },
