@@ -1659,22 +1659,59 @@ export const generateLocal3D = createServerFn({ method: "POST" })
     }
     try {
       const spaceUrl = localUrl.replace(/\/$/, "");
-      const base64Image = data.imageDataUrl.split(",")[1] ?? data.imageDataUrl;
+      const headers = { "ngrok-skip-browser-warning": "true" };
 
-      console.log("[3D GEN / server] POST", `${spaceUrl}/run/predict`, "fn_index=1");
-      const response = await fetch(`${spaceUrl}/run/predict`, {
+      // Convert base64 dataURL to a blob and upload it
+      const base64Data = data.imageDataUrl.split(",")[1];
+      const mimeType = data.imageDataUrl.split(";")[0].split(":")[1] || "image/png";
+      const imageBuffer = Buffer.from(base64Data, "base64");
+
+      console.log("[3D GEN / server] uploading image to", `${spaceUrl}/upload`);
+      const form = new FormData();
+      form.append("files", new Blob([imageBuffer], { type: mimeType }), "image.png");
+      const uploadRes = await fetch(`${spaceUrl}/upload`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "ngrok-skip-browser-warning": "true",
-        },
-        body: JSON.stringify({ fn_index: 1, data: [base64Image] }),
+        headers,
+        body: form,
+        signal: AbortSignal.timeout(60_000),
+      });
+      if (!uploadRes.ok) throw new Error(`Upload failed: ${uploadRes.status}`);
+      const uploadJson = await uploadRes.json();
+      const uploadedPath = uploadJson[0];
+      console.log("[3D GEN / server] uploaded path:", uploadedPath);
+
+      // Step 1: preprocess (fn_index 1)
+      console.log("[3D GEN / server] preprocessing…");
+      const preprocessRes = await fetch(`${spaceUrl}/run/predict`, {
+        method: "POST",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fn_index: 1,
+          data: [{ path: uploadedPath }, true, 0.85],
+        }),
+        signal: AbortSignal.timeout(120_000),
+      });
+      if (!preprocessRes.ok) throw new Error(`Preprocess failed: ${preprocessRes.status}`);
+      const preprocessJson = await preprocessRes.json();
+      const processedFile = preprocessJson.data[0];
+      console.log("[3D GEN / server] preprocess done");
+
+      // Step 2: generate (fn_index 2)
+      console.log("[3D GEN / server] generating…");
+      const generateRes = await fetch(`${spaceUrl}/run/predict`, {
+        method: "POST",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fn_index: 2,
+          data: [processedFile, 256],
+        }),
         signal: AbortSignal.timeout(300_000),
       });
-      if (!response.ok) throw new Error(`TripoSR responded with ${response.status}`);
-      const json = await response.json();
-      const modelUrl = json?.data?.[1];
-      if (!modelUrl) throw new Error("TripoSR returned no model URL");
+      if (!generateRes.ok) throw new Error(`Generate failed: ${generateRes.status}`);
+      const generateJson = await generateRes.json();
+      const glbFile = generateJson.data[1];
+      const modelUrl = `${spaceUrl}/file=${glbFile.path}`;
+      console.log("[3D GEN / server] modelUrl:", modelUrl);
       return { ok: true as const, modelUrl };
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
