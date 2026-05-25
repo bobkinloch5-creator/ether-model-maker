@@ -74,7 +74,7 @@ function Model({
   const { actions, names } = useAnimations(animations, group);
   const { gl } = useThree();
   // Cap anisotropy at 8 — visually indistinguishable from 16 but cheaper on the GPU
-  const anisotropy = useMemo(() => Math.min(gl.capabilities.getMaxAnisotropy() || 8, 8), [gl]);
+  const anisotropy = useMemo(() => Math.min(gl.capabilities.getMaxAnisotropy() || 16, 16), [gl]);
 
   useEffect(() => {
     if (scene) enhanceSceneQuality(scene, anisotropy, wireframe);
