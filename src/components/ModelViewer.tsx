@@ -192,36 +192,6 @@ export function ModelViewer({ url, prompt }: ModelViewerProps) {
         }}
       />
 
-      <Suspense
-        fallback={
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/20 backdrop-blur-sm">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="mt-2 text-xs text-muted-foreground">Loading 3D model…</p>
-          </div>
-        }
-      >
-        <Canvas
-          shadows
-          dpr={dpr}
-          frameloop={autoRotate ? "always" : "demand"}
-          gl={{
-            antialias: !isMobile,
-            alpha: true,
-            powerPreference: "high-performance",
-            preserveDrawingBuffer: false,
-            toneMapping: THREE.ACESFilmicToneMapping,
-            toneMappingExposure: 1.18,
-          }}
-          camera={{ position: [2.4, 1.6, 3.4], fov: 38, near: 0.05, far: 100 }}
-          onCreated={({ gl, scene }) => {
-            gl.shadowMap.enabled = true;
-            gl.shadowMap.type = THREE.PCFSoftShadowMap;
-            gl.outputColorSpace = THREE.SRGBColorSpace;
-            // Crisper IBL — boosts reflection sharpness on PBR surfaces.
-            (scene as any).environmentIntensity = 1.15;
-            scene.background = null;
-          }}
-        >
       {!initial.webgl || contextLost ? (
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/75 backdrop-blur-sm p-6 text-center">
           <AlertTriangle className="h-10 w-10 text-amber-300 mb-3" />
@@ -266,11 +236,14 @@ export function ModelViewer({ url, prompt }: ModelViewerProps) {
               (scene as any).environmentIntensity = 1.15;
               scene.background = null;
               const canvas = gl.domElement;
-              const onLost = (e: Event) => {
-                e.preventDefault();
-                setContextLost(true);
-              };
-              canvas.addEventListener("webglcontextlost", onLost as any, false);
+              canvas.addEventListener(
+                "webglcontextlost",
+                (e: Event) => {
+                  e.preventDefault();
+                  setContextLost(true);
+                },
+                false,
+              );
             }}
           >
             <PerformanceMonitor
@@ -348,6 +321,50 @@ export function ModelViewer({ url, prompt }: ModelViewerProps) {
           </Canvas>
         </Suspense>
       )}
+
+      {/* Controls Overlay — desktop top-right */}
+      <div className="absolute top-3 right-3 z-10 hidden sm:flex flex-col gap-2">
+        <ViewerBtn active={wireframe} onClick={() => setWireframe(!wireframe)} title="Wireframe">
+          <Grid className="h-4 w-4" />
+        </ViewerBtn>
+        <ViewerBtn active={autoRotate} onClick={() => setAutoRotate(!autoRotate)} title="Auto-rotate">
+          <RotateCw className={`h-4 w-4 ${autoRotate ? "animate-spin" : ""}`} style={{ animationDuration: "4s" }} />
+        </ViewerBtn>
+        <ViewerBtn onClick={cycleEnv} title={`Lighting: ${envPreset}`}>
+          <Aperture className="h-4 w-4" />
+        </ViewerBtn>
+        <ViewerBtn active={dark} onClick={() => setDark(!dark)} title="Backdrop">
+          {dark ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+        </ViewerBtn>
+        <ViewerBtn onClick={recenter} title="Recenter">
+          <Maximize2 className="h-4 w-4" />
+        </ViewerBtn>
+      </div>
+
+      {/* Mobile bottom dock */}
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex sm:hidden gap-1.5 rounded-2xl border border-white/15 bg-black/55 backdrop-blur-xl px-2 py-1.5 shadow-2xl">
+        <ViewerBtn active={wireframe} onClick={() => setWireframe(!wireframe)} title="Wireframe" small>
+          <Grid className="h-4 w-4" />
+        </ViewerBtn>
+        <ViewerBtn active={autoRotate} onClick={() => setAutoRotate(!autoRotate)} title="Auto-rotate" small>
+          <RotateCw className="h-4 w-4" />
+        </ViewerBtn>
+        <ViewerBtn onClick={cycleEnv} title="Lighting" small>
+          <Aperture className="h-4 w-4" />
+        </ViewerBtn>
+        <ViewerBtn active={dark} onClick={() => setDark(!dark)} title="Backdrop" small>
+          {dark ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+        </ViewerBtn>
+        <ViewerBtn onClick={recenter} title="Recenter" small>
+          <Maximize2 className="h-4 w-4" />
+        </ViewerBtn>
+      </div>
+
+      {/* Perf-tier badge so users know quality is auto-tuned */}
+      <div className="absolute top-3 left-3 z-10 rounded-full border border-white/10 bg-black/55 backdrop-blur-md px-2.5 py-1 text-[10px] font-medium text-white/70">
+        {perfTier === "high" ? "Quality: High" : perfTier === "medium" ? "Quality: Balanced" : "Quality: Lite"}
+      </div>
+
 
       {/* Desktop interaction hint */}
       <div className="absolute bottom-3 left-0 right-0 hidden sm:flex justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300">
