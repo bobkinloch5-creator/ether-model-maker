@@ -2,9 +2,12 @@ import { Link } from "@tanstack/react-router";
 import { Sparkles, User, Coins, Users, Menu, X, Home } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { LanguagePicker } from "@/components/LanguagePicker";
 
 export function Header() {
   const { user, profile, loading } = useAuth();
+  const { t } = useTranslation();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -39,17 +42,18 @@ export function Header() {
             </span>
           </Link>
           <nav className="hidden items-center gap-7 text-sm text-muted-foreground md:flex">
-            <Link to="/" className="hover:text-foreground transition">Home</Link>
-            <a href="#features" className="hover:text-foreground transition">Features</a>
-            <Link to="/community" className="hover:text-foreground transition">Community</Link>
-            <Link to="/second-life" className="hover:text-foreground transition">Second Life</Link>
-            <Link to="/" hash="integrations" className="hover:text-foreground transition">Integrations</Link>
-            <Link to="/tutorials" className="hover:text-foreground transition">Tutorials</Link>
-            <Link to="/docs" className="hover:text-foreground transition">Docs</Link>
-            <Link to="/roadmap" className="hover:text-foreground transition">Roadmap</Link>
-            <Link to="/changelog" className="hover:text-foreground transition">What's New</Link>
+            <Link to="/" className="hover:text-foreground transition">{t("nav.home")}</Link>
+            <a href="#features" className="hover:text-foreground transition">{t("nav.features")}</a>
+            <Link to="/community" className="hover:text-foreground transition">{t("nav.community")}</Link>
+            <Link to="/second-life" className="hover:text-foreground transition">{t("nav.secondLife")}</Link>
+            <Link to="/" hash="integrations" className="hover:text-foreground transition">{t("nav.integrations")}</Link>
+            <Link to="/tutorials" className="hover:text-foreground transition">{t("nav.tutorials")}</Link>
+            <Link to="/docs" className="hover:text-foreground transition">{t("nav.docs")}</Link>
+            <Link to="/roadmap" className="hover:text-foreground transition">{t("nav.roadmap")}</Link>
+            <Link to="/changelog" className="hover:text-foreground transition">{t("nav.whatsNew")}</Link>
           </nav>
           <div className="flex items-center gap-2">
+            <LanguagePicker />
             {!loading && user ? (
               <>
                 {/* Admin link hidden — access via direct URL /admin */}
@@ -88,13 +92,13 @@ export function Header() {
                   to="/login"
                   className="hidden sm:inline-flex h-10 items-center rounded-full px-4 text-sm text-muted-foreground hover:text-foreground transition"
                 >
-                  Sign in
+                  {t("nav.signIn")}
                 </Link>
                 <Link
                   to="/signup"
                   className="hidden sm:inline-flex h-10 items-center rounded-full bg-[var(--gradient-primary)] px-5 text-sm font-medium text-white shadow-[0_8px_30px_-8px_oklch(0.7_0.22_305_/_0.6)] hover:opacity-95 transition"
                 >
-                  Launch app
+                  {t("nav.launchApp")}
                 </Link>
               </>
             )}
@@ -114,6 +118,10 @@ export function Header() {
       {menuOpen && (
         <div className="sm:hidden fixed inset-0 top-[72px] z-40 bg-background/95 backdrop-blur-lg animate-fade-in">
           <div className="mx-auto max-w-6xl px-4 py-6 flex flex-col gap-2">
+            <div className="mb-2 flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-2.5">
+              <span className="text-sm text-muted-foreground">{t("common.language")}</span>
+              <LanguagePicker compact />
+            </div>
             {!loading && user ? (
               <>
                 <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 mb-2">
@@ -143,14 +151,14 @@ export function Header() {
                   onClick={closeMenu}
                   className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-center text-sm text-foreground"
                 >
-                  Sign in
+                  {t("nav.signIn")}
                 </Link>
                 <Link
                   to="/signup"
                   onClick={closeMenu}
                   className="rounded-2xl bg-[var(--gradient-primary)] px-4 py-3 text-center text-sm font-medium text-white"
                 >
-                  Launch app
+                  {t("nav.launchApp")}
                 </Link>
               </>
             )}
