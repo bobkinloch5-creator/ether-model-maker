@@ -17,7 +17,7 @@ export function Hero() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [value, setValue] = useState("An ornate elven longbow with glowing runes");
-  const [mode, setMode] = useState<"text-to-image" | "image-to-3d">("text-to-image");
+  const [mode] = useState<"image-to-3d">("image-to-3d");
 
   const go = (prompt?: string) => {
     const p = (prompt ?? value).trim();
