@@ -197,7 +197,7 @@ async function generateImageFromPrompt(prompt: string): Promise<string> {
       messages: [
         {
           role: "user",
-          content: `A clean studio photograph of: ${prompt}. Single subject, centered, plain neutral background, soft even lighting, no text, no watermark.`,
+          content: `Studio product photograph of: ${prompt}. Single subject, perfectly centered, plain pure-white seamless background, bright even softbox lighting, vivid saturated colors, rich color depth, sharp focus, high contrast, crisp PBR materials, no shadows on background, no text, no watermark, photoreal.`,
         },
       ],
       modalities: ["image", "text"],
@@ -227,18 +227,18 @@ function buildPayload(apiName: string, firstInput: unknown, extraArgs: unknown[]
     // NOTE: resolution must be one of the supported cascades: 1024 or 1536.
     const defaultArgs: unknown[] = [
       0,        // seed
-      1024,     // resolution (Pixal3D supports 1024_cascade / 1536_cascade)
+      1536,     // resolution — higher cascade for sharper, richer textures
       7.5,      // ss_guidance_strength
       0.7,      // ss_guidance_rescale
-      12,       // ss_sampling_steps
+      18,       // ss_sampling_steps (more steps = cleaner shape)
       5.0,      // ss_rescale_t
       7.5,      // shape_slat_guidance_strength
       0.5,      // shape_slat_guidance_rescale
-      12,       // shape_slat_sampling_steps
+      18,       // shape_slat_sampling_steps
       3.0,      // shape_slat_rescale_t
-      1.0,      // tex_slat_guidance_strength
-      0.0,      // tex_slat_guidance_rescale
-      12,       // tex_slat_sampling_steps
+      6.0,      // tex_slat_guidance_strength — MAJOR boost for color fidelity (was 1.0)
+      0.3,      // tex_slat_guidance_rescale — reduces washed-out look (was 0.0)
+      24,       // tex_slat_sampling_steps — doubled for vivid texture detail (was 12)
       3.0,      // tex_slat_rescale_t
       -1.0,     // manual_fov
       makeSessionHash(), // session_id
