@@ -14,7 +14,7 @@ import { Footer } from "@/components/site/Footer";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "KingDavez Studios — AI 3D Model & Texture Generator for Blender, Unity, Roblox & More" },
+      { title: "KingDavez Studios — AI 3D Model & Texture Generator for Blender, Unity, Roblox & More (Beta)" },
       {
         name: "description",
         content:
