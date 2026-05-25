@@ -626,7 +626,7 @@ function ProfilePage() {
           {!profile?.referred_by && (
             <div className="mt-5 rounded-xl border border-white/10 bg-white/[0.02] p-4">
               <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5">
-                <Ticket className="h-3.5 w-3.5" /> Got a friend's code?
+                <Ticket className="h-3.5 w-3.5" /> Got a friend's code or promo?
               </p>
               <div className="flex flex-col sm:flex-row gap-2">
                 <input
@@ -634,7 +634,7 @@ function ProfilePage() {
                   value={refCodeInput}
                   onChange={(e) => setRefCodeInput(e.target.value.toUpperCase())}
                   placeholder="ENTER CODE"
-                  maxLength={16}
+                  maxLength={32}
                   className="flex-1 h-10 rounded-xl border border-white/10 bg-black/30 px-4 text-sm uppercase tracking-[0.15em] placeholder:text-muted-foreground placeholder:tracking-normal focus:border-primary/50 focus:outline-none"
                 />
                 <button
