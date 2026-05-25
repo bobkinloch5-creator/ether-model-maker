@@ -154,7 +154,7 @@ export function Header() {
                   onClick={closeMenu}
                   className="rounded-2xl bg-[var(--gradient-primary)] px-4 py-3 text-center text-sm font-medium text-white"
                 >
-                  Launch app
+                  {t("nav.launchApp")}
                 </Link>
               </>
             )}
