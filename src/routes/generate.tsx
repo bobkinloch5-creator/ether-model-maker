@@ -499,7 +499,17 @@ function GeneratePage() {
           duration: 12000,
         });
 
+      } else if (selectedType === "text-to-image" && !imageUrl) {
+        // AI image generation failed — do not charge, do not create a row.
+        setCurrentGen(null);
+        const reason = error || "Image generation service is unavailable. Please try again.";
+        toast.error("Image generation failed", {
+          description: reason.slice(0, 600),
+          duration: 12000,
+        });
+
       } else {
+
         if (!gen) {
           gen = await createGeneration(
             user.id,
