@@ -1696,10 +1696,10 @@ export const generateLocal3D = createServerFn({ method: "POST" })
       const processedFile = preprocessJson.data[0];
       console.log("[3D GEN / server] preprocess output:", JSON.stringify(processedFile));
 
-      // Step 2: generate (fn_index 2)
+      // Step 2: generate (fn_index 3)
       const generateBody = {
-        fn_index: 2,
-        data: [processedFile, 256],
+        fn_index: 3,
+        data: [processedFile, 256.0],
       };
       console.log("[3D GEN / server] generate body:", JSON.stringify(generateBody));
       const generateRes = await fetch(`${spaceUrl}/run/predict`, {
