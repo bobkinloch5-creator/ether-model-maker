@@ -27,8 +27,19 @@ export const generateAIImage = createServerFn({ method: "POST" })
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: data.model || "google/gemini-2.5-flash-image",
-          messages: [{ role: "user", content: data.prompt }],
+          // Nano Banana 2 (gemini-3.1-flash-image-preview) — pro-level fidelity
+          // at flash speed. Sharper detail, better text, richer color than 2.5.
+          model: data.model || "google/gemini-3.1-flash-image-preview",
+          messages: [
+            {
+              role: "user",
+              content:
+                `${data.prompt}\n\n` +
+                `Render in ultra-high detail: crisp focus, physically accurate lighting, ` +
+                `rich color depth, clean composition, photoreal textures, no artifacts, ` +
+                `no watermarks, no text overlays unless explicitly requested.`,
+            },
+          ],
           modalities: ["image", "text"],
         }),
       });
@@ -80,7 +91,7 @@ export const editAIImage = createServerFn({ method: "POST" })
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: data.model || "google/gemini-2.5-flash-image",
+          model: data.model || "google/gemini-3.1-flash-image-preview",
           messages: [
             {
               role: "user",
