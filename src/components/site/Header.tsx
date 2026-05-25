@@ -98,7 +98,7 @@ export function Header() {
                   to="/signup"
                   className="hidden sm:inline-flex h-10 items-center rounded-full bg-[var(--gradient-primary)] px-5 text-sm font-medium text-white shadow-[0_8px_30px_-8px_oklch(0.7_0.22_305_/_0.6)] hover:opacity-95 transition"
                 >
-                  Launch app
+                  {t("nav.launchApp")}
                 </Link>
               </>
             )}
