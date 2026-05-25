@@ -2,9 +2,12 @@ import { Link } from "@tanstack/react-router";
 import { Sparkles, User, Coins, Users, Menu, X, Home } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { LanguagePicker } from "@/components/LanguagePicker";
 
 export function Header() {
   const { user, profile, loading } = useAuth();
+  const { t } = useTranslation();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
