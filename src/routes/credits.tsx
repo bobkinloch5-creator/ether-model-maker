@@ -12,11 +12,11 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/credits")({
   head: () => ({
     meta: [
-      { title: "Buy Credits — AI 3D Generation Credit Packs | KingDavez Studios (Beta)" },
-      { name: "description", content: "Purchase generation credits for AI 3D models, PBR textures, and image-to-mesh conversion via PayPal. Pay only for what you use — no subscriptions, no plans." },
+      { title: "Buy Credits — AI 3D Generation | KingDavez" },
+      { name: "description", content: "Purchase generation credits for AI 3D models, PBR textures, and image-to-mesh via PayPal. Pay only for what you use — no subscriptions." },
       { name: "keywords", content: "buy 3D generation credits, AI mesh credits, PayPal 3D models, game asset credits, Second Life mesh credits, PBR texture credits" },
-      { property: "og:title", content: "Buy Credits — AI 3D Generation Credit Packs | KingDavez Studios" },
-      { property: "og:description", content: "Purchase generation credits for AI 3D models and textures via PayPal. No subscriptions required." },
+      { property: "og:title", content: "Buy Credits — AI 3D Generation" },
+      { property: "og:description", content: "Generation credits for AI 3D models and textures via PayPal. No subscriptions." },
       { property: "og:url", content: "https://kingdavez.click/credits" },
     ],
     links: [{ rel: "canonical", href: "https://kingdavez.click/credits" }],
