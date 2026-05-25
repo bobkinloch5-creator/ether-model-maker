@@ -280,8 +280,8 @@ function GeneratePage() {
   }, [user]);
 
   const cost = profile?.is_owner ? 0 : (CREDIT_COSTS[selectedType] ?? 2);
-  // Credit gate temporarily disabled (display is reading wrong source).
-  const hasEnoughCredits = true;
+  const hasEnoughCredits = (profile?.is_owner ?? false) || (profile?.credits ?? 0) >= cost;
+
 
   const isProceduralPreview = currentGen?.result_data?.generation_method === "procedural";
 
