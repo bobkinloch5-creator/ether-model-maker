@@ -1278,7 +1278,7 @@ function GeneratePage() {
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder={selectedType === "manual-upload" ? "Enter a title or description for your manual upload…" : "An ornate elven longbow with glowing runes, stylized fantasy style…"}
                 rows={3}
-                className="w-full resize-none rounded-xl bg-black/30 p-4 text-sm placeholder:text-muted-foreground/50 focus:outline-none"
+                className="w-full resize-none rounded-xl bg-black/30 p-4 text-sm placeholder:text-muted-foreground focus:outline-none"
               />
             )}
 
@@ -1655,7 +1655,7 @@ function GeneratePage() {
                 value={negativePrompt}
                 onChange={(e) => setNegativePrompt(e.target.value)}
                 placeholder="blurry, low-quality, extra limbs, distorted, watermark…"
-                className="w-full bg-black/40 border border-white/10 rounded-lg text-sm px-3 py-2 placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/50"
+                className="w-full bg-black/40 border border-white/10 rounded-lg text-sm px-3 py-2 placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
               />
             </div>
 

@@ -108,7 +108,7 @@ export function Hero() {
               <input
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
-                className="flex-1 bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground/60 focus:outline-none"
+                className="flex-1 bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none"
                 placeholder="An ornate elven longbow with glowing runes…"
                 aria-label="Describe your 3D model"
               />

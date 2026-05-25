@@ -6,10 +6,11 @@ import { ArrowLeft, Sparkles } from "lucide-react";
 export const Route = createFileRoute("/integrations/godot")({
   head: () => ({
     meta: [
-      { title: "Godot — Import AI 3D Models (GLB) | KingDavez Studios (Beta)" },
+      { title: "Godot — Import AI 3D Models (GLB) | KingDavez" },
       { name: "description", content: "Native GLB import for Godot 4. Drop AI-generated models into your project — zero conversion needed." },
       { property: "og:title", content: "Godot — AI text-to-3D guide" },
       { property: "og:description", content: "Native GLB for indie & open-source pipelines." },
+      { property: "og:url", content: "https://kingdavez.click/integrations/godot" },
     ],
     links: [{ rel: "canonical", href: "https://kingdavez.click/integrations/godot" }],
   }),

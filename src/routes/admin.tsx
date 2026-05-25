@@ -574,7 +574,7 @@ function AdminPage() {
             <h2 className="font-display text-xl font-semibold tracking-tight">Users ({filtered.length})</h2>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by email or name…" className="h-10 w-72 rounded-xl border border-white/10 bg-black/30 pl-10 pr-4 text-sm placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20" />
+              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by email or name…" className="h-10 w-72 rounded-xl border border-white/10 bg-black/30 pl-10 pr-4 text-sm placeholder:text-muted-foreground focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20" />
             </div>
           </div>
 

@@ -7,7 +7,7 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/integrations/roblox")({
   head: () => ({
     meta: [
-      { title: "Generate AI 3D Models inside Roblox Studio — KingDavez Studios (Beta)" },
+      { title: "Roblox Studio — AI Text-to-3D Plugin | KingDavez" },
       {
         name: "description",
         content:
@@ -19,6 +19,7 @@ export const Route = createFileRoute("/integrations/roblox")({
         content:
           "Generate 3D models from a text prompt directly inside Roblox Studio using the KingDavez Studios API.",
       },
+      { property: "og:url", content: "https://kingdavez.click/integrations/roblox" },
     ],
     links: [{ rel: "canonical", href: "https://kingdavez.click/integrations/roblox" }],
   }),

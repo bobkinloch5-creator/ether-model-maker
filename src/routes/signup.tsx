@@ -20,15 +20,15 @@ import {
 export const Route = createFileRoute("/signup")({
   head: () => ({
     meta: [
-      { title: "Sign Up — Get 25 Free Credits for AI 3D Generation | KingDavez Studios (Beta)" },
+      { title: "Sign Up — 25 Free AI 3D Credits | KingDavez" },
       {
         name: "description",
         content:
-          "Create your free KingDavez Studios account and get 25 free credits to start generating AI 3D models, PBR textures, and game-ready meshes instantly.",
+          "Create a free KingDavez Studios account and get 25 credits to generate AI 3D models, PBR textures, and game-ready meshes.",
       },
       { name: "keywords", content: "AI 3D generator free trial, free 3D model generator, text to 3D free, Second Life mesh creator, PBR texture AI" },
-      { property: "og:title", content: "Sign Up — Get 25 Free Credits for AI 3D Generation | KingDavez Studios" },
-      { property: "og:description", content: "Create a free account and get 25 credits to generate AI 3D models and textures." },
+      { property: "og:title", content: "Sign Up — 25 Free AI 3D Credits" },
+      { property: "og:description", content: "Free account, 25 credits to generate AI 3D models and textures." },
       { property: "og:url", content: "https://kingdavez.click/signup" },
       { name: "robots", content: "noindex,nofollow" },
     ],
@@ -307,7 +307,7 @@ function SignupPage() {
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
                       placeholder="KingDavez Studios"
-                      className="h-11 w-full rounded-xl border border-white/10 bg-black/30 pl-10 pr-4 text-sm placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
+                      className="h-11 w-full rounded-xl border border-white/10 bg-black/30 pl-10 pr-4 text-sm placeholder:text-muted-foreground focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
                     />
                   </div>
                 </div>
@@ -329,7 +329,7 @@ function SignupPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="you@example.com"
-                      className="h-11 w-full rounded-xl border border-white/10 bg-black/30 pl-10 pr-4 text-sm placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
+                      className="h-11 w-full rounded-xl border border-white/10 bg-black/30 pl-10 pr-4 text-sm placeholder:text-muted-foreground focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
                     />
                   </div>
                 </div>
@@ -361,7 +361,7 @@ function SignupPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••  (min 6 characters)"
-                      className="h-11 w-full rounded-xl border border-white/10 bg-black/30 pl-10 pr-20 text-sm placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
+                      className="h-11 w-full rounded-xl border border-white/10 bg-black/30 pl-10 pr-20 text-sm placeholder:text-muted-foreground focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
                     />
                     {password && (
                       <button
@@ -401,7 +401,7 @@ function SignupPage() {
                       onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
                       placeholder="FRIEND123"
                       maxLength={16}
-                      className="h-11 w-full rounded-xl border border-white/10 bg-black/30 pl-10 pr-4 text-sm uppercase tracking-wider placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
+                      className="h-11 w-full rounded-xl border border-white/10 bg-black/30 pl-10 pr-4 text-sm uppercase tracking-wider placeholder:text-muted-foreground focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
                     />
                   </div>
                 </div>

@@ -7,10 +7,11 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/integrations/web")({
   head: () => ({
     meta: [
-      { title: "Three.js & Web — Stream AI 3D Models in the Browser | KingDavez Studios (Beta)" },
+      { title: "Three.js & Web — Stream AI 3D in Browser | KingDavez" },
       { name: "description", content: "Use KingDavez Studios GLB models with <model-viewer>, react-three-fiber, Three.js, or Babylon.js — straight in the browser." },
       { property: "og:title", content: "Three.js / web — AI text-to-3D guide" },
       { property: "og:description", content: "GLB stream into model-viewer, R3F, Babylon.js." },
+      { property: "og:url", content: "https://kingdavez.click/integrations/web" },
     ],
     links: [{ rel: "canonical", href: "https://kingdavez.click/integrations/web" }],
   }),

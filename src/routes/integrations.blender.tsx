@@ -7,7 +7,7 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/integrations/blender")({
   head: () => ({
     meta: [
-      { title: "Blender add-on — Generate AI 3D Models in Blender | KingDavez Studios (Beta)" },
+      { title: "Blender Add-on — AI Text-to-3D | KingDavez" },
       {
         name: "description",
         content:
@@ -19,6 +19,7 @@ export const Route = createFileRoute("/integrations/blender")({
         content:
           "One-file Python add-on. Type a prompt in Blender, get a fully-imported 3D model in your scene.",
       },
+      { property: "og:url", content: "https://kingdavez.click/integrations/blender" },
     ],
     links: [{ rel: "canonical", href: "https://kingdavez.click/integrations/blender" }],
   }),
