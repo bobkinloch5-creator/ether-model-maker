@@ -59,14 +59,12 @@ export function Hero() {
         </a>
 
         <h1 className="mt-6 font-display text-4xl font-semibold leading-[1.05] tracking-tight sm:text-6xl md:text-7xl lg:text-[88px] animate-slide-up animate-delay-100">
-          The fastest way to <br className="hidden sm:block" />
-          <span className="text-shine">3D, from text or image.</span>
+          {t("hero.titleA")} <br className="hidden sm:block" />
+          <span className="text-shine">{t("hero.titleB")}</span>
         </h1>
 
         <p className="mx-auto mt-4 max-w-2xl text-sm text-muted-foreground sm:mt-6 sm:text-lg animate-slide-up animate-delay-200">
-          Generate game-ready 3D models, PBR textures, and animations in under
-          a minute. Export to Blender, Unity, Unreal, Godot, Roblox, Three.js,
-          Second Life — anywhere you build.
+          {t("hero.subtitle")}
         </p>
 
 
