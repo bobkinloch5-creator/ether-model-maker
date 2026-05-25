@@ -42,17 +42,18 @@ export function Header() {
             </span>
           </Link>
           <nav className="hidden items-center gap-7 text-sm text-muted-foreground md:flex">
-            <Link to="/" className="hover:text-foreground transition">Home</Link>
-            <a href="#features" className="hover:text-foreground transition">Features</a>
-            <Link to="/community" className="hover:text-foreground transition">Community</Link>
-            <Link to="/second-life" className="hover:text-foreground transition">Second Life</Link>
-            <Link to="/" hash="integrations" className="hover:text-foreground transition">Integrations</Link>
-            <Link to="/tutorials" className="hover:text-foreground transition">Tutorials</Link>
-            <Link to="/docs" className="hover:text-foreground transition">Docs</Link>
-            <Link to="/roadmap" className="hover:text-foreground transition">Roadmap</Link>
-            <Link to="/changelog" className="hover:text-foreground transition">What's New</Link>
+            <Link to="/" className="hover:text-foreground transition">{t("nav.home")}</Link>
+            <a href="#features" className="hover:text-foreground transition">{t("nav.features")}</a>
+            <Link to="/community" className="hover:text-foreground transition">{t("nav.community")}</Link>
+            <Link to="/second-life" className="hover:text-foreground transition">{t("nav.secondLife")}</Link>
+            <Link to="/" hash="integrations" className="hover:text-foreground transition">{t("nav.integrations")}</Link>
+            <Link to="/tutorials" className="hover:text-foreground transition">{t("nav.tutorials")}</Link>
+            <Link to="/docs" className="hover:text-foreground transition">{t("nav.docs")}</Link>
+            <Link to="/roadmap" className="hover:text-foreground transition">{t("nav.roadmap")}</Link>
+            <Link to="/changelog" className="hover:text-foreground transition">{t("nav.whatsNew")}</Link>
           </nav>
           <div className="flex items-center gap-2">
+            <LanguagePicker />
             {!loading && user ? (
               <>
                 {/* Admin link hidden — access via direct URL /admin */}
