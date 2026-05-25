@@ -95,12 +95,6 @@ const TYPES: { key: GenType; label: string; icon: typeof Box; desc: string }[] =
     icon: Palette,
     desc: "Re-texture an existing model with AI",
   },
-  {
-    key: "manual-upload",
-    label: "Colab Import",
-    icon: UploadCloud,
-    desc: "Manually upload generated OBJ/GLB/ZIP models from Google Colab",
-  },
 ];
 
 function GeneratePage() {
