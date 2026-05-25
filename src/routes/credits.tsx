@@ -380,7 +380,7 @@ function PaypalCheckout({
           <li className={`rounded-xl border p-4 transition ${opened ? "border-white/10 bg-white/5" : "border-white/5 bg-white/[0.02] opacity-60"}`}>
             <div className="font-semibold text-foreground">2. Paste your PayPal transaction ID</div>
             <p className="mt-1">
-              After paying, copy your PayPal transaction / receipt ID and paste it here. Credits will be added instantly.
+              After paying, copy your PayPal transaction / receipt ID and paste it here. We'll verify the payment and add credits to your account once an owner approves it.
             </p>
             <div className="mt-3">
               <input
