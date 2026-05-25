@@ -624,7 +624,7 @@ function DashboardPage() {
                       placeholder="SL Username (e.g. Bob Resident)"
                       value={slUsernameInput}
                       onChange={(e) => setSlUsernameInput(e.target.value)}
-                      className="flex-1 rounded-lg border border-white/10 bg-black/30 px-3 py-1.5 text-xs placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary/30"
+                      className="flex-1 rounded-lg border border-white/10 bg-black/30 px-3 py-1.5 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
                       required
                     />
                     <button
@@ -1133,7 +1133,7 @@ function DashboardPage() {
                           step="10"
                           placeholder="Amount (e.g. 100)"
                           id="customCreditInput"
-                          className="flex-1 rounded-lg border border-white/10 bg-black/30 px-3 py-1.5 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary/30"
+                          className="flex-1 rounded-lg border border-white/10 bg-black/30 px-3 py-1.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
                         />
                         <button
                           onClick={() => {
@@ -1325,7 +1325,7 @@ function DashboardPage() {
                     value={newProjectName}
                     onChange={(e) => setNewProjectName(e.target.value)}
                     placeholder="e.g. Elven Weapons Pack"
-                    className="w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary/30"
+                    className="w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
                     autoFocus
                     required
                   />

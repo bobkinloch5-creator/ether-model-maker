@@ -344,7 +344,7 @@ function ProfilePage() {
                   value={avatarSeed}
                   onChange={(e) => setAvatarSeed(e.target.value)}
                   placeholder="Any text — your look is generated from this"
-                  className="h-11 flex-1 rounded-xl border border-white/10 bg-black/30 px-4 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 transition"
+                  className="h-11 flex-1 rounded-xl border border-white/10 bg-black/30 px-4 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 transition"
                   style={{ ['--tw-ring-color' as string]: `${accentObj.hex}55` }}
                 />
                 <button
@@ -454,7 +454,7 @@ function ProfilePage() {
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 placeholder="Your display name"
-                className="h-11 w-full rounded-xl border border-white/10 bg-black/30 px-4 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 transition"
+                className="h-11 w-full rounded-xl border border-white/10 bg-black/30 px-4 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 transition"
                 style={{ ['--tw-ring-color' as string]: `${accentObj.hex}55` }}
               />
             </div>
@@ -474,7 +474,7 @@ function ProfilePage() {
                 onChange={(e) => setBio(e.target.value.slice(0, 280))}
                 rows={3}
                 placeholder="Tell people who you are and what you build…"
-                className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 transition resize-none"
+                className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 transition resize-none"
                 style={{ ['--tw-ring-color' as string]: `${accentObj.hex}55` }}
               />
             </div>
@@ -484,7 +484,7 @@ function ProfilePage() {
                 value={slUsername}
                 onChange={(e) => setSlUsername(e.target.value)}
                 placeholder="Your Second Life legacy name"
-                className="h-11 w-full rounded-xl border border-white/10 bg-black/30 px-4 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 transition"
+                className="h-11 w-full rounded-xl border border-white/10 bg-black/30 px-4 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 transition"
                 style={{ ['--tw-ring-color' as string]: `${accentObj.hex}55` }}
               />
             </div>
@@ -494,7 +494,7 @@ function ProfilePage() {
                 value={robloxUsername}
                 onChange={(e) => setRobloxUsername(e.target.value)}
                 placeholder="Your Roblox username"
-                className="h-11 w-full rounded-xl border border-white/10 bg-black/30 px-4 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 transition"
+                className="h-11 w-full rounded-xl border border-white/10 bg-black/30 px-4 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 transition"
                 style={{ ['--tw-ring-color' as string]: `${accentObj.hex}55` }}
               />
             </div>
@@ -623,7 +623,7 @@ function ProfilePage() {
                   onChange={(e) => setRefCodeInput(e.target.value.toUpperCase())}
                   placeholder="ENTER CODE"
                   maxLength={16}
-                  className="flex-1 h-10 rounded-xl border border-white/10 bg-black/30 px-4 text-sm uppercase tracking-[0.15em] placeholder:text-muted-foreground/50 placeholder:tracking-normal focus:border-primary/50 focus:outline-none"
+                  className="flex-1 h-10 rounded-xl border border-white/10 bg-black/30 px-4 text-sm uppercase tracking-[0.15em] placeholder:text-muted-foreground placeholder:tracking-normal focus:border-primary/50 focus:outline-none"
                 />
                 <button
                   onClick={handleApplyReferral}
