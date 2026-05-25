@@ -2283,10 +2283,12 @@ function GeneratePage() {
                         className="flex items-center justify-center gap-2 w-full h-10 rounded-xl border border-primary/30 bg-primary/10 text-sm font-medium text-primary-glow hover:bg-primary/20 transition"
                       >
                         <Sparkles className="h-4 w-4" /> Share to Community
+                        <span className="ml-1 inline-flex items-center rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">+25 credits</span>
                       </button>
                     ) : (
                       <div className="rounded-xl border border-white/10 bg-white/5 p-3 space-y-2">
-                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Share to Community</p>
+                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Share to Community · earn +25 credits</p>
+
                         <input
                           value={publishTitle}
                           onChange={(e) => setPublishTitle(e.target.value.slice(0, 120))}
