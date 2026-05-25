@@ -165,8 +165,9 @@ export function ModelViewer({ url, prompt }: ModelViewerProps) {
         <Canvas
           shadows
           dpr={dpr}
+          frameloop={autoRotate ? "always" : "demand"}
           gl={{
-            antialias: true,
+            antialias: !isMobile,
             alpha: true,
             powerPreference: "high-performance",
             preserveDrawingBuffer: false,
@@ -181,6 +182,15 @@ export function ModelViewer({ url, prompt }: ModelViewerProps) {
             scene.background = null;
           }}
         >
+          <PerformanceMonitor
+            onIncline={() => setPerfTier("high")}
+            onDecline={() => setPerfTier("low")}
+            flipflops={3}
+          />
+          <AdaptiveDpr pixelated />
+          <AdaptiveEvents />
+          {/* Bake static shadows once instead of recomputing every frame */}
+          <BakeShadows />
           {/* Studio key + fill + rim, dialled to flatter PBR materials */}
           <ambientLight intensity={0.35} />
           <directionalLight
