@@ -300,9 +300,12 @@ function GeneratePage() {
 
   const handleGenerate = async () => {
     if (!prompt.trim() || !user) return;
-    // Credit gate temporarily disabled — credit display is reading the wrong source.
-    // TODO: re-enable once credit display is fixed.
-
+    if (!hasEnoughCredits) {
+      toast.error("Not enough credits", {
+        description: `${selectedType.replace(/-/g, " ")} costs ${cost} credits. You have ${profile?.credits ?? 0}.`,
+      });
+      return;
+    }
 
     setIsGenerating(true);
     setGenStartedAt(Date.now());
@@ -312,6 +315,7 @@ function GeneratePage() {
     setHfStatus("idle");
     setHfProgress(0);
     setHfMessage("");
+
 
     // Step 1: Auto-enhance if not already done
     let finalEnhanced = enhancedPromptText;
