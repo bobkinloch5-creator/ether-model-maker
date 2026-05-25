@@ -78,13 +78,12 @@ function CreditsPage() {
     if (!user) return;
     setProcessing(true);
     try {
-      const newCredits = await purchaseCredits(user.id, pack.credits, "paypal", transactionId, pack.cost);
-      if (newCredits !== null) {
-        await refreshProfile();
+      const purchaseId = await purchaseCredits(user.id, pack.credits, "paypal", transactionId, pack.cost);
+      if (purchaseId !== null) {
         setSuccess({ credits: pack.credits });
-        toast.success(`+${pack.credits} credits added`);
+        toast.success("Payment submitted — awaiting owner approval");
       } else {
-        toast.error("Payment captured but credit grant failed. Contact support with your PayPal receipt.");
+        toast.error("Could not submit payment. Make sure you pasted a valid PayPal transaction ID, then try again.");
       }
     } finally {
       setProcessing(false);
