@@ -197,7 +197,7 @@ async function generateImageFromPrompt(prompt: string): Promise<string> {
       messages: [
         {
           role: "user",
-          content: `A clean studio photograph of: ${prompt}. Single subject, centered, plain neutral background, soft even lighting, no text, no watermark.`,
+          content: `Studio product photograph of: ${prompt}. Single subject, perfectly centered, plain pure-white seamless background, bright even softbox lighting, vivid saturated colors, rich color depth, sharp focus, high contrast, crisp PBR materials, no shadows on background, no text, no watermark, photoreal.`,
         },
       ],
       modalities: ["image", "text"],
