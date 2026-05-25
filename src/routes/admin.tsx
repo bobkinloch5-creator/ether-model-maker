@@ -316,8 +316,12 @@ function AdminPage() {
     );
   }
 
-  const maxRevenue = analytics ? Math.max(1, ...analytics.daily.map((d) => Number(d.revenue))) : 1;
-  const maxGens = analytics ? Math.max(1, ...analytics.daily.map((d) => d.generations)) : 1;
+  const maxRevenue = analytics && analytics.daily.length > 0
+    ? Math.max(1, ...analytics.daily.map((d) => Number(d?.revenue ?? 0)))
+    : 1;
+  const maxGens = analytics && analytics.daily.length > 0
+    ? Math.max(1, ...analytics.daily.map((d) => Number(d?.generations ?? 0)))
+    : 1;
 
   return (
     <div className="min-h-screen px-4 py-24">
