@@ -8,7 +8,7 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/community")({
   head: () => ({
     meta: [
-      { title: "Community Showcase — KingDavez Studios" },
+      { title: "Community Showcase — KingDavez Studios (Beta)" },
       { name: "description", content: "Browse 3D models, textures, and concept art shared by the KingDavez community. Like, comment, and remix." },
       { property: "og:title", content: "Community Showcase — KingDavez Studios" },
       { property: "og:description", content: "Browse 3D models and concept art shared by the community." },

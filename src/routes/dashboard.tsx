@@ -62,7 +62,7 @@ import { useScrollAnimate } from "@/hooks/useScrollAnimate";
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
-      { title: "Dashboard — Manage Your AI 3D Models & Credits | KingDavez Studios" },
+      { title: "Dashboard — Manage Your AI 3D Models & Credits | KingDavez Studios (Beta)" },
       { name: "description", content: "Manage your AI-generated 3D models, projects, credits, API keys, and Second Life deliveries from your KingDavez Studios dashboard." },
       { name: "keywords", content: "AI 3D dashboard, 3D model manager, text-to-3D projects, Second Life mesh delivery, PBR texture library, GLB downloads, game asset manager" },
       { property: "og:title", content: "Dashboard — Manage Your AI 3D Models & Credits | KingDavez Studios" },
@@ -542,6 +542,9 @@ function DashboardPage() {
               </div>
               <span className="font-display text-base font-semibold tracking-tight">
                 KingDavez<span className="text-muted-foreground">.studio</span>
+              </span>
+              <span className="inline-flex items-center rounded-full bg-primary/15 border border-primary/30 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-primary-glow">
+                Beta
               </span>
             </Link>
 

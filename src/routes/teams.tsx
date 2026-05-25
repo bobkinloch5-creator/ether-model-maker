@@ -22,7 +22,7 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/teams")({
   head: () => ({
     meta: [
-      { title: "Teams — Collaborate on AI 3D Projects | KingDavez Studios" },
+      { title: "Teams — Collaborate on AI 3D Projects | KingDavez Studios (Beta)" },
       { name: "description", content: "Create or join teams to collaborate with friends on shared AI 3D model projects, manage permissions, and pool credits for larger generations." },
       { name: "keywords", content: "3D collaboration team, AI mesh team project, shared 3D models, team workspace, game dev collaboration" },
       { property: "og:title", content: "Teams — Collaborate on AI 3D Projects | KingDavez Studios" },

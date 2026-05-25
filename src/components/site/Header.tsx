@@ -34,6 +34,9 @@ export function Header() {
             <span className="font-display text-sm sm:text-base font-semibold tracking-tight truncate">
               KingDavez <span className="text-muted-foreground hidden xs:inline">studio</span>
             </span>
+            <span className="inline-flex items-center rounded-full bg-primary/15 border border-primary/30 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-primary-glow">
+              Beta
+            </span>
           </Link>
           <nav className="hidden items-center gap-7 text-sm text-muted-foreground md:flex">
             <Link to="/" className="hover:text-foreground transition">Home</Link>

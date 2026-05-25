@@ -54,7 +54,7 @@ type GenType = "image-to-3d" | "retexture" | "text-to-image" | "manual-upload";
 export const Route = createFileRoute("/generate")({
   head: () => ({
     meta: [
-      { title: "Generate 3D Models from Text or Image — KingDavez Studios" },
+      { title: "Generate 3D Models from Text or Image — KingDavez Studios (Beta)" },
       { name: "description", content: "Turn a prompt or reference photo into a downloadable 3D model with PBR textures. Export GLB, OBJ, STL, or FBX in seconds." },
       { name: "keywords", content: "AI 3D model generator, text to 3D online, image to 3D converter, AI mesh generator, PBR texture generator, GLB exporter, OBJ exporter, FBX exporter, STL exporter, Second Life mesh creator, game asset generator, AI retexturing" },
       { property: "og:title", content: "AI 3D Model Generator — KingDavez Studios" },
@@ -1028,6 +1028,9 @@ function GeneratePage() {
         <div className="mb-8">
           <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground backdrop-blur">
             <Zap className="h-3 w-3 text-primary-glow" /> AI-Powered Workspace
+            <span className="inline-flex items-center rounded-full bg-primary/15 border border-primary/30 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-primary-glow ml-1">
+              Beta
+            </span>
           </div>
           <h1 className="mt-3 font-display text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.05]">
             <span className="gradient-text">Generate</span> a 3D asset
@@ -1108,7 +1111,12 @@ function GeneratePage() {
                   selectedType === t.key ? "text-primary-glow" : "text-muted-foreground"
                 }`}
               />
-              <h3 className="mt-3 font-display text-sm font-semibold">{t.label}</h3>
+              <div className="mt-3 flex items-center gap-2">
+                <h3 className="font-display text-sm font-semibold">{t.label}</h3>
+                <span className="inline-flex items-center rounded-full bg-primary/15 border border-primary/30 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-primary-glow">
+                  Beta
+                </span>
+              </div>
               <p className="mt-1 text-xs text-muted-foreground">{t.desc}</p>
               <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
                 <Coins className="h-3 w-3 text-amber-400" />

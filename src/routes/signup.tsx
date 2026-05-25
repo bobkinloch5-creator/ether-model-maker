@@ -20,7 +20,7 @@ import {
 export const Route = createFileRoute("/signup")({
   head: () => ({
     meta: [
-      { title: "Sign Up — Get 25 Free Credits for AI 3D Generation | KingDavez Studios" },
+      { title: "Sign Up — Get 25 Free Credits for AI 3D Generation | KingDavez Studios (Beta)" },
       {
         name: "description",
         content:

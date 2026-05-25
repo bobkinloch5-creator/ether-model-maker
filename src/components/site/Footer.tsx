@@ -12,7 +12,12 @@ export function Footer() {
                 <Sparkles className="h-4 w-4 text-white" />
               </div>
               <div>
-                <p className="font-display text-sm font-semibold">KingDavez Studios</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-display text-sm font-semibold">KingDavez Studios</p>
+                  <span className="inline-flex items-center rounded-full bg-primary/15 border border-primary/30 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-primary-glow">
+                    Beta
+                  </span>
+                </div>
                 <p className="text-xs text-muted-foreground">AI 3D generation for Second Life and beyond.</p>
               </div>
             </div>

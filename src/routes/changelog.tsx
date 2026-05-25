@@ -6,7 +6,7 @@ import { Sparkles, Calendar, Tag, ArrowRight } from "lucide-react";
 export const Route = createFileRoute("/changelog")({
   head: () => ({
     meta: [
-      { title: "Changelog — KingDavez Studios Updates & Releases" },
+      { title: "Changelog — KingDavez Studios Updates & Releases (Beta)" },
       { name: "description", content: "Latest KingDavez Studios releases: FBX exports, developer API, procedural previews, STL print export, and more." },
       { property: "og:title", content: "Changelog — KingDavez Studios" },
       { property: "og:description", content: "What's new in KingDavez Studios — AI 3D generation updates and feature releases." },

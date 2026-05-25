@@ -23,7 +23,12 @@ export function Features() {
             headerVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
           }`}
         >
-          <p className="text-sm font-medium text-primary-glow">Everything you need</p>
+          <div className="inline-flex items-center gap-2 mb-3">
+            <span className="inline-flex items-center rounded-full bg-primary/15 border border-primary/30 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-primary-glow">
+              Beta
+            </span>
+            <p className="text-sm font-medium text-primary-glow">Everything you need</p>
+          </div>
           <h2 className="mt-2 font-display text-3xl font-semibold tracking-tight sm:text-5xl">
             One platform. <span className="gradient-text">Every asset.</span>
           </h2>

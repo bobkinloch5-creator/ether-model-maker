@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 export const Route = createFileRoute("/diag")({
   head: () => ({
     meta: [
-      { title: "Diagnostics — KingDavez Studios" },
+      { title: "Diagnostics — KingDavez Studios (Beta)" },
       { name: "description", content: "Internal environment diagnostics for KingDavez Studios infrastructure." },
       { name: "robots", content: "noindex,nofollow" },
     ],
