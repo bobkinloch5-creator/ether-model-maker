@@ -117,7 +117,7 @@ export const Route = createFileRoute("/settings/backend")({
 
 function BackendSettingsPage() {
   const { profile, session, loading: authLoading } = useAuth();
-  const isOwner = profile?.is_owner === true || (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"));
+  const isOwner = profile?.is_owner === true;
   const [cfg, setCfg] = useState<BackendConfig>(() => getBackendConfig());
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ ok: boolean; msg: string } | null>(null);

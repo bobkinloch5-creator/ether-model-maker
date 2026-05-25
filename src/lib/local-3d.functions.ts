@@ -10,16 +10,13 @@ export const getLocal3DUrl = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { userId } = context;
-    const isDev = process.env.NODE_ENV === "development";
-    if (!isDev) {
-      const { data: roleRow } = await supabaseAdmin
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId)
-        .eq("role", "owner")
-        .maybeSingle();
-      if (!roleRow) return { ok: false as const, error: "Forbidden" };
-    }
+    const { data: roleRow } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "owner")
+      .maybeSingle();
+    if (!roleRow) return { ok: false as const, error: "Forbidden" };
     const url = process.env.LOCAL_3D_API_URL?.trim().replace(/\/+$/, "") || "";
     return { ok: true as const, url };
   });
@@ -36,18 +33,15 @@ export const testLocal3DServer = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     const { userId } = context;
 
-    // Owner check via user_roles (bypassed in development mode)
-    const isDev = process.env.NODE_ENV === "development";
-    if (!isDev) {
-      const { data: roleRow } = await supabaseAdmin
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId)
-        .eq("role", "owner")
-        .maybeSingle();
-      if (!roleRow) {
-        return { ok: false as const, error: "Forbidden: owner only" };
-      }
+    // Owner check via user_roles
+    const { data: roleRow } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "owner")
+      .maybeSingle();
+    if (!roleRow) {
+      return { ok: false as const, error: "Forbidden: owner only" };
     }
 
     const base = process.env.LOCAL_3D_API_URL?.trim().replace(/\/+$/, "");
@@ -156,16 +150,13 @@ export const testGradioSpace = createServerFn({ method: "POST" })
   .inputValidator((input: { spaceUrl: string; apiName?: string; provider?: "hf" | "comfyui" | "local" }) => input)
   .handler(async ({ context, data }) => {
     const { userId } = context;
-    const isDev = process.env.NODE_ENV === "development";
-    if (!isDev) {
-      const { data: roleRow } = await supabaseAdmin
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId)
-        .eq("role", "owner")
-        .maybeSingle();
-      if (!roleRow) return { ok: false as const, error: "Forbidden: owner only" };
-    }
+    const { data: roleRow } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "owner")
+      .maybeSingle();
+    if (!roleRow) return { ok: false as const, error: "Forbidden: owner only" };
 
     const base = (data.spaceUrl || "").trim().replace(/\/+$/, "");
     if (!base) return { ok: false as const, error: "Space URL is required" };
