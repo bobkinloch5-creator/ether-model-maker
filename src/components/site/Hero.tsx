@@ -90,7 +90,7 @@ export function Hero() {
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  <Wand2 className="h-3.5 w-3.5" /> Text
+                  <Wand2 className="h-3.5 w-3.5" /> {t("hero.text")}
                 </button>
                 <button
                   type="button"
@@ -102,42 +102,42 @@ export function Hero() {
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  <ImageIcon className="h-3.5 w-3.5" /> Image
+                  <ImageIcon className="h-3.5 w-3.5" /> {t("hero.image")}
                 </button>
               </div>
               <input
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
                 className="flex-1 bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none"
-                placeholder="An ornate elven longbow with glowing runes…"
+                placeholder={t("hero.placeholder")}
                 aria-label="Describe your 3D model"
               />
               <button
                 type="submit"
                 className="inline-flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-[var(--gradient-primary)] px-4 text-sm font-medium text-white hover:opacity-95 transition"
               >
-                <Box className="h-4 w-4" /> Generate
+                <Box className="h-4 w-4" /> {t("hero.generate")}
               </button>
             </div>
             <div className="flex flex-wrap items-center gap-2 px-3 py-2 text-[11px] text-muted-foreground">
-              <span>Try:</span>
-              {SUGGESTIONS.map((t) => (
+              <span>{t("hero.try")}</span>
+              {SUGGESTIONS.map((tt) => (
                 <button
                   type="button"
-                  key={t}
+                  key={tt}
                   onClick={() => {
-                    setValue(t);
-                    go(t);
+                    setValue(tt);
+                    go(tt);
                   }}
                   className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 hover:bg-white/15 hover:text-foreground cursor-pointer transition"
                 >
-                  {t}
+                  {tt}
                 </button>
               ))}
             </div>
           </div>
           <p className="mt-3 text-xs text-muted-foreground animate-fade-in animate-delay-400">
-            No credit card required · 25 free credits
+            {t("hero.noCard")}
           </p>
         </form>
       </div>
