@@ -90,10 +90,11 @@ export const Route = createFileRoute("/api/public/v1/generations")({
           return jsonResponse({ error: deductErr.message || "Insufficient credits" }, 402);
         }
 
-        const resultData: Record<string, unknown> = {};
+        const resultData: Record<string, string> = {};
         if (imageUrl) resultData.image_url = imageUrl;
         if (clientJobId) resultData.client_job_id = clientJobId;
         if (externalId) resultData.external_id = externalId;
+
 
         const { data, error } = await supabaseAdmin
           .from("generations")
