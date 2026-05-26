@@ -46,6 +46,7 @@ import { Route as AdminLedgerRouteImport } from './routes/admin.ledger'
 import { Route as ApiPublicV1MeRouteImport } from './routes/api/public/v1/me'
 import { Route as ApiPublicV1GenerationsRouteImport } from './routes/api/public/v1/generations'
 import { Route as ApiPublicV1SlUploadRouteImport } from './routes/api/public/v1/sl/upload'
+import { Route as ApiPublicV1GenerationsIdRouteImport } from './routes/api/public/v1/generations.$id'
 
 const TutorialsRoute = TutorialsRouteImport.update({
   id: '/tutorials',
@@ -232,6 +233,12 @@ const ApiPublicV1SlUploadRoute = ApiPublicV1SlUploadRouteImport.update({
   path: '/api/public/v1/sl/upload',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicV1GenerationsIdRoute =
+  ApiPublicV1GenerationsIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => ApiPublicV1GenerationsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -268,8 +275,9 @@ export interface FileRoutesByFullPath {
   '/settings/backend': typeof SettingsBackendRoute
   '/tutorials/$slug': typeof TutorialsSlugRoute
   '/tutorials/': typeof TutorialsIndexRoute
-  '/api/public/v1/generations': typeof ApiPublicV1GenerationsRoute
+  '/api/public/v1/generations': typeof ApiPublicV1GenerationsRouteWithChildren
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
+  '/api/public/v1/generations/$id': typeof ApiPublicV1GenerationsIdRoute
   '/api/public/v1/sl/upload': typeof ApiPublicV1SlUploadRoute
 }
 export interface FileRoutesByTo {
@@ -306,8 +314,9 @@ export interface FileRoutesByTo {
   '/settings/backend': typeof SettingsBackendRoute
   '/tutorials/$slug': typeof TutorialsSlugRoute
   '/tutorials': typeof TutorialsIndexRoute
-  '/api/public/v1/generations': typeof ApiPublicV1GenerationsRoute
+  '/api/public/v1/generations': typeof ApiPublicV1GenerationsRouteWithChildren
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
+  '/api/public/v1/generations/$id': typeof ApiPublicV1GenerationsIdRoute
   '/api/public/v1/sl/upload': typeof ApiPublicV1SlUploadRoute
 }
 export interface FileRoutesById {
@@ -346,8 +355,9 @@ export interface FileRoutesById {
   '/settings/backend': typeof SettingsBackendRoute
   '/tutorials/$slug': typeof TutorialsSlugRoute
   '/tutorials/': typeof TutorialsIndexRoute
-  '/api/public/v1/generations': typeof ApiPublicV1GenerationsRoute
+  '/api/public/v1/generations': typeof ApiPublicV1GenerationsRouteWithChildren
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
+  '/api/public/v1/generations/$id': typeof ApiPublicV1GenerationsIdRoute
   '/api/public/v1/sl/upload': typeof ApiPublicV1SlUploadRoute
 }
 export interface FileRouteTypes {
@@ -389,6 +399,7 @@ export interface FileRouteTypes {
     | '/tutorials/'
     | '/api/public/v1/generations'
     | '/api/public/v1/me'
+    | '/api/public/v1/generations/$id'
     | '/api/public/v1/sl/upload'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -427,6 +438,7 @@ export interface FileRouteTypes {
     | '/tutorials'
     | '/api/public/v1/generations'
     | '/api/public/v1/me'
+    | '/api/public/v1/generations/$id'
     | '/api/public/v1/sl/upload'
   id:
     | '__root__'
@@ -466,6 +478,7 @@ export interface FileRouteTypes {
     | '/tutorials/'
     | '/api/public/v1/generations'
     | '/api/public/v1/me'
+    | '/api/public/v1/generations/$id'
     | '/api/public/v1/sl/upload'
   fileRoutesById: FileRoutesById
 }
@@ -499,7 +512,7 @@ export interface RootRouteChildren {
   IntegrationsUnrealRoute: typeof IntegrationsUnrealRoute
   IntegrationsWebRoute: typeof IntegrationsWebRoute
   SettingsBackendRoute: typeof SettingsBackendRoute
-  ApiPublicV1GenerationsRoute: typeof ApiPublicV1GenerationsRoute
+  ApiPublicV1GenerationsRoute: typeof ApiPublicV1GenerationsRouteWithChildren
   ApiPublicV1MeRoute: typeof ApiPublicV1MeRoute
   ApiPublicV1SlUploadRoute: typeof ApiPublicV1SlUploadRoute
 }
@@ -765,6 +778,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicV1SlUploadRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/v1/generations/$id': {
+      id: '/api/public/v1/generations/$id'
+      path: '/$id'
+      fullPath: '/api/public/v1/generations/$id'
+      preLoaderRoute: typeof ApiPublicV1GenerationsIdRouteImport
+      parentRoute: typeof ApiPublicV1GenerationsRoute
+    }
   }
 }
 
@@ -815,6 +835,20 @@ const TutorialsRouteWithChildren = TutorialsRoute._addFileChildren(
   TutorialsRouteChildren,
 )
 
+interface ApiPublicV1GenerationsRouteChildren {
+  ApiPublicV1GenerationsIdRoute: typeof ApiPublicV1GenerationsIdRoute
+}
+
+const ApiPublicV1GenerationsRouteChildren: ApiPublicV1GenerationsRouteChildren =
+  {
+    ApiPublicV1GenerationsIdRoute: ApiPublicV1GenerationsIdRoute,
+  }
+
+const ApiPublicV1GenerationsRouteWithChildren =
+  ApiPublicV1GenerationsRoute._addFileChildren(
+    ApiPublicV1GenerationsRouteChildren,
+  )
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
@@ -845,7 +879,7 @@ const rootRouteChildren: RootRouteChildren = {
   IntegrationsUnrealRoute: IntegrationsUnrealRoute,
   IntegrationsWebRoute: IntegrationsWebRoute,
   SettingsBackendRoute: SettingsBackendRoute,
-  ApiPublicV1GenerationsRoute: ApiPublicV1GenerationsRoute,
+  ApiPublicV1GenerationsRoute: ApiPublicV1GenerationsRouteWithChildren,
   ApiPublicV1MeRoute: ApiPublicV1MeRoute,
   ApiPublicV1SlUploadRoute: ApiPublicV1SlUploadRoute,
 }

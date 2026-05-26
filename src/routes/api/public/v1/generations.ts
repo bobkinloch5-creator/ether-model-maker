@@ -58,6 +58,10 @@ export const Route = createFileRoute("/api/public/v1/generations")({
         const type = typeof body.type === "string" ? body.type.trim() : "text-to-3d";
         const imageUrl = typeof body.image_url === "string" ? body.image_url.trim() : null;
         const source = typeof body.source === "string" ? body.source.trim().slice(0, 32) : "secondlife";
+        const clientJobId =
+          typeof body.client_job_id === "string" ? body.client_job_id.trim().slice(0, 128) : null;
+        const externalId =
+          typeof body.external_id === "string" ? body.external_id.trim().slice(0, 128) : null;
 
         if (!prompt || prompt.length < 3 || prompt.length > 1000) {
           return jsonResponse({ error: "Prompt must be 3-1000 chars." }, 400);
@@ -86,6 +90,12 @@ export const Route = createFileRoute("/api/public/v1/generations")({
           return jsonResponse({ error: deductErr.message || "Insufficient credits" }, 402);
         }
 
+        const resultData: Record<string, string> = {};
+        if (imageUrl) resultData.image_url = imageUrl;
+        if (clientJobId) resultData.client_job_id = clientJobId;
+        if (externalId) resultData.external_id = externalId;
+
+
         const { data, error } = await supabaseAdmin
           .from("generations")
           .insert({
@@ -93,26 +103,36 @@ export const Route = createFileRoute("/api/public/v1/generations")({
             prompt,
             enhanced_prompt: null,
             generation_type: type,
-            status: "queued",
+            status: "processing",
             credits_used: cost,
             source,
-            result_data: imageUrl ? { image_url: imageUrl } : {},
+            result_data: resultData,
           })
           .select("id, prompt, generation_type, status, credits_used, created_at")
           .single();
 
         if (error) return jsonResponse({ error: error.message }, 500);
 
+        const etaSeconds = type === "retexture" ? 120 : 300;
+
         return jsonResponse(
           {
             ok: true,
+            id: data.id,
+            job_id: data.id,
+            generation_id: data.id,
+            client_job_id: clientJobId,
+            external_id: externalId,
+            status: "processing",
+            eta_seconds: etaSeconds,
             generation: data,
             credits_remaining: auth.user.isOwner ? null : auth.user.credits - cost,
-            status_url: `https://kingdavez.click/api/public/v1/generations?limit=1`,
+            status_url: `https://kingdavez.click/api/public/v1/generations/${data.id}`,
           },
           201,
         );
       },
+
     },
   },
 });
