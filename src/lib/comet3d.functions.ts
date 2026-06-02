@@ -130,30 +130,92 @@ export const generateComet3D = createServerFn({ method: "POST" })
       const endpoint = `${getBaseUrl()}/images/generations`;
       console.log("[COMET 3D] POST", endpoint, "kind=", data.kind);
 
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-        signal: AbortSignal.timeout(290_000),
-      });
+      // CometAPI fronts Hunyuan3D with a Cloudflare gateway that returns 524
+      // (and sometimes 502/503) when the model takes longer than the edge
+      // timeout, even though the job often succeeds on a retry. Retry those
+      // transient gateway errors a few times with backoff before giving up.
+      const TRANSIENT = new Set([429, 500, 502, 503, 504, 520, 521, 522, 523, 524]);
+      const MAX_ATTEMPTS = 4;
+      let res: Response | null = null;
+      let text = "";
+      let lastTransientStatus = 0;
 
-      const text = await res.text();
+      for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+        try {
+          res = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(body),
+            signal: AbortSignal.timeout(290_000),
+          });
+        } catch (fetchErr) {
+          // Network-level failure (incl. our own timeout) — retry if attempts remain.
+          if (attempt < MAX_ATTEMPTS) {
+            const wait = 2000 * attempt;
+            console.warn(`[COMET 3D] fetch threw (attempt ${attempt}), retrying in ${wait}ms`, fetchErr);
+            await new Promise((r) => setTimeout(r, wait));
+            continue;
+          }
+          throw fetchErr;
+        }
+
+        text = await res.text();
+        if (res.ok) break;
+
+        if (TRANSIENT.has(res.status) && attempt < MAX_ATTEMPTS) {
+          lastTransientStatus = res.status;
+          const wait = 3000 * attempt;
+          console.warn(
+            `[COMET 3D] transient ${res.status} (attempt ${attempt}/${MAX_ATTEMPTS}), retrying in ${wait}ms`,
+            text.slice(0, 200)
+          );
+          await new Promise((r) => setTimeout(r, wait));
+          continue;
+        }
+        break; // non-transient error, or out of attempts
+      }
+
+      if (!res) {
+        return { ok: false as const, error: "CometAPI could not be reached. Please try again." };
+      }
+
       if (!res.ok) {
         console.error("[COMET 3D] error", res.status, text.slice(0, 500));
+        const lower = text.toLowerCase();
         if (res.status === 401 || res.status === 403) {
           return { ok: false as const, error: "CometAPI rejected the API key. Check COMET_API_KEY." };
         }
-        if (res.status === 402) {
-          return { ok: false as const, error: "CometAPI account is out of credit. Please top up your CometAPI balance." };
+        // Quota / billing — CometAPI returns these as 402 OR as a 200/4xx body
+        // containing "quota"/"insufficient". Detect the message too.
+        if (
+          res.status === 402 ||
+          lower.includes("quota") ||
+          lower.includes("insufficient") ||
+          lower.includes("out of credit") ||
+          lower.includes("balance")
+        ) {
+          return {
+            ok: false as const,
+            error:
+              "CometAPI model quota reached / out of credit. Your plan's baseline quota refreshes on its renewal date, or you can top up your CometAPI balance at cometapi.com to continue now.",
+          };
         }
         if (res.status === 429) {
           return { ok: false as const, error: "CometAPI is rate-limiting requests. Please wait a moment and try again." };
         }
+        if (TRANSIENT.has(res.status)) {
+          return {
+            ok: false as const,
+            error: `CometAPI's 3D service is temporarily overloaded (gateway ${res.status}) and didn't finish after ${MAX_ATTEMPTS} attempts. This is a CometAPI-side timeout — please try again in a minute.`,
+          };
+        }
         return { ok: false as const, error: `CometAPI failed (${res.status}): ${text.slice(0, 300)}` };
       }
+
+      void lastTransientStatus;
 
       let json: unknown;
       try {

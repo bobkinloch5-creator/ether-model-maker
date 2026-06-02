@@ -50,7 +50,7 @@ import { ModelViewer } from "@/components/ModelViewer";
 import { toast } from "sonner";
 import { normalizeImageToJpeg } from "@/lib/normalize-image";
 
-type GenType = "image-to-3d" | "retexture" | "manual-upload";
+type GenType = "text-to-3d" | "image-to-3d" | "retexture" | "manual-upload";
 
 export const Route = createFileRoute("/generate")({
   head: () => ({
@@ -69,7 +69,7 @@ export const Route = createFileRoute("/generate")({
   }),
   validateSearch: (search: Record<string, unknown>): { type?: GenType; prompt?: string } => {
     const rawType = search.type as string;
-    const validType: GenType | undefined = ["image-to-3d", "retexture", "manual-upload"].includes(rawType)
+    const validType: GenType | undefined = ["text-to-3d", "image-to-3d", "retexture", "manual-upload"].includes(rawType)
       ? (rawType as GenType)
       : undefined;
     return {
@@ -81,6 +81,12 @@ export const Route = createFileRoute("/generate")({
 });
 
 const TYPES: { key: GenType; label: string; icon: typeof Box; desc: string }[] = [
+  {
+    key: "text-to-3d",
+    label: "Text → 3D",
+    icon: Sparkles,
+    desc: "Describe an object in words to generate a 3D mesh",
+  },
   {
     key: "image-to-3d",
     label: "Image → 3D",
@@ -342,7 +348,7 @@ function GeneratePage() {
         created_at: new Date().toISOString(),
       };
 
-      if (selectedType === "image-to-3d") {
+      if (selectedType === "image-to-3d" || selectedType === "text-to-3d") {
         // Defer credit deduction until the AI service actually succeeds.
         setCurrentGen(tempGenerationBase);
       } else {
@@ -446,6 +452,53 @@ function GeneratePage() {
         }
       }
 
+      if (selectedType === "text-to-3d") {
+        if (!prompt.trim()) {
+          const msg = "Please describe what you want to generate.";
+          setError(msg);
+          setHfStatus("error");
+          setHfMessage(msg);
+          toast.error("Prompt required", { description: msg });
+          setIsGenerating(false);
+          setGenStartedAt(null);
+          return;
+        }
+        try {
+          setHfStatus("running");
+          setHfProgress(15);
+          setHfMessage("Generating on CometAPI Cloud (Hunyuan3D-2)…");
+
+          const { generateComet3D } = await import("@/lib/comet3d.functions");
+          console.log("[3D GEN / client] calling generateComet3D serverFn (text-to-3d)");
+          const res = await generateComet3D({
+            data: {
+              kind: "text-to-3d",
+              prompt: composedPrompt || prompt.trim(),
+            },
+          });
+          console.log("[3D GEN / client] generateComet3D returned", res);
+
+          if (res.ok) {
+            modelUrl = res.modelUrl;
+            generationMethod = "comet3d";
+            setHfStatus("complete");
+            setHfProgress(100);
+            setHfMessage("Done");
+          } else {
+            hfError = res.error;
+            setHfStatus("error");
+            setHfMessage(hfError);
+            console.error("[COMET 3D] failed:", hfError);
+          }
+        } catch (e: any) {
+          const msg = e?.message || String(e);
+          hfError = msg;
+          setHfStatus("error");
+          setHfMessage(msg);
+          console.error("[COMET 3D] threw:", e);
+        }
+      }
+
 
 
 
@@ -471,7 +524,7 @@ function GeneratePage() {
         effective_texture_resolution: effectiveTexRes,
       };
 
-      if (selectedType === "image-to-3d" && generationMethod !== "comet3d") {
+      if ((selectedType === "image-to-3d" || selectedType === "text-to-3d") && generationMethod !== "comet3d") {
         // Real 3D generation failed — surface the error, do not charge, do not
         // create a generation row, do not show a procedural placeholder.
         setCurrentGen(null);
