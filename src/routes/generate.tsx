@@ -144,6 +144,7 @@ function GeneratePage() {
   const [showPromptGen, setShowPromptGen] = useState(false);
   const [quality, setQuality] = useState<"fast" | "balanced" | "hd">("fast");
   const [bakeTexture, setBakeTexture] = useState<boolean>(false);
+  const [generateTexture, setGenerateTexture] = useState<boolean>(true);
   const [imageDataUrl, setImageDataUrl] = useState<string>("");
   const [manualFiles, setManualFiles] = useState<File[]>([]);
   const [manualUploading, setManualUploading] = useState(false);
@@ -160,12 +161,16 @@ function GeneratePage() {
 
   // Estimated total duration in ms based on type + quality (rough heuristic)
   const estimatedTotalMs = (() => {
+    // Hunyuan3D-2 on CometAPI realistically runs 60–180s. The texture stage
+    // (Hunyuan3D-Paint) is the slow half, so an untextured mesh is much faster.
+    const textured = selectedType === "text-to-3d" ? generateTexture : (bakeTexture && generateTexture);
     const base: Record<string, number> = {
-      "image-to-3d": 22000,
+      "image-to-3d": textured ? 150000 : 75000,
+      "text-to-3d": textured ? 165000 : 90000,
       "text-to-texture": 14000,
     };
-    const qMult: Record<string, number> = { fast: 0.6, balanced: 1, hd: 1.8 };
-    const b = base[selectedType as string] ?? 18000;
+    const qMult: Record<string, number> = { fast: 0.7, balanced: 1, hd: 1.5 };
+    const b = base[selectedType as string] ?? 120000;
     const m = qMult[quality] ?? 1;
     return Math.round(b * m);
   })();
@@ -205,7 +210,6 @@ function GeneratePage() {
   const [seed, setSeed] = useState<number>(() => Math.floor(Math.random() * 1_000_000));
   const [negativePrompt, setNegativePrompt] = useState<string>("");
   const [aiModel, setAiModel] = useState<"meshy-4" | "meshy-5-preview" | "triposr" | "shape-e" | "hunyuan3d-2" | "auto">("auto");
-  const [generateTexture, setGenerateTexture] = useState<boolean>(true);
   const [textureRichness, setTextureRichness] = useState<"low" | "medium" | "high">("high");
   const [remesh, setRemesh] = useState<boolean>(true);
   const [orientation, setOrientation] = useState<"y-up" | "z-up">("y-up");
@@ -427,6 +431,8 @@ function GeneratePage() {
               kind: "image-to-3d",
               imageDataUrl,
               prompt: composedPrompt || undefined,
+              texture: bakeTexture && generateTexture,
+              faceCount: effectivePoly,
             },
           });
           console.log("[3D GEN / client] generateComet3D returned", res);
@@ -474,6 +480,8 @@ function GeneratePage() {
             data: {
               kind: "text-to-3d",
               prompt: composedPrompt || prompt.trim(),
+              texture: generateTexture,
+              faceCount: effectivePoly,
             },
           });
           console.log("[3D GEN / client] generateComet3D returned", res);

@@ -18,6 +18,11 @@ const INPUT = z.object({
   prompt: z.string().min(1).max(2000).optional(),
   imageDataUrl: z.string().max(15_000_000).optional(),
   kind: z.enum(["text-to-3d", "image-to-3d"]),
+  // Speed levers. texture=false skips the expensive Hunyuan3D-Paint stage
+  // (much faster, returns a bare mesh). faceCount caps geometry density —
+  // lower = faster generation + lighter file (good for Second Life upload).
+  texture: z.boolean().optional(),
+  faceCount: z.number().int().min(1000).max(300000).optional(),
 });
 
 function getBaseUrl(): string {
@@ -127,6 +132,12 @@ export const generateComet3D = createServerFn({ method: "POST" })
         body.prompt = data.prompt;
       }
 
+      // Speed levers. Only send when explicitly set so we don't override
+      // Comet's sensible defaults. Skipping texture is the single biggest
+      // time saving (it bypasses the Hunyuan3D-Paint stage entirely).
+      if (typeof data.texture === "boolean") body.texture = data.texture;
+      if (typeof data.faceCount === "number") body.face_count = data.faceCount;
+
       const endpoint = `${getBaseUrl()}/images/generations`;
       console.log("[COMET 3D] POST", endpoint, "kind=", data.kind);
 
@@ -230,10 +241,12 @@ export const generateComet3D = createServerFn({ method: "POST" })
         return { ok: false as const, error: `CometAPI did not return a model URL: ${text.slice(0, 300)}` };
       }
 
-      // Rehost the model to Supabase storage so it survives and serves over CDN.
+      // Rehost the model to Supabase storage so it survives and serves over
+      // CDN (Comet's result URLs can expire). Capped tightly: if the rehost is
+      // slow we fall back to the source URL rather than make the user wait.
       let modelUrl = sourceUrl;
       try {
-        const fileRes = await fetch(sourceUrl, { signal: AbortSignal.timeout(120_000) });
+        const fileRes = await fetch(sourceUrl, { signal: AbortSignal.timeout(30_000) });
         if (fileRes.ok) {
           const buf = Buffer.from(await fileRes.arrayBuffer());
           const lower = sourceUrl.toLowerCase();
