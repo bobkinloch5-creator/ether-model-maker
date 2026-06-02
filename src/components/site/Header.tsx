@@ -123,7 +123,7 @@ export function Header() {
               </button>
               
               {/* Dropdown Menu Container */}
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[720px] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform scale-95 group-hover:scale-100 origin-top pointer-events-none group-hover:pointer-events-auto z-50">
+              <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 w-[720px] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform scale-95 group-hover:scale-100 origin-top pointer-events-none group-hover:pointer-events-auto z-50">
                 <div className="glass rounded-3xl border border-white/10 bg-black/90 p-6 shadow-2xl shadow-black/80 backdrop-blur-2xl grid grid-cols-3 gap-6 text-left">
                   {/* Column 1: Studio & Creation */}
                   <div className="space-y-3">
