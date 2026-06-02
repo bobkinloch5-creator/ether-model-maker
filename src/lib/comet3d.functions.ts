@@ -231,7 +231,8 @@ export const generateComet3D = createServerFn({ method: "POST" })
         if (TRANSIENT.has(res.status)) {
           return {
             ok: false as const,
-            error: `CometAPI's 3D service is temporarily overloaded (gateway ${res.status}) and didn't finish after ${MAX_ATTEMPTS} attempts. This is a CometAPI-side timeout — please try again in a minute.`,
+            error:
+              `CometAPI's gateway timed out (${res.status}) before Hunyuan3D finished. This is a connection limit on their side — the 3D job can take longer than their gateway allows, especially with textures on. Try again, or turn texture OFF for a faster, more reliable result.`,
           };
         }
         return { ok: false as const, error: `CometAPI failed (${res.status}): ${text.slice(0, 300)}` };
