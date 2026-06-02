@@ -104,9 +104,9 @@ export const recordSignupFingerprint = createServerFn({ method: "POST" })
 
     if (token) {
       try {
-        const SUPABASE_URL = (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL)!;
+        const SUPABASE_URL = (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "https://uufwzownbmohsdctytiq.supabase.co")!;
         const SUPABASE_PUBLISHABLE_KEY =
-          (process.env.SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY)!;
+          (process.env.SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV1Znd6b3duYm1vaHNkY3R5dGlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MzMxMTUsImV4cCI6MjA5NTEwOTExNX0.E1CeHZ3U2t_PpgpLvVUbCOu03sCAs30GtcNT1AmVZrM")!;
         const sb = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
           auth: { persistSession: false, autoRefreshToken: false },
         });
