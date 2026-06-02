@@ -1,5 +1,24 @@
 import { Link } from "@tanstack/react-router";
-import { Sparkles, User, Coins, Users, Menu, X, Home, Gift, Copy, Check } from "lucide-react";
+import {
+  Sparkles,
+  User,
+  Coins,
+  Users,
+  Menu,
+  X,
+  Home,
+  Gift,
+  Copy,
+  Check,
+  ChevronDown,
+  BookOpen,
+  FileText,
+  Map,
+  History,
+  HelpCircle,
+  Globe,
+  LayoutDashboard,
+} from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -94,14 +113,123 @@ export function Header() {
           </Link>
           <nav className="hidden items-center gap-7 text-sm text-muted-foreground md:flex">
             <Link to="/" className="hover:text-foreground transition">{t("nav.home")}</Link>
-            <a href="#features" className="hover:text-foreground transition">{t("nav.features")}</a>
+            <Link to="/generate" className="hover:text-foreground transition">Studio</Link>
+            
+            {/* BROWSE DROPDOWN (MEGA MENU) */}
+            <div className="relative group py-2">
+              <button className="flex items-center gap-1 hover:text-foreground transition focus:outline-none py-1">
+                Browse
+                <ChevronDown className="h-3.5 w-3.5 transition-transform group-hover:rotate-180 duration-200" />
+              </button>
+              
+              {/* Dropdown Menu Container */}
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[720px] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform scale-95 group-hover:scale-100 origin-top pointer-events-none group-hover:pointer-events-auto z-50">
+                <div className="glass rounded-3xl border border-white/10 bg-black/90 p-6 shadow-2xl shadow-black/80 backdrop-blur-2xl grid grid-cols-3 gap-6 text-left">
+                  {/* Column 1: Studio & Creation */}
+                  <div className="space-y-3">
+                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-primary-glow border-b border-white/5 pb-1.5">
+                      Create & Share
+                    </h4>
+                    <div className="flex flex-col gap-2">
+                      <DropdownLink 
+                        to="/generate" 
+                        icon={<Sparkles className="h-4 w-4 text-primary" />} 
+                        title="AI 3D Generator" 
+                        desc="Text/Image to game-ready 3D"
+                      />
+                      <DropdownLink 
+                        to="/community" 
+                        icon={<Users className="h-4 w-4 text-blue-400" />} 
+                        title="Community Gallery" 
+                        desc="Explore and share creations"
+                      />
+                      <DropdownLink 
+                        to="/dashboard" 
+                        icon={<LayoutDashboard className="h-4 w-4 text-purple-400" />} 
+                        title="My Dashboard" 
+                        desc="Access assets, credits & tasks"
+                      />
+                      <DropdownLink 
+                        to="/teams" 
+                        icon={<Users className="h-4 w-4 text-emerald-400" />} 
+                        title="Teams" 
+                        desc="Collaborate with other creators"
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Column 2: Integrations */}
+                  <div className="space-y-3">
+                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-pink-400 border-b border-white/5 pb-1.5">
+                      Integrations & SDKs
+                    </h4>
+                    <div className="flex flex-col gap-2">
+                      <DropdownLink 
+                        to="/second-life" 
+                        icon={<Globe className="h-4 w-4 text-pink-400" />} 
+                        title="Second Life Hub" 
+                        desc="Low LI mesh, script uploader"
+                      />
+                      <div className="rounded-xl bg-white/[0.02] border border-white/5 p-2 space-y-1.5">
+                        <span className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold block">
+                          Plugins & Engines
+                        </span>
+                        <div className="grid grid-cols-2 gap-1 text-[11px] font-medium">
+                          <Link to="/integrations/blender" className="hover:text-primary-glow text-muted-foreground transition">Blender</Link>
+                          <Link to="/integrations/roblox" className="hover:text-primary-glow text-muted-foreground transition">Roblox</Link>
+                          <Link to="/integrations/unity" className="hover:text-primary-glow text-muted-foreground transition">Unity</Link>
+                          <Link to="/integrations/unreal" className="hover:text-primary-glow text-muted-foreground transition">Unreal</Link>
+                          <Link to="/integrations/godot" className="hover:text-primary-glow text-muted-foreground transition">Godot</Link>
+                          <Link to="/integrations/web" className="hover:text-primary-glow text-muted-foreground transition">Web API</Link>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Column 3: Resources */}
+                  <div className="space-y-3">
+                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-amber-400 border-b border-white/5 pb-1.5">
+                      Resources & Docs
+                    </h4>
+                    <div className="flex flex-col gap-2">
+                      <DropdownLink 
+                        to="/tutorials" 
+                        icon={<BookOpen className="h-4 w-4 text-amber-400" />} 
+                        title="Tutorials" 
+                        desc="Step-by-step 3D guides"
+                      />
+                      <DropdownLink 
+                        to="/docs" 
+                        icon={<FileText className="h-4 w-4 text-indigo-400" />} 
+                        title="Documentation" 
+                        desc="Guides, APIs & settings"
+                      />
+                      <DropdownLink 
+                        to="/roadmap" 
+                        icon={<Map className="h-4 w-4 text-cyan-400" />} 
+                        title="Roadmap" 
+                        desc="Upcoming features & plans"
+                      />
+                      <DropdownLink 
+                        to="/changelog" 
+                        icon={<History className="h-4 w-4 text-orange-400" />} 
+                        title="What's New" 
+                        desc="View recent changelogs"
+                      />
+                      <DropdownLink 
+                        to="/faq" 
+                        icon={<HelpCircle className="h-4 w-4 text-teal-400" />} 
+                        title="FAQ" 
+                        desc="Answers to common questions"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
             <Link to="/community" className="hover:text-foreground transition">{t("nav.community")}</Link>
             <Link to="/second-life" className="hover:text-foreground transition">{t("nav.secondLife")}</Link>
-            <Link to="/" hash="integrations" className="hover:text-foreground transition">{t("nav.integrations")}</Link>
-            <Link to="/tutorials" className="hover:text-foreground transition">{t("nav.tutorials")}</Link>
-            <Link to="/docs" className="hover:text-foreground transition">{t("nav.docs")}</Link>
-            <Link to="/roadmap" className="hover:text-foreground transition">{t("nav.roadmap")}</Link>
-            <Link to="/changelog" className="hover:text-foreground transition">{t("nav.whatsNew")}</Link>
           </nav>
           <div className="flex items-center gap-2">
             <LanguagePicker />
@@ -245,6 +373,40 @@ function MobileLink({
     >
       {icon}
       {label}
+    </Link>
+  );
+}
+
+function DropdownLink({
+  to,
+  icon,
+  title,
+  desc,
+  onClick,
+}: {
+  to: string;
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
+  onClick?: () => void;
+}) {
+  return (
+    <Link
+      to={to}
+      onClick={onClick}
+      className="flex items-start gap-3 rounded-xl p-2 hover:bg-white/5 transition duration-200 group/link text-left"
+    >
+      <div className="mt-0.5 rounded-lg bg-white/5 p-1.5 transition-colors group-hover/link:bg-primary/20 shrink-0">
+        {icon}
+      </div>
+      <div className="min-w-0">
+        <div className="text-xs font-semibold text-foreground group-hover/link:text-primary-glow transition-colors truncate">
+          {title}
+        </div>
+        <div className="text-[10px] text-muted-foreground leading-tight mt-0.5">
+          {desc}
+        </div>
+      </div>
     </Link>
   );
 }
