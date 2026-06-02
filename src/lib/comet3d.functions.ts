@@ -141,17 +141,26 @@ export const generateComet3D = createServerFn({ method: "POST" })
       const endpoint = `${getBaseUrl()}/images/generations`;
       console.log("[COMET 3D] POST", endpoint, "kind=", data.kind);
 
-      // CometAPI fronts Hunyuan3D with a Cloudflare gateway that returns 524
-      // (and sometimes 502/503) when the model takes longer than the edge
-      // timeout, even though the job often succeeds on a retry. Retry those
-      // transient gateway errors a few times with backoff before giving up.
+      // CometAPI fronts Hunyuan3D with a Cloudflare gateway that can return
+      // 524/502/503. We retry transient errors, but with two hard guards so a
+      // slow service can never make the user wait forever:
+      //   1. OVERALL_DEADLINE caps total wall-clock across ALL attempts.
+      //   2. We only retry an error that came back FAST. A 524 after a long
+      //      hang means the job is genuinely slow — retrying just repeats the
+      //      wait, so we give up and report it instead.
       const TRANSIENT = new Set([429, 500, 502, 503, 504, 520, 521, 522, 523, 524]);
+      const PER_ATTEMPT_TIMEOUT = 240_000; // 4 min cap per single attempt
+      const OVERALL_DEADLINE = Date.now() + 300_000; // 5 min total, hard ceiling
+      const FAST_FAIL_MS = 20_000; // only retry errors that arrive within 20s
       const MAX_ATTEMPTS = 4;
       let res: Response | null = null;
       let text = "";
       let lastTransientStatus = 0;
 
       for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+        const remaining = OVERALL_DEADLINE - Date.now();
+        if (remaining <= 0) break; // out of total budget
+        const attemptStarted = Date.now();
         try {
           res = await fetch(endpoint, {
             method: "POST",
@@ -160,14 +169,15 @@ export const generateComet3D = createServerFn({ method: "POST" })
               "Content-Type": "application/json",
             },
             body: JSON.stringify(body),
-            signal: AbortSignal.timeout(290_000),
+            signal: AbortSignal.timeout(Math.min(PER_ATTEMPT_TIMEOUT, remaining)),
           });
         } catch (fetchErr) {
-          // Network-level failure (incl. our own timeout) — retry if attempts remain.
-          if (attempt < MAX_ATTEMPTS) {
-            const wait = 2000 * attempt;
-            console.warn(`[COMET 3D] fetch threw (attempt ${attempt}), retrying in ${wait}ms`, fetchErr);
-            await new Promise((r) => setTimeout(r, wait));
+          // Network/timeout failure. Only retry if it failed FAST and we still
+          // have budget — a slow timeout means the job itself is slow.
+          const elapsed = Date.now() - attemptStarted;
+          if (attempt < MAX_ATTEMPTS && elapsed < FAST_FAIL_MS && Date.now() < OVERALL_DEADLINE) {
+            console.warn(`[COMET 3D] fetch threw fast (attempt ${attempt}, ${elapsed}ms), retrying`, fetchErr);
+            await new Promise((r) => setTimeout(r, 1500 * attempt));
             continue;
           }
           throw fetchErr;
@@ -176,17 +186,18 @@ export const generateComet3D = createServerFn({ method: "POST" })
         text = await res.text();
         if (res.ok) break;
 
-        if (TRANSIENT.has(res.status) && attempt < MAX_ATTEMPTS) {
+        const elapsed = Date.now() - attemptStarted;
+        const fastFail = elapsed < FAST_FAIL_MS;
+        if (TRANSIENT.has(res.status) && attempt < MAX_ATTEMPTS && fastFail && Date.now() < OVERALL_DEADLINE) {
           lastTransientStatus = res.status;
-          const wait = 3000 * attempt;
           console.warn(
-            `[COMET 3D] transient ${res.status} (attempt ${attempt}/${MAX_ATTEMPTS}), retrying in ${wait}ms`,
+            `[COMET 3D] transient ${res.status} after ${elapsed}ms (attempt ${attempt}/${MAX_ATTEMPTS}), retrying`,
             text.slice(0, 200)
           );
-          await new Promise((r) => setTimeout(r, wait));
+          await new Promise((r) => setTimeout(r, 2000 * attempt));
           continue;
         }
-        break; // non-transient error, or out of attempts
+        break; // non-transient error, slow failure, or out of attempts/budget
       }
 
       if (!res) {

@@ -166,7 +166,8 @@ function GeneratePage() {
     const textured = selectedType === "text-to-3d" ? generateTexture : (bakeTexture && generateTexture);
     const base: Record<string, number> = {
       "image-to-3d": textured ? 150000 : 75000,
-      "text-to-3d": textured ? 165000 : 90000,
+      // text-to-3d is now a two-step pipeline: AI image (~10-20s) then image-to-3D.
+      "text-to-3d": textured ? 170000 : 95000,
       "text-to-texture": 14000,
     };
     const qMult: Record<string, number> = { fast: 0.7, balanced: 1, hd: 1.5 };
@@ -470,40 +471,60 @@ function GeneratePage() {
           return;
         }
         try {
+          // Hunyuan3D-2's direct text-to-3D path on CometAPI is slow and prone
+          // to 524 gateway timeouts (it's fundamentally an image-conditioned
+          // model). Instead, generate a reference image from the prompt first,
+          // then run the fast, reliable image-to-3D path on that image — the
+          // same two-step approach the retexture flow uses.
           setHfStatus("running");
-          setHfProgress(15);
-          setHfMessage("Generating on CometAPI Cloud (Hunyuan3D-2)…");
+          setHfProgress(10);
+          setHfMessage("Step 1/2: Creating a reference image from your prompt…");
 
-          const { generateComet3D } = await import("@/lib/comet3d.functions");
-          console.log("[3D GEN / client] calling generateComet3D serverFn (text-to-3d)");
-          const res = await generateComet3D({
-            data: {
-              kind: "text-to-3d",
-              prompt: composedPrompt || prompt.trim(),
-              texture: generateTexture,
-              faceCount: effectivePoly,
-            },
-          });
-          console.log("[3D GEN / client] generateComet3D returned", res);
-
-          if (res.ok) {
-            modelUrl = res.modelUrl;
-            generationMethod = "comet3d";
-            setHfStatus("complete");
-            setHfProgress(100);
-            setHfMessage("Done");
-          } else {
-            hfError = res.error;
+          const { generateAIImage } = await import("@/lib/ai-image.functions");
+          const imgPrompt = `${composedPrompt || prompt.trim()}. Single object, centered, plain neutral background, full object visible, 3/4 view, even studio lighting, no shadows cutting off the silhouette.`;
+          const imgRes = await generateAIImage({ data: { prompt: imgPrompt } });
+          if (!imgRes.ok || !imgRes.imageUrl) {
+            hfError = (imgRes as { error?: string }).error || "Couldn't create a reference image from the prompt.";
             setHfStatus("error");
             setHfMessage(hfError);
-            console.error("[COMET 3D] failed:", hfError);
+            console.error("[TEXT→3D] image step failed:", hfError);
+          } else {
+            setHfProgress(35);
+            setHfMessage("Step 2/2: Generating 3D on CometAPI Cloud (Hunyuan3D-2)…");
+
+            const { generateComet3D } = await import("@/lib/comet3d.functions");
+            console.log("[3D GEN / client] text→image→3D: image ready, calling generateComet3D");
+            const res = await generateComet3D({
+              data: {
+                kind: "image-to-3d",
+                imageDataUrl: imgRes.imageUrl,
+                prompt: composedPrompt || prompt.trim(),
+                texture: generateTexture,
+                faceCount: effectivePoly,
+              },
+            });
+            console.log("[3D GEN / client] generateComet3D returned", res);
+
+            if (res.ok) {
+              modelUrl = res.modelUrl;
+              generationMethod = "comet3d";
+              imageUrl = imgRes.imageUrl;
+              setHfStatus("complete");
+              setHfProgress(100);
+              setHfMessage("Done");
+            } else {
+              hfError = res.error;
+              setHfStatus("error");
+              setHfMessage(hfError);
+              console.error("[COMET 3D] failed:", hfError);
+            }
           }
         } catch (e: any) {
           const msg = e?.message || String(e);
           hfError = msg;
           setHfStatus("error");
           setHfMessage(msg);
-          console.error("[COMET 3D] threw:", e);
+          console.error("[TEXT→3D] threw:", e);
         }
       }
 

@@ -310,16 +310,33 @@ export function Header() {
                     {profile?.is_owner ? "∞" : (profile?.credits ?? 0).toLocaleString()}
                   </span>
                 </div>
+                {/* Create & Share */}
+                <p className="text-[10px] font-bold uppercase tracking-wider text-primary-glow mt-1 mb-0.5 px-1">Create & Share</p>
                 <MobileLink to="/" onClick={closeMenu} icon={<Home className="h-4 w-4" />} label="Home" />
-                <MobileLink to="/dashboard" onClick={closeMenu} icon={<User className="h-4 w-4" />} label="Dashboard" />
-                <MobileLink to="/generate" onClick={closeMenu} icon={<Sparkles className="h-4 w-4" />} label="Generate" />
+                <MobileLink to="/generate" onClick={closeMenu} icon={<Sparkles className="h-4 w-4" />} label="AI 3D Generator" accent />
+                <MobileLink to="/dashboard" onClick={closeMenu} icon={<LayoutDashboard className="h-4 w-4" />} label="Dashboard" />
+                <MobileLink to="/community" onClick={closeMenu} icon={<Users className="h-4 w-4" />} label="Community Gallery" />
                 <MobileLink to="/credits" onClick={closeMenu} icon={<Coins className="h-4 w-4" />} label="Credits" />
                 <MobileLink to="/teams" onClick={closeMenu} icon={<Users className="h-4 w-4" />} label="Teams" />
                 <MobileLink to="/profile" onClick={closeMenu} icon={<User className="h-4 w-4" />} label="Profile" />
-                <MobileLink to="/tutorials" onClick={closeMenu} icon={<Sparkles className="h-4 w-4" />} label="Tutorials" />
-                <MobileLink to="/second-life" onClick={closeMenu} icon={<Sparkles className="h-4 w-4" />} label="Second Life" />
-                <MobileLink to="/integrations/blender" onClick={closeMenu} icon={<Sparkles className="h-4 w-4" />} label="Blender add-on" />
-                <MobileLink to="/integrations/roblox" onClick={closeMenu} icon={<Sparkles className="h-4 w-4" />} label="Roblox plugin" />
+
+                {/* Integrations */}
+                <p className="text-[10px] font-bold uppercase tracking-wider text-pink-400 mt-3 mb-0.5 px-1">Integrations & SDKs</p>
+                <MobileLink to="/second-life" onClick={closeMenu} icon={<Globe className="h-4 w-4" />} label="Second Life Hub" />
+                <MobileLink to="/integrations/blender" onClick={closeMenu} icon={<Sparkles className="h-4 w-4" />} label="Blender Add-on" />
+                <MobileLink to="/integrations/roblox" onClick={closeMenu} icon={<Sparkles className="h-4 w-4" />} label="Roblox Plugin" />
+                <MobileLink to="/integrations/unity" onClick={closeMenu} icon={<Sparkles className="h-4 w-4" />} label="Unity SDK" />
+                <MobileLink to="/integrations/unreal" onClick={closeMenu} icon={<Sparkles className="h-4 w-4" />} label="Unreal Engine" />
+                <MobileLink to="/integrations/godot" onClick={closeMenu} icon={<Sparkles className="h-4 w-4" />} label="Godot" />
+                <MobileLink to="/integrations/web" onClick={closeMenu} icon={<Globe className="h-4 w-4" />} label="Web API" />
+
+                {/* Resources */}
+                <p className="text-[10px] font-bold uppercase tracking-wider text-amber-400 mt-3 mb-0.5 px-1">Resources & Docs</p>
+                <MobileLink to="/tutorials" onClick={closeMenu} icon={<BookOpen className="h-4 w-4" />} label="Tutorials" />
+                <MobileLink to="/docs" onClick={closeMenu} icon={<FileText className="h-4 w-4" />} label="Documentation" />
+                <MobileLink to="/roadmap" onClick={closeMenu} icon={<Map className="h-4 w-4" />} label="Roadmap" />
+                <MobileLink to="/changelog" onClick={closeMenu} icon={<History className="h-4 w-4" />} label="What's New" />
+                <MobileLink to="/faq" onClick={closeMenu} icon={<HelpCircle className="h-4 w-4" />} label="FAQ" />
                 {/* Admin link hidden from mobile menu — access via direct URL /admin */}
               </>
             ) : (
