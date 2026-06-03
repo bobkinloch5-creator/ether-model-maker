@@ -31,46 +31,57 @@ export type CommunityPost = {
 export const listCommunityPosts = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => LIST_INPUT.parse(d ?? {}))
-  .handler(async ({ data, context }): Promise<{ ok: true; posts: CommunityPost[] } | { ok: false; error: string }> => {
-    const limit = data.limit ?? 24;
-    const offset = data.offset ?? 0;
-    const sort = data.sort ?? "new";
-    const { userId } = context;
+  .handler(
+    async ({
+      data,
+      context,
+    }): Promise<{ ok: true; posts: CommunityPost[] } | { ok: false; error: string }> => {
+      const limit = data.limit ?? 24;
+      const offset = data.offset ?? 0;
+      const sort = data.sort ?? "new";
+      const { userId } = context;
 
-    const orderCol = sort === "top" ? "likes_count" : "created_at";
-    const { data: rows, error } = await supabaseAdmin
-      .from("community_posts")
-      .select("id,user_id,generation_id,title,description,image_url,model_url,generation_type,tags,likes_count,comments_count,created_at")
-      .eq("is_hidden", false)
-      .order(orderCol, { ascending: false })
-      .order("created_at", { ascending: false })
-      .range(offset, offset + limit - 1);
+      const orderCol = sort === "top" ? "likes_count" : "created_at";
+      const { data: rows, error } = await supabaseAdmin
+        .from("community_posts")
+        .select(
+          "id,user_id,generation_id,title,description,image_url,model_url,generation_type,tags,likes_count,comments_count,created_at",
+        )
+        .eq("is_hidden", false)
+        .order(orderCol, { ascending: false })
+        .order("created_at", { ascending: false })
+        .range(offset, offset + limit - 1);
 
-    if (error) return { ok: false, error: error.message };
-    if (!rows || rows.length === 0) return { ok: true, posts: [] };
+      if (error) return { ok: false, error: error.message };
+      if (!rows || rows.length === 0) return { ok: true, posts: [] };
 
-    const userIds = Array.from(new Set(rows.map((r) => r.user_id)));
-    const postIds = rows.map((r) => r.id);
+      const userIds = Array.from(new Set(rows.map((r) => r.user_id)));
+      const postIds = rows.map((r) => r.id);
 
-    const [{ data: profiles }, { data: likes }] = await Promise.all([
-      supabaseAdmin.from("profiles").select("id,display_name,avatar_url").in("id", userIds),
-      supabaseAdmin.from("community_likes").select("post_id").eq("user_id", userId).in("post_id", postIds),
-    ]);
+      const [{ data: profiles }, { data: likes }] = await Promise.all([
+        supabaseAdmin.from("profiles").select("id,display_name,avatar_url").in("id", userIds),
+        supabaseAdmin
+          .from("community_likes")
+          .select("post_id")
+          .eq("user_id", userId)
+          .in("post_id", postIds),
+      ]);
 
-    const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));
-    const likedSet = new Set((likes ?? []).map((l) => l.post_id));
+      const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));
+      const likedSet = new Set((likes ?? []).map((l) => l.post_id));
 
-    return {
-      ok: true,
-      posts: rows.map((r) => ({
-        ...r,
-        tags: r.tags ?? [],
-        author_name: profileMap.get(r.user_id)?.display_name ?? null,
-        author_avatar: profileMap.get(r.user_id)?.avatar_url ?? null,
-        liked_by_me: likedSet.has(r.id),
-      })),
-    };
-  });
+      return {
+        ok: true,
+        posts: rows.map((r) => ({
+          ...r,
+          tags: r.tags ?? [],
+          author_name: profileMap.get(r.user_id)?.display_name ?? null,
+          author_avatar: profileMap.get(r.user_id)?.avatar_url ?? null,
+          liked_by_me: likedSet.has(r.id),
+        })),
+      };
+    },
+  );
 
 // ============= Get single post + comments =============
 const GET_INPUT = z.object({ postId: z.string().uuid() });
@@ -82,7 +93,9 @@ export const getCommunityPost = createServerFn({ method: "POST" })
     const { userId } = context;
     const { data: post, error } = await supabaseAdmin
       .from("community_posts")
-      .select("id,user_id,generation_id,title,description,image_url,model_url,generation_type,tags,likes_count,comments_count,created_at,is_hidden")
+      .select(
+        "id,user_id,generation_id,title,description,image_url,model_url,generation_type,tags,likes_count,comments_count,created_at,is_hidden",
+      )
       .eq("id", data.postId)
       .maybeSingle();
 
@@ -90,8 +103,17 @@ export const getCommunityPost = createServerFn({ method: "POST" })
     if (!post || post.is_hidden) return { ok: false as const, error: "Post not found" };
 
     const [{ data: profile }, { data: liked }, { data: comments }] = await Promise.all([
-      supabaseAdmin.from("profiles").select("id,display_name,avatar_url").eq("id", post.user_id).maybeSingle(),
-      supabaseAdmin.from("community_likes").select("post_id").eq("user_id", userId).eq("post_id", post.id).maybeSingle(),
+      supabaseAdmin
+        .from("profiles")
+        .select("id,display_name,avatar_url")
+        .eq("id", post.user_id)
+        .maybeSingle(),
+      supabaseAdmin
+        .from("community_likes")
+        .select("post_id")
+        .eq("user_id", userId)
+        .eq("post_id", post.id)
+        .maybeSingle(),
       supabaseAdmin
         .from("community_comments")
         .select("id,user_id,body,created_at")
@@ -103,7 +125,10 @@ export const getCommunityPost = createServerFn({ method: "POST" })
 
     const commentUserIds = Array.from(new Set((comments ?? []).map((c) => c.user_id)));
     const { data: commentProfiles } = commentUserIds.length
-      ? await supabaseAdmin.from("profiles").select("id,display_name,avatar_url").in("id", commentUserIds)
+      ? await supabaseAdmin
+          .from("profiles")
+          .select("id,display_name,avatar_url")
+          .in("id", commentUserIds)
       : { data: [] as Array<{ id: string; display_name: string; avatar_url: string }> };
     const cpMap = new Map((commentProfiles ?? []).map((p) => [p.id, p]));
 
@@ -174,12 +199,13 @@ export const publishCommunityPost = createServerFn({ method: "POST" })
         .maybeSingle();
 
       if (!existingPost) {
-        const { data: profile } = await supabaseAdmin.from("profiles").select("credits").eq("id", userId).single();
-        const newBalance = (profile?.credits ?? 0) + REWARD_CREDITS;
-        await supabaseAdmin
+        const { data: profile } = await supabaseAdmin
           .from("profiles")
-          .update({ credits: newBalance })
-          .eq("id", userId);
+          .select("credits")
+          .eq("id", userId)
+          .single();
+        const newBalance = (profile?.credits ?? 0) + REWARD_CREDITS;
+        await supabaseAdmin.from("profiles").update({ credits: newBalance }).eq("id", userId);
         await supabaseAdmin.rpc("log_credit_change", {
           _user_id: userId,
           _amount: REWARD_CREDITS,
@@ -192,12 +218,13 @@ export const publishCommunityPost = createServerFn({ method: "POST" })
       }
     } else {
       // No generationId tied — still award credits (standalone upload/share)
-      const { data: profile } = await supabaseAdmin.from("profiles").select("credits").eq("id", userId).single();
-      const newBalance = (profile?.credits ?? 0) + REWARD_CREDITS;
-      await supabaseAdmin
+      const { data: profile } = await supabaseAdmin
         .from("profiles")
-        .update({ credits: newBalance })
-        .eq("id", userId);
+        .select("credits")
+        .eq("id", userId)
+        .single();
+      const newBalance = (profile?.credits ?? 0) + REWARD_CREDITS;
+      await supabaseAdmin.from("profiles").update({ credits: newBalance }).eq("id", userId);
       await supabaseAdmin.rpc("log_credit_change", {
         _user_id: userId,
         _amount: REWARD_CREDITS,
@@ -240,11 +267,17 @@ export const toggleCommunityLike = createServerFn({ method: "POST" })
       .eq("user_id", userId)
       .maybeSingle();
     if (existing) {
-      const { error } = await supabase.from("community_likes").delete().eq("post_id", data.postId).eq("user_id", userId);
+      const { error } = await supabase
+        .from("community_likes")
+        .delete()
+        .eq("post_id", data.postId)
+        .eq("user_id", userId);
       if (error) return { ok: false as const, error: error.message };
       return { ok: true as const, liked: false };
     }
-    const { error } = await supabase.from("community_likes").insert({ post_id: data.postId, user_id: userId });
+    const { error } = await supabase
+      .from("community_likes")
+      .insert({ post_id: data.postId, user_id: userId });
     if (error) return { ok: false as const, error: error.message };
     return { ok: true as const, liked: true };
   });

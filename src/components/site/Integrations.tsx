@@ -15,7 +15,8 @@ const INTEGRATIONS: Integration[] = [
   {
     name: "Blender",
     icon: Hammer,
-    blurb: "One-file Python add-on adds a panel in the 3D viewport — type a prompt, get a GLB imported into your scene.",
+    blurb:
+      "One-file Python add-on adds a panel in the 3D viewport — type a prompt, get a GLB imported into your scene.",
     format: "Add-on · GLB · OBJ · FBX",
     accent: "from-orange-500/30 to-amber-400/10",
     href: "/integrations/blender",
@@ -24,7 +25,8 @@ const INTEGRATIONS: Integration[] = [
   {
     name: "Roblox Studio",
     icon: Gamepad2,
-    blurb: "One-file Luau plugin lets you generate AI 3D models from a prompt without leaving Studio.",
+    blurb:
+      "One-file Luau plugin lets you generate AI 3D models from a prompt without leaving Studio.",
     format: "Studio plugin · FBX · OBJ",
     accent: "from-rose-500/30 to-red-400/10",
     href: "/integrations/roblox",
@@ -33,7 +35,8 @@ const INTEGRATIONS: Integration[] = [
   {
     name: "Unity",
     icon: Cuboid,
-    blurb: "Drag GLB / FBX into your Assets folder. Materials, normals, AO maps wired automatically.",
+    blurb:
+      "Drag GLB / FBX into your Assets folder. Materials, normals, AO maps wired automatically.",
     format: "GLB · FBX",
     accent: "from-slate-400/30 to-zinc-300/10",
     href: "/integrations/unity",
@@ -42,7 +45,8 @@ const INTEGRATIONS: Integration[] = [
   {
     name: "Unreal Engine",
     icon: Layers3,
-    blurb: "FBX import with PBR maps for instant use in your level. Nanite-friendly LODs available.",
+    blurb:
+      "FBX import with PBR maps for instant use in your level. Nanite-friendly LODs available.",
     format: "FBX · GLB",
     accent: "from-sky-500/30 to-blue-400/10",
     href: "/integrations/unreal",
@@ -69,7 +73,8 @@ const INTEGRATIONS: Integration[] = [
   {
     name: "Second Life",
     icon: Box,
-    blurb: "Optional SL-optimized pipeline: low LI, watertight mesh, DAE export, in-world delivery.",
+    blurb:
+      "Optional SL-optimized pipeline: low LI, watertight mesh, DAE export, in-world delivery.",
     format: "DAE · COLLADA",
     accent: "from-pink-500/30 to-purple-400/10",
     href: "/integrations/second-life",
@@ -78,7 +83,8 @@ const INTEGRATIONS: Integration[] = [
   {
     name: "Anywhere else",
     icon: Package,
-    blurb: "Any DCC, engine, or marketplace that reads standard 3D formats — Maya, 3ds Max, Houdini, Sketchfab.",
+    blurb:
+      "Any DCC, engine, or marketplace that reads standard 3D formats — Maya, 3ds Max, Houdini, Sketchfab.",
     format: "GLB · OBJ · FBX · DAE",
     accent: "from-cyan-500/30 to-teal-300/10",
     href: "/integrations/anywhere",
@@ -98,9 +104,9 @@ export function Integrations() {
             Built for <span className="text-shine">every engine</span> & DCC
           </h2>
           <p className="mt-3 text-sm sm:text-base text-muted-foreground">
-            Not just Second Life. Export standard 3D formats and use your assets in Blender,
-            Unity, Unreal, Godot, Roblox, Three.js, web viewers — or anywhere that opens GLB,
-            OBJ, FBX, or DAE.
+            Not just Second Life. Export standard 3D formats and use your assets in Blender, Unity,
+            Unreal, Godot, Roblox, Three.js, web viewers — or anywhere that opens GLB, OBJ, FBX, or
+            DAE.
           </p>
         </div>
 
@@ -136,7 +142,8 @@ export function Integrations() {
         </div>
 
         <p className="mt-8 text-center text-xs text-muted-foreground">
-          Every generation exports as standard mesh formats — no vendor lock-in, no proprietary tooling.
+          Every generation exports as standard mesh formats — no vendor lock-in, no proprietary
+          tooling.
         </p>
       </div>
     </section>

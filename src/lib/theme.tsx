@@ -284,19 +284,25 @@ function applyTheme(state: ThemeState) {
   root.style.setProperty("--popover", `oklch(${preset.card})`);
   root.style.setProperty("--secondary", `oklch(${preset.card})`);
   root.style.setProperty("--muted", `oklch(${preset.card})`);
-  root.style.setProperty("--foreground", isLight ? "oklch(0.15 0.02 280)" : "oklch(0.98 0.005 280)");
-  root.style.setProperty("--muted-foreground", isLight ? "oklch(0.45 0.02 280)" : "oklch(0.68 0.02 282)");
+  root.style.setProperty(
+    "--foreground",
+    isLight ? "oklch(0.15 0.02 280)" : "oklch(0.98 0.005 280)",
+  );
+  root.style.setProperty(
+    "--muted-foreground",
+    isLight ? "oklch(0.45 0.02 280)" : "oklch(0.68 0.02 282)",
+  );
   root.style.setProperty("--primary", `oklch(${primary})`);
   root.style.setProperty("--primary-glow", `oklch(${preset.primaryGlow})`);
   root.style.setProperty("--ring", `oklch(${primary})`);
   root.style.setProperty("--accent", `oklch(${preset.accent})`);
   root.style.setProperty(
     "--gradient-primary",
-    `linear-gradient(135deg, oklch(${primary}) 0%, oklch(${preset.primaryGlow}) 100%)`
+    `linear-gradient(135deg, oklch(${primary}) 0%, oklch(${preset.primaryGlow}) 100%)`,
   );
   root.style.setProperty(
     "--gradient-hero",
-    `radial-gradient(ellipse 80% 60% at 50% 0%, oklch(${primary} / 0.25), transparent 70%)`
+    `radial-gradient(ellipse 80% 60% at 50% 0%, oklch(${primary} / 0.25), transparent 70%)`,
   );
   root.style.setProperty("--shadow-glow", `0 0 80px -10px oklch(${primary} / 0.45)`);
 
@@ -345,7 +351,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     applyTheme(state);
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch {}
   }, [state]);
 
   const value: ThemeContextValue = {

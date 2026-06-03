@@ -1,6 +1,16 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Ticket, Plus, Loader2, Copy, Check, Trash2, Power, RefreshCw, Shuffle } from "lucide-react";
+import {
+  Ticket,
+  Plus,
+  Loader2,
+  Copy,
+  Check,
+  Trash2,
+  Power,
+  RefreshCw,
+  Shuffle,
+} from "lucide-react";
 
 type Promo = {
   id: string;

@@ -55,9 +55,13 @@ export const Route = createFileRoute("/tutorials/")({
         content: "Free guides on AI 3D, Second Life mesh, PBR textures and retexturing.",
       },
       { property: "og:url", content: "https://kingdavez.click/tutorials" },
-    { name: "twitter:card", content: "summary_large_image" },
-    { name: "twitter:title", content: "Tutorials — KingDavez Studios" },
-    { name: "twitter:description", content: "Step-by-step tutorials for AI 3D model generation, Second Life mesh, and game asset workflows." },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Tutorials — KingDavez Studios" },
+      {
+        name: "twitter:description",
+        content:
+          "Step-by-step tutorials for AI 3D model generation, Second Life mesh, and game asset workflows.",
+      },
     ],
     links: [{ rel: "canonical", href: "https://kingdavez.click/tutorials" }],
     scripts: [
@@ -87,8 +91,8 @@ function TutorialsIndex() {
           Tutorials
         </h1>
         <p className="mt-3 text-lg text-muted-foreground max-w-2xl mx-auto">
-          Free, no-fluff guides for AI 3D generation, Second Life mesh, PBR textures and engine imports.
-          Written for builders who just want results.
+          Free, no-fluff guides for AI 3D generation, Second Life mesh, PBR textures and engine
+          imports. Written for builders who just want results.
         </p>
       </header>
 

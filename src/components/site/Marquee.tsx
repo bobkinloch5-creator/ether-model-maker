@@ -22,7 +22,6 @@ const ITEMS = [
   { icon: Package, text: "GLB · FBX · DAE" },
 ];
 
-
 export function Marquee() {
   const row = [...ITEMS, ...ITEMS];
   return (

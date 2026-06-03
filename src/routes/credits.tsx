@@ -1,6 +1,17 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Coins, Check, ArrowLeft, Sparkles, Zap, Shield, Loader2, ExternalLink, Ticket, Gift } from "lucide-react";
+import {
+  Coins,
+  Check,
+  ArrowLeft,
+  Sparkles,
+  Zap,
+  Shield,
+  Loader2,
+  ExternalLink,
+  Ticket,
+  Gift,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { purchaseCredits } from "@/lib/supabase";
@@ -13,14 +24,29 @@ export const Route = createFileRoute("/credits")({
   head: () => ({
     meta: [
       { title: "Buy Credits — AI 3D Generation | KingDavez" },
-      { name: "description", content: "Purchase generation credits for AI 3D models, PBR textures, and image-to-mesh via PayPal. Pay only for what you use — no subscriptions." },
-      { name: "keywords", content: "buy 3D generation credits, AI mesh credits, PayPal 3D models, game asset credits, Second Life mesh credits, PBR texture credits" },
+      {
+        name: "description",
+        content:
+          "Purchase generation credits for AI 3D models, PBR textures, and image-to-mesh via PayPal. Pay only for what you use — no subscriptions.",
+      },
+      {
+        name: "keywords",
+        content:
+          "buy 3D generation credits, AI mesh credits, PayPal 3D models, game asset credits, Second Life mesh credits, PBR texture credits",
+      },
       { property: "og:title", content: "Buy Credits — AI 3D Generation" },
-      { property: "og:description", content: "Generation credits for AI 3D models and textures via PayPal. No subscriptions." },
+      {
+        property: "og:description",
+        content: "Generation credits for AI 3D models and textures via PayPal. No subscriptions.",
+      },
       { property: "og:url", content: "https://kingdavez.click/credits" },
-    { name: "twitter:card", content: "summary_large_image" },
-    { name: "twitter:title", content: "Buy Credits — AI 3D Generation | KingDavez" },
-    { name: "twitter:description", content: "Purchase generation credits for AI 3D models, PBR textures, and image-to-mesh via PayPal." },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Buy Credits — AI 3D Generation | KingDavez" },
+      {
+        name: "twitter:description",
+        content:
+          "Purchase generation credits for AI 3D models, PBR textures, and image-to-mesh via PayPal.",
+      },
     ],
     links: [{ rel: "canonical", href: "https://kingdavez.click/credits" }],
   }),
@@ -71,19 +97,32 @@ function CreditsPage() {
   const customPack = (): Pack | null => {
     const n = parseInt(customCredits, 10);
     if (!Number.isFinite(n) || n < 10) return null;
-    return { credits: n, cost: Math.max(1, Math.round(n * 0.1 * 100) / 100), label: "Custom", perk: `${n} credits` };
+    return {
+      credits: n,
+      cost: Math.max(1, Math.round(n * 0.1 * 100) / 100),
+      label: "Custom",
+      perk: `${n} credits`,
+    };
   };
 
   const handleApprove = async (pack: Pack, transactionId?: string) => {
     if (!user) return;
     setProcessing(true);
     try {
-      const purchaseId = await purchaseCredits(user.id, pack.credits, "paypal", transactionId, pack.cost);
+      const purchaseId = await purchaseCredits(
+        user.id,
+        pack.credits,
+        "paypal",
+        transactionId,
+        pack.cost,
+      );
       if (purchaseId !== null) {
         setSuccess({ credits: pack.credits });
         toast.success("Payment submitted — awaiting owner approval");
       } else {
-        toast.error("Could not submit payment. Make sure you pasted a valid PayPal transaction ID, then try again.");
+        toast.error(
+          "Could not submit payment. Make sure you pasted a valid PayPal transaction ID, then try again.",
+        );
       }
     } finally {
       setProcessing(false);
@@ -96,11 +135,17 @@ function CreditsPage() {
       <main className="pt-28 pb-24">
         <div className="mx-auto max-w-5xl px-4">
           <div className="flex items-center justify-between gap-4">
-            <Link to="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition">
+            <Link
+              to="/dashboard"
+              className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition"
+            >
               <ArrowLeft className="h-4 w-4" /> Back to dashboard
             </Link>
             <div className="flex items-center gap-2">
-              <Link to="/credits/history" className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-white/10">
+              <Link
+                to="/credits/history"
+                className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-white/10"
+              >
                 History
               </Link>
               {profile && (
@@ -121,7 +166,8 @@ function CreditsPage() {
               Top up your <span className="gradient-text">balance</span>
             </h1>
             <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-              Pay only for what you use. No subscriptions, no plans — just credits that never expire.
+              Pay only for what you use. No subscriptions, no plans — just credits that never
+              expire.
             </p>
           </header>
 
@@ -134,14 +180,18 @@ function CreditsPage() {
                 </div>
                 <div>
                   <h3 className="font-display text-lg font-semibold">Have a promo code?</h3>
-                  <p className="text-xs text-muted-foreground">Redeem it for free credits — one per account.</p>
+                  <p className="text-xs text-muted-foreground">
+                    Redeem it for free credits — one per account.
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <input
                   value={promoCode}
                   onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                  onKeyDown={(e) => { if (e.key === "Enter") redeemPromo(); }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") redeemPromo();
+                  }}
                   placeholder="ENTER CODE"
                   maxLength={32}
                   className="h-10 w-44 rounded-lg border border-white/10 bg-black/40 px-3 font-mono text-sm uppercase tracking-wider focus:outline-none focus:ring-1 focus:ring-fuchsia-400/50"
@@ -151,13 +201,19 @@ function CreditsPage() {
                   disabled={redeeming || !promoCode.trim()}
                   className="inline-flex h-10 items-center gap-1.5 rounded-lg bg-[var(--gradient-primary)] px-4 text-sm font-medium text-white hover:opacity-95 disabled:opacity-50"
                 >
-                  {redeeming ? <Loader2 className="h-4 w-4 animate-spin" /> : <Gift className="h-4 w-4" />}
+                  {redeeming ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Gift className="h-4 w-4" />
+                  )}
                   Redeem
                 </button>
               </div>
             </div>
             {redeemResult && (
-              <div className={`mt-3 rounded-lg px-3 py-2 text-xs ${redeemResult.ok ? "bg-emerald-500/10 text-emerald-300" : "bg-rose-500/10 text-rose-300"}`}>
+              <div
+                className={`mt-3 rounded-lg px-3 py-2 text-xs ${redeemResult.ok ? "bg-emerald-500/10 text-emerald-300" : "bg-rose-500/10 text-rose-300"}`}
+              >
                 {redeemResult.msg}
               </div>
             )}
@@ -189,7 +245,9 @@ function CreditsPage() {
                     <span className="text-sm text-muted-foreground">credits</span>
                   </div>
                   <div className="mt-1 text-sm text-muted-foreground">{p.perk}</div>
-                  <div className="mt-4 text-2xl font-semibold text-primary-glow">${p.cost.toFixed(2)}</div>
+                  <div className="mt-4 text-2xl font-semibold text-primary-glow">
+                    ${p.cost.toFixed(2)}
+                  </div>
                 </button>
               );
             })}
@@ -200,7 +258,9 @@ function CreditsPage() {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h3 className="font-display text-lg font-semibold">Custom amount</h3>
-                <p className="text-sm text-muted-foreground">$0.10 per credit · minimum 10 credits</p>
+                <p className="text-sm text-muted-foreground">
+                  $0.10 per credit · minimum 10 credits
+                </p>
               </div>
               <div className="flex items-center gap-2">
                 <input
@@ -213,7 +273,12 @@ function CreditsPage() {
                     const cp = (() => {
                       const n = parseInt(e.target.value, 10);
                       if (!Number.isFinite(n) || n < 10) return null;
-                      return { credits: n, cost: Math.max(1, Math.round(n * 0.1 * 100) / 100), label: "Custom", perk: `${n} credits` } as Pack;
+                      return {
+                        credits: n,
+                        cost: Math.max(1, Math.round(n * 0.1 * 100) / 100),
+                        label: "Custom",
+                        perk: `${n} credits`,
+                      } as Pack;
                     })();
                     setSelected(cp);
                   }}
@@ -238,17 +303,29 @@ function CreditsPage() {
                 <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-amber-500/20 text-amber-300">
                   <Check className="h-6 w-6" />
                 </div>
-                <h3 className="font-display text-xl font-semibold text-amber-300">Payment submitted</h3>
+                <h3 className="font-display text-xl font-semibold text-amber-300">
+                  Payment submitted
+                </h3>
                 <p className="text-sm text-muted-foreground">
-                  Your payment for <span className="font-semibold text-foreground">{success.credits}</span> credits is awaiting owner approval.
-                  Credits will appear in your balance once we confirm the PayPal transaction (usually within a few hours).
+                  Your payment for{" "}
+                  <span className="font-semibold text-foreground">{success.credits}</span> credits
+                  is awaiting owner approval. Credits will appear in your balance once we confirm
+                  the PayPal transaction (usually within a few hours).
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  You can track this purchase under <Link to="/credits/history" className="underline hover:text-foreground">Credits history</Link>.
+                  You can track this purchase under{" "}
+                  <Link to="/credits/history" className="underline hover:text-foreground">
+                    Credits history
+                  </Link>
+                  .
                 </p>
                 <div className="flex justify-center gap-2 pt-2">
                   <button
-                    onClick={() => { setSuccess(null); setSelected(null); setCustomCredits(""); }}
+                    onClick={() => {
+                      setSuccess(null);
+                      setSelected(null);
+                      setCustomCredits("");
+                    }}
                     className="rounded-xl border border-white/10 px-4 py-2 text-sm font-semibold hover:bg-white/5"
                   >
                     Buy more
@@ -282,7 +359,9 @@ function CreditsPage() {
           </div>
 
           <p className="mt-6 text-center text-xs text-muted-foreground">
-            Payments are sent directly to <span className="font-semibold text-foreground">paypal.me/{PAYPAL_ME_USERNAME}</span>. Credits are released after payment is confirmed.
+            Payments are sent directly to{" "}
+            <span className="font-semibold text-foreground">paypal.me/{PAYPAL_ME_USERNAME}</span>.
+            Credits are released after payment is confirmed.
           </p>
         </div>
       </main>
@@ -354,7 +433,8 @@ function PaypalCheckout({
             <Check className="h-4 w-4" /> Payment submitted for review
           </div>
           <p className="mt-1 text-xs text-muted-foreground">
-            We've recorded your transaction. An owner will verify it and credits will be added to your balance shortly.
+            We've recorded your transaction. An owner will verify it and credits will be added to
+            your balance shortly.
           </p>
         </div>
       ) : (
@@ -362,8 +442,9 @@ function PaypalCheckout({
           <li className="rounded-xl border border-white/10 bg-white/5 p-4">
             <div className="font-semibold text-foreground">1. Send payment via PayPal</div>
             <p className="mt-1">
-              Open <span className="font-mono text-foreground">paypal.me/{PAYPAL_ME_USERNAME}</span> for{" "}
-              <span className="font-semibold text-emerald-400">${pack.cost.toFixed(2)}</span>. The note is pre-filled with your reference{" "}
+              Open <span className="font-mono text-foreground">paypal.me/{PAYPAL_ME_USERNAME}</span>{" "}
+              for <span className="font-semibold text-emerald-400">${pack.cost.toFixed(2)}</span>.
+              The note is pre-filled with your reference{" "}
               <span className="font-mono text-foreground">{ref}</span> — please keep it.
             </p>
             <a
@@ -377,10 +458,13 @@ function PaypalCheckout({
             </a>
           </li>
 
-          <li className={`rounded-xl border p-4 transition ${opened ? "border-white/10 bg-white/5" : "border-white/5 bg-white/[0.02] opacity-60"}`}>
+          <li
+            className={`rounded-xl border p-4 transition ${opened ? "border-white/10 bg-white/5" : "border-white/5 bg-white/[0.02] opacity-60"}`}
+          >
             <div className="font-semibold text-foreground">2. Paste your PayPal transaction ID</div>
             <p className="mt-1">
-              After paying, copy your PayPal transaction / receipt ID and paste it here. We'll verify the payment and add credits to your account once an owner approves it.
+              After paying, copy your PayPal transaction / receipt ID and paste it here. We'll
+              verify the payment and add credits to your account once an owner approves it.
             </p>
             <div className="mt-3">
               <input
@@ -413,8 +497,12 @@ function PaypalCheckout({
       )}
 
       <div className="flex flex-wrap items-center justify-center gap-4 pt-1 text-xs text-muted-foreground">
-        <span className="inline-flex items-center gap-1.5"><Shield className="h-3.5 w-3.5" /> Paid directly to paypal.me/{PAYPAL_ME_USERNAME}</span>
-        <span className="inline-flex items-center gap-1.5"><Zap className="h-3.5 w-3.5" /> Keep your reference {ref}</span>
+        <span className="inline-flex items-center gap-1.5">
+          <Shield className="h-3.5 w-3.5" /> Paid directly to paypal.me/{PAYPAL_ME_USERNAME}
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <Zap className="h-3.5 w-3.5" /> Keep your reference {ref}
+        </span>
       </div>
     </div>
   );

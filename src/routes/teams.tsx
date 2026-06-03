@@ -23,14 +23,31 @@ export const Route = createFileRoute("/teams")({
   head: () => ({
     meta: [
       { title: "Teams — KingDavez Studios AI 3D Projects" },
-      { name: "description", content: "Create or join teams to collaborate with friends on shared AI 3D model projects, manage permissions, and pool credits for larger generations." },
-      { name: "keywords", content: "3D collaboration team, AI mesh team project, shared 3D models, team workspace, game dev collaboration" },
-      { property: "og:title", content: "Teams — Collaborate on AI 3D Projects | KingDavez Studios" },
-      { property: "og:description", content: "Create or join teams to collaborate on shared AI 3D model projects." },
+      {
+        name: "description",
+        content:
+          "Create or join teams to collaborate with friends on shared AI 3D model projects, manage permissions, and pool credits for larger generations.",
+      },
+      {
+        name: "keywords",
+        content:
+          "3D collaboration team, AI mesh team project, shared 3D models, team workspace, game dev collaboration",
+      },
+      {
+        property: "og:title",
+        content: "Teams — Collaborate on AI 3D Projects | KingDavez Studios",
+      },
+      {
+        property: "og:description",
+        content: "Create or join teams to collaborate on shared AI 3D model projects.",
+      },
       { property: "og:url", content: "https://kingdavez.click/teams" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:title", content: "Teams — KingDavez Studios AI 3D Projects" },
-      { name: "twitter:description", content: "Create or join teams to collaborate on shared AI 3D model projects." },
+      {
+        name: "twitter:description",
+        content: "Create or join teams to collaborate on shared AI 3D model projects.",
+      },
     ],
     links: [{ rel: "canonical", href: "https://kingdavez.click/teams" }],
   }),
@@ -92,10 +109,7 @@ function TeamsPage() {
     // Resolve member emails
     const ids = Array.from(new Set((m as Member[] | null)?.map((x) => x.user_id) ?? []));
     if (ids.length > 0) {
-      const { data: profs } = await supabase
-        .from("profiles")
-        .select("id,email")
-        .in("id", ids);
+      const { data: profs } = await supabase.from("profiles").select("id,email").in("id", ids);
       const map: Record<string, string> = {};
       (profs as { id: string; email: string }[] | null)?.forEach((p) => (map[p.id] = p.email));
       setMemberEmails(map);
@@ -153,8 +167,7 @@ function TeamsPage() {
   );
   const isOwnerOfSelected = useMemo(
     () =>
-      !!selectedTeam &&
-      selectedMembers.some((m) => m.user_id === user?.id && m.role === "owner"),
+      !!selectedTeam && selectedMembers.some((m) => m.user_id === user?.id && m.role === "owner"),
     [selectedTeam, selectedMembers, user?.id],
   );
 
@@ -228,14 +241,21 @@ function TeamsPage() {
   };
 
   if (authLoading) {
-    return <div className="grid min-h-screen place-items-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
+    return (
+      <div className="grid min-h-screen place-items-center">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
   }
 
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-40 border-b border-white/10 glass">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
-          <Link to="/dashboard" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+          <Link
+            to="/dashboard"
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+          >
             <ArrowLeft className="h-4 w-4" /> Dashboard
           </Link>
           <div className="flex items-center gap-2">
@@ -253,7 +273,8 @@ function TeamsPage() {
               <span className="gradient-text">Teams</span>
             </h1>
             <p className="mt-1 text-muted-foreground text-sm">
-              Build together. Invite friends, share a project workspace, and watch each other&apos;s creations come to life.
+              Build together. Invite friends, share a project workspace, and watch each other&apos;s
+              creations come to life.
             </p>
             <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-emerald-300">
               <span className="relative flex h-1.5 w-1.5">
@@ -276,10 +297,15 @@ function TeamsPage() {
               {invitesForMe.map((inv) => {
                 const team = teams.find((t) => t.id === inv.team_id);
                 return (
-                  <li key={inv.id} className="flex items-center justify-between rounded-xl bg-white/5 p-3">
+                  <li
+                    key={inv.id}
+                    className="flex items-center justify-between rounded-xl bg-white/5 p-3"
+                  >
                     <div>
                       <div className="font-medium">{team?.name ?? "A team"}</div>
-                      <div className="text-xs text-muted-foreground">As {inv.role} · expires {new Date(inv.expires_at).toLocaleDateString()}</div>
+                      <div className="text-xs text-muted-foreground">
+                        As {inv.role} · expires {new Date(inv.expires_at).toLocaleDateString()}
+                      </div>
                     </div>
                     <button
                       onClick={() => acceptInvite(inv.id)}
@@ -299,7 +325,9 @@ function TeamsPage() {
           {/* Sidebar */}
           <aside className="space-y-4">
             <div className="glass rounded-2xl p-4">
-              <h3 className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Create a team</h3>
+              <h3 className="text-xs uppercase tracking-wider text-muted-foreground mb-2">
+                Create a team
+              </h3>
               <div className="flex gap-2">
                 <input
                   value={newName}
@@ -314,22 +342,34 @@ function TeamsPage() {
                   disabled={creating || !newName.trim()}
                   className="h-10 rounded-xl bg-[var(--gradient-primary)] px-3 text-sm font-medium text-white disabled:opacity-50"
                 >
-                  {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                  {creating ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Plus className="h-4 w-4" />
+                  )}
                 </button>
               </div>
             </div>
 
             <div className="glass rounded-2xl p-2">
-              <h3 className="px-2 pt-2 pb-1 text-xs uppercase tracking-wider text-muted-foreground">Your teams ({teams.length})</h3>
+              <h3 className="px-2 pt-2 pb-1 text-xs uppercase tracking-wider text-muted-foreground">
+                Your teams ({teams.length})
+              </h3>
               {loading ? (
-                <div className="grid place-items-center py-8"><Loader2 className="h-5 w-5 animate-spin text-primary/60" /></div>
+                <div className="grid place-items-center py-8">
+                  <Loader2 className="h-5 w-5 animate-spin text-primary/60" />
+                </div>
               ) : teams.length === 0 ? (
-                <p className="px-3 py-6 text-sm text-muted-foreground text-center">No teams yet — create one above.</p>
+                <p className="px-3 py-6 text-sm text-muted-foreground text-center">
+                  No teams yet — create one above.
+                </p>
               ) : (
                 <ul className="space-y-1 p-1">
                   {teams.map((t) => {
                     const count = members.filter((m) => m.team_id === t.id).length;
-                    const iAmOwner = members.some((m) => m.team_id === t.id && m.user_id === user?.id && m.role === "owner");
+                    const iAmOwner = members.some(
+                      (m) => m.team_id === t.id && m.user_id === user?.id && m.role === "owner",
+                    );
                     return (
                       <li key={t.id}>
                         <button
@@ -344,7 +384,9 @@ function TeamsPage() {
                             <span className="font-medium truncate">{t.name}</span>
                             {iAmOwner && <Crown className="h-3.5 w-3.5 text-amber-300 shrink-0" />}
                           </div>
-                          <div className="text-xs text-muted-foreground">{count} member{count === 1 ? "" : "s"}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {count} member{count === 1 ? "" : "s"}
+                          </div>
                         </button>
                       </li>
                     );
@@ -359,16 +401,22 @@ function TeamsPage() {
             {!selectedTeam ? (
               <div className="glass rounded-2xl p-12 text-center">
                 <Sparkles className="mx-auto h-10 w-10 text-primary-glow" />
-                <p className="mt-3 text-sm text-muted-foreground">Pick a team or create one to start collaborating.</p>
+                <p className="mt-3 text-sm text-muted-foreground">
+                  Pick a team or create one to start collaborating.
+                </p>
               </div>
             ) : (
               <div className="space-y-5">
                 <div className="glass rounded-2xl p-6">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <h2 className="font-display text-2xl font-semibold tracking-tight">{selectedTeam.name}</h2>
+                      <h2 className="font-display text-2xl font-semibold tracking-tight">
+                        {selectedTeam.name}
+                      </h2>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        Created {new Date(selectedTeam.created_at).toLocaleDateString()} · {selectedMembers.length} member{selectedMembers.length === 1 ? "" : "s"} · {selectedProjects.length} project{selectedProjects.length === 1 ? "" : "s"}
+                        Created {new Date(selectedTeam.created_at).toLocaleDateString()} ·{" "}
+                        {selectedMembers.length} member{selectedMembers.length === 1 ? "" : "s"} ·{" "}
+                        {selectedProjects.length} project{selectedProjects.length === 1 ? "" : "s"}
                       </p>
                     </div>
                     {isOwnerOfSelected && (
@@ -420,7 +468,8 @@ function TeamsPage() {
                       </button>
                     </div>
                     <p className="mt-2 text-xs text-muted-foreground">
-                      They&apos;ll see the invite next time they open the Teams page (must sign up with that email first).
+                      They&apos;ll see the invite next time they open the Teams page (must sign up
+                      with that email first).
                     </p>
 
                     {teamInvites.length > 0 && (
@@ -428,9 +477,18 @@ function TeamsPage() {
                         <p className="text-xs text-muted-foreground mb-2">Pending invites</p>
                         <ul className="space-y-1.5">
                           {teamInvites.map((i) => (
-                            <li key={i.id} className="flex items-center justify-between rounded-lg bg-white/5 px-3 py-2 text-sm">
-                              <span><span className="text-muted-foreground">{i.role}</span> · {i.email}</span>
-                              <button onClick={() => cancelInvite(i.id)} className="rounded p-1 hover:bg-white/10 text-muted-foreground" title="Cancel">
+                            <li
+                              key={i.id}
+                              className="flex items-center justify-between rounded-lg bg-white/5 px-3 py-2 text-sm"
+                            >
+                              <span>
+                                <span className="text-muted-foreground">{i.role}</span> · {i.email}
+                              </span>
+                              <button
+                                onClick={() => cancelInvite(i.id)}
+                                className="rounded p-1 hover:bg-white/10 text-muted-foreground"
+                                title="Cancel"
+                              >
                                 <X className="h-3.5 w-3.5" />
                               </button>
                             </li>
@@ -448,7 +506,10 @@ function TeamsPage() {
                   </h3>
                   <ul className="space-y-1.5">
                     {selectedMembers.map((m) => (
-                      <li key={m.id} className="flex items-center justify-between rounded-xl bg-white/5 p-3">
+                      <li
+                        key={m.id}
+                        className="flex items-center justify-between rounded-xl bg-white/5 p-3"
+                      >
                         <div className="flex items-center gap-2">
                           <div className="grid h-8 w-8 place-items-center rounded-full bg-[var(--gradient-primary)] text-xs font-semibold text-white">
                             {(memberEmails[m.user_id] ?? "?").charAt(0).toUpperCase()}
@@ -456,7 +517,9 @@ function TeamsPage() {
                           <div>
                             <div className="text-sm font-medium">
                               {memberEmails[m.user_id] ?? m.user_id.slice(0, 8)}
-                              {m.user_id === user?.id && <span className="ml-1.5 text-xs text-muted-foreground">(you)</span>}
+                              {m.user_id === user?.id && (
+                                <span className="ml-1.5 text-xs text-muted-foreground">(you)</span>
+                              )}
                             </div>
                             <div className="text-[10px] uppercase tracking-wider text-muted-foreground flex items-center gap-1">
                               {m.role === "owner" && <Crown className="h-3 w-3 text-amber-300" />}
@@ -485,19 +548,27 @@ function TeamsPage() {
                     <h3 className="font-display font-semibold flex items-center gap-2">
                       <Folder className="h-4 w-4 text-primary-glow" /> Shared projects
                     </h3>
-                    <Link to="/dashboard" className="text-xs text-muted-foreground hover:text-foreground">Manage in dashboard →</Link>
+                    <Link
+                      to="/dashboard"
+                      className="text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      Manage in dashboard →
+                    </Link>
                   </div>
                   {selectedProjects.length === 0 ? (
                     <p className="text-sm text-muted-foreground text-center py-4">
                       No team projects yet. In the dashboard, set a project&apos;s team to{" "}
-                      <span className="font-medium text-foreground">{selectedTeam.name}</span> and everyone here can use it.
+                      <span className="font-medium text-foreground">{selectedTeam.name}</span> and
+                      everyone here can use it.
                     </p>
                   ) : (
                     <ul className="grid sm:grid-cols-2 gap-2">
                       {selectedProjects.map((p) => (
                         <li key={p.id} className="rounded-xl border border-white/10 bg-white/5 p-3">
                           <div className="font-medium truncate">{p.name}</div>
-                          <div className="text-xs text-muted-foreground">{new Date(p.created_at).toLocaleDateString()}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {new Date(p.created_at).toLocaleDateString()}
+                          </div>
                         </li>
                       ))}
                     </ul>

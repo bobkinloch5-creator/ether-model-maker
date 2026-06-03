@@ -29,13 +29,24 @@ export const Route = createFileRoute("/faq")({
   head: () => ({
     meta: [
       { title: "FAQ — KingDavez Studios AI 3D Generator (Beta)" },
-      { name: "description", content: "How AI 3D generation, credits, exports, and Second Life delivery work at KingDavez Studios." },
+      {
+        name: "description",
+        content:
+          "How AI 3D generation, credits, exports, and Second Life delivery work at KingDavez Studios.",
+      },
       { property: "og:title", content: "FAQ — KingDavez Studios" },
-      { property: "og:description", content: "Answers about credits, exports, Second Life delivery, and ownership." },
+      {
+        property: "og:description",
+        content: "Answers about credits, exports, Second Life delivery, and ownership.",
+      },
       { property: "og:url", content: "https://kingdavez.click/faq" },
-    { name: "twitter:card", content: "summary_large_image" },
-    { name: "twitter:title", content: "FAQ — KingDavez Studios AI 3D Generator" },
-    { name: "twitter:description", content: "Frequently asked questions about AI 3D model generation, pricing, exports, and Second Life delivery." },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "FAQ — KingDavez Studios AI 3D Generator" },
+      {
+        name: "twitter:description",
+        content:
+          "Frequently asked questions about AI 3D model generation, pricing, exports, and Second Life delivery.",
+      },
     ],
     links: [{ rel: "canonical", href: "https://kingdavez.click/faq" }],
     scripts: [
@@ -62,13 +73,20 @@ function FAQPage() {
       <Header />
       <main className="mx-auto max-w-4xl px-4 py-24">
         <div className="mb-12 text-center">
-          <h1 className="text-4xl font-bold font-display tracking-tight text-foreground">Frequently Asked Questions</h1>
-          <p className="mt-4 text-lg text-muted-foreground">Everything you need to know about KingDavez Studios.</p>
+          <h1 className="text-4xl font-bold font-display tracking-tight text-foreground">
+            Frequently Asked Questions
+          </h1>
+          <p className="mt-4 text-lg text-muted-foreground">
+            Everything you need to know about KingDavez Studios.
+          </p>
         </div>
 
         <div className="space-y-6">
           {FAQS.map((faq, i) => (
-            <div key={i} className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm transition hover:border-primary/50">
+            <div
+              key={i}
+              className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm transition hover:border-primary/50"
+            >
               <h3 className="text-xl font-semibold text-foreground mb-3">{faq.q}</h3>
               <p className="text-muted-foreground leading-relaxed">{faq.a}</p>
             </div>

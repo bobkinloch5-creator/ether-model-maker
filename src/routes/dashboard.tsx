@@ -63,15 +63,34 @@ export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
       { title: "Dashboard — KingDavez Studios AI 3D Generator" },
-      { name: "description", content: "Manage your AI-generated 3D models, projects, credits, API keys, and Second Life deliveries from your KingDavez Studios dashboard." },
-      { name: "keywords", content: "AI 3D dashboard, 3D model manager, text-to-3D projects, Second Life mesh delivery, PBR texture library, GLB downloads, game asset manager" },
-      { property: "og:title", content: "Dashboard — Manage Your AI 3D Models & Credits | KingDavez Studios" },
-      { property: "og:description", content: "Manage your AI-generated 3D models, projects, credits, and Second Life deliveries." },
+      {
+        name: "description",
+        content:
+          "Manage your AI-generated 3D models, projects, credits, API keys, and Second Life deliveries from your KingDavez Studios dashboard.",
+      },
+      {
+        name: "keywords",
+        content:
+          "AI 3D dashboard, 3D model manager, text-to-3D projects, Second Life mesh delivery, PBR texture library, GLB downloads, game asset manager",
+      },
+      {
+        property: "og:title",
+        content: "Dashboard — Manage Your AI 3D Models & Credits | KingDavez Studios",
+      },
+      {
+        property: "og:description",
+        content:
+          "Manage your AI-generated 3D models, projects, credits, and Second Life deliveries.",
+      },
       { property: "og:url", content: "https://kingdavez.click/dashboard" },
       { name: "robots", content: "noindex,nofollow" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:title", content: "Dashboard — KingDavez Studios" },
-      { name: "twitter:description", content: "Manage your AI-generated 3D models, projects, credits, and Second Life deliveries." },
+      {
+        name: "twitter:description",
+        content:
+          "Manage your AI-generated 3D models, projects, credits, and Second Life deliveries.",
+      },
     ],
     links: [{ rel: "canonical", href: "https://kingdavez.click/dashboard" }],
   }),
@@ -100,18 +119,18 @@ function DashboardPage() {
 
   // Tick every second to update progress bars and timers if there are active generations
   useEffect(() => {
-    const hasActive = generations.some(g => g.status === "processing" || g.status === "pending");
+    const hasActive = generations.some((g) => g.status === "processing" || g.status === "pending");
     if (!hasActive) return;
 
     const interval = setInterval(() => {
-      setTimeTick(t => t + 1);
+      setTimeTick((t) => t + 1);
     }, 1000);
     return () => clearInterval(interval);
   }, [generations]);
 
   // Poll generations if any are processing or pending to auto-update status when completed
   useEffect(() => {
-    const hasActive = generations.some(g => g.status === "processing" || g.status === "pending");
+    const hasActive = generations.some((g) => g.status === "processing" || g.status === "pending");
     if (!hasActive) return;
 
     const interval = setInterval(() => {
@@ -127,7 +146,7 @@ function DashboardPage() {
   const getProgressDetails = (createdAtStr: string, genType: string) => {
     const elapsedMs = Date.now() - new Date(createdAtStr).getTime();
     const elapsedSec = Math.floor(elapsedMs / 1000);
-    
+
     // Standard estimation of generation times in seconds
     const totalEstSec = genType === "image-to-3d" ? 180 : genType === "retexture" ? 60 : 120;
     const remainingSec = Math.max(0, totalEstSec - elapsedSec);
@@ -143,7 +162,7 @@ function DashboardPage() {
     return {
       elapsedText: formatTime(elapsedSec),
       etaText: remainingSec > 0 ? `~${formatTime(remainingSec)}` : "Any second now...",
-      progressPercent
+      progressPercent,
     };
   };
 
@@ -154,7 +173,7 @@ function DashboardPage() {
         const { GLTFExporter } = await import("three/examples/jsm/exporters/GLTFExporter.js");
         const { buildProceduralMesh } = await import("@/lib/procedural");
         const sceneToExport = buildProceduralMesh(prompt);
-        
+
         const exporter = new GLTFExporter();
         exporter.parse(
           sceneToExport,
@@ -170,7 +189,7 @@ function DashboardPage() {
             console.error("GLB export parse error:", err);
             toast.error("Failed to export as GLB.");
           },
-          { binary: true }
+          { binary: true },
         );
       } else {
         const link = document.createElement("a");
@@ -189,7 +208,7 @@ function DashboardPage() {
     try {
       toast.info("Preparing OBJ file...");
       const { OBJExporter } = await import("three/examples/jsm/exporters/OBJExporter.js");
-      
+
       let sceneToExport;
       if (url === "/demo-model.glb" || url.includes("demo-model")) {
         const { buildProceduralMesh } = await import("@/lib/procedural");
@@ -197,7 +216,9 @@ function DashboardPage() {
       } else {
         const { GLTFLoader } = await import("three/examples/jsm/loaders/GLTFLoader.js");
         const loader = new GLTFLoader();
-        const gltf = await new Promise<any>((resolve, reject) => loader.load(url, resolve, undefined, reject));
+        const gltf = await new Promise<any>((resolve, reject) =>
+          loader.load(url, resolve, undefined, reject),
+        );
         sceneToExport = gltf.scene;
       }
 
@@ -219,7 +240,7 @@ function DashboardPage() {
     try {
       toast.info("Preparing STL file...");
       const { STLExporter } = await import("three/examples/jsm/exporters/STLExporter.js");
-      
+
       let sceneToExport;
       if (url === "/demo-model.glb" || url.includes("demo-model")) {
         const { buildProceduralMesh } = await import("@/lib/procedural");
@@ -227,7 +248,9 @@ function DashboardPage() {
       } else {
         const { GLTFLoader } = await import("three/examples/jsm/loaders/GLTFLoader.js");
         const loader = new GLTFLoader();
-        const gltf = await new Promise<any>((resolve, reject) => loader.load(url, resolve, undefined, reject));
+        const gltf = await new Promise<any>((resolve, reject) =>
+          loader.load(url, resolve, undefined, reject),
+        );
         sceneToExport = gltf.scene;
       }
 
@@ -249,7 +272,7 @@ function DashboardPage() {
     try {
       toast.info("Preparing FBX file...");
       const { FBXExporter } = await import("@/lib/FBXExporter");
-      
+
       let sceneToExport;
       if (url === "/demo-model.glb" || url.includes("demo-model")) {
         const { buildProceduralMesh } = await import("@/lib/procedural");
@@ -257,7 +280,9 @@ function DashboardPage() {
       } else {
         const { GLTFLoader } = await import("three/examples/jsm/loaders/GLTFLoader.js");
         const loader = new GLTFLoader();
-        const gltf = await new Promise<any>((resolve, reject) => loader.load(url, resolve, undefined, reject));
+        const gltf = await new Promise<any>((resolve, reject) =>
+          loader.load(url, resolve, undefined, reject),
+        );
         sceneToExport = gltf.scene;
       }
 
@@ -312,12 +337,16 @@ function DashboardPage() {
   // Chat state
   const [chatOpen, setChatOpen] = useState(false);
   const [chatInput, setChatInput] = useState("");
-  const [chatMessages, setChatMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
+  const [chatMessages, setChatMessages] = useState<
+    { role: "user" | "assistant"; content: string }[]
+  >([]);
   const [chatLoading, setChatLoading] = useState(false);
 
   // Modals state
   const [buyCreditsOpen, setBuyCreditsOpen] = useState(false);
-  const [selectedPackage, setSelectedPackage] = useState<{ credits: number; cost: number } | null>(null);
+  const [selectedPackage, setSelectedPackage] = useState<{ credits: number; cost: number } | null>(
+    null,
+  );
   const [checkoutStep, setCheckoutStep] = useState<"select" | "pay" | "success">("select");
   const [slUsernameInput, setSlUsernameInput] = useState("");
   const [updatingSL, setUpdatingSL] = useState(false);
@@ -327,7 +356,9 @@ function DashboardPage() {
   const [uploadOpen, setUploadOpen] = useState(false);
   const [selectedGen, setSelectedGen] = useState<Generation | null>(null);
   const [uploadStep, setUploadStep] = useState<"choice" | "processing" | "success">("choice");
-  const [uploadPaymentMethod, setUploadPaymentMethod] = useState<"credits" | "lindens" | null>(null);
+  const [uploadPaymentMethod, setUploadPaymentMethod] = useState<"credits" | "lindens" | null>(
+    null,
+  );
 
   // API key state
   const [showApiKey, setShowApiKey] = useState(false);
@@ -363,9 +394,17 @@ function DashboardPage() {
     if (!user) return;
     const channel = supabase
       .channel("dashboard-collab")
-      .on("postgres_changes", { event: "*", schema: "public", table: "projects" }, () => loadGenerations())
-      .on("postgres_changes", { event: "*", schema: "public", table: "generations" }, () => loadGenerations())
-      .on("postgres_changes", { event: "*", schema: "public", table: "team_members", filter: `user_id=eq.${user.id}` }, () => loadGenerations())
+      .on("postgres_changes", { event: "*", schema: "public", table: "projects" }, () =>
+        loadGenerations(),
+      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "generations" }, () =>
+        loadGenerations(),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "team_members", filter: `user_id=eq.${user.id}` },
+        () => loadGenerations(),
+      )
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
@@ -406,10 +445,14 @@ function DashboardPage() {
   };
 
   const handleDeleteProject = async (projectId: string) => {
-    if (confirm("Are you sure you want to delete this project? All generations inside it will be permanently deleted.")) {
+    if (
+      confirm(
+        "Are you sure you want to delete this project? All generations inside it will be permanently deleted.",
+      )
+    ) {
       const success = await deleteProject(projectId);
       if (success) {
-        setProjects(projects.filter(p => p.id !== projectId));
+        setProjects(projects.filter((p) => p.id !== projectId));
         if (selectedProjectId === projectId) {
           setSelectedProjectId(null);
         }
@@ -436,7 +479,12 @@ function DashboardPage() {
 
   const handleRegenerateApiKey = async () => {
     if (!user) return;
-    if (!confirm("Are you sure you want to regenerate your API Key? Any application or HUD using your old key will stop working immediately.")) return;
+    if (
+      !confirm(
+        "Are you sure you want to regenerate your API Key? Any application or HUD using your old key will stop working immediately.",
+      )
+    )
+      return;
     setRegeneratingApiKey(true);
     const key = await regenerateApiKey(user.id);
     if (key) {
@@ -458,7 +506,13 @@ function DashboardPage() {
     if (!user || !selectedPackage) return;
     setCheckoutStep("pay");
     const transactionId = details?.id ?? details?.purchase_units?.[0]?.payments?.captures?.[0]?.id;
-    const purchaseId = await purchaseCredits(user.id, selectedPackage.credits, "paypal", transactionId, selectedPackage.cost);
+    const purchaseId = await purchaseCredits(
+      user.id,
+      selectedPackage.credits,
+      "paypal",
+      transactionId,
+      selectedPackage.cost,
+    );
     if (purchaseId !== null) {
       setCheckoutStep("success");
     }
@@ -506,7 +560,7 @@ function DashboardPage() {
 
     const result = await assistantChat(
       msg,
-      chatMessages.map((m) => ({ role: m.role, content: m.content }))
+      chatMessages.map((m) => ({ role: m.role, content: m.content })),
     );
 
     setChatMessages((prev) => [
@@ -515,7 +569,7 @@ function DashboardPage() {
         role: "assistant",
         content: result.success
           ? result.text
-          : result.error ?? "Sorry, I couldn't respond. Is the AI server reachable?",
+          : (result.error ?? "Sorry, I couldn't respond. Is the AI server reachable?"),
       },
     ]);
     setChatLoading(false);
@@ -559,9 +613,13 @@ function DashboardPage() {
                 className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-sm hover:bg-white/10 transition"
               >
                 <Coins className="h-4 w-4 text-amber-400 animate-pulse" />
-                <span className="font-semibold">{profile?.is_owner ? "Unlimited" : (profile?.credits ?? 0)}</span>
+                <span className="font-semibold">
+                  {profile?.is_owner ? "Unlimited" : (profile?.credits ?? 0)}
+                </span>
                 <span className="text-muted-foreground">credits</span>
-                <span className="ml-1 text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded-full font-bold">BUY</span>
+                <span className="ml-1 text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded-full font-bold">
+                  BUY
+                </span>
               </button>
               <Link
                 to="/profile"
@@ -594,9 +652,7 @@ function DashboardPage() {
                 {profile?.display_name || user.email?.split("@")[0]}
               </span>
             </h1>
-            <p className="mt-1 text-muted-foreground">
-              Here's your studio at a glance.
-            </p>
+            <p className="mt-1 text-muted-foreground">Here's your studio at a glance.</p>
           </div>
           <div className="flex flex-col md:flex-row gap-4 md:items-stretch w-full md:w-auto">
             {/* Second Life Link Account */}
@@ -637,7 +693,9 @@ function DashboardPage() {
                     </button>
                   </div>
                   {slBindSuccess && (
-                    <p className="text-xs text-emerald-400 font-medium">Successfully bound your account!</p>
+                    <p className="text-xs text-emerald-400 font-medium">
+                      Successfully bound your account!
+                    </p>
                   )}
                 </form>
               )}
@@ -668,7 +726,11 @@ function DashboardPage() {
                     className="p-1 text-muted-foreground hover:text-foreground transition"
                     title={showApiKey ? "Hide API Key" : "Show API Key"}
                   >
-                    {showApiKey ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                    {showApiKey ? (
+                      <EyeOff className="h-3.5 w-3.5" />
+                    ) : (
+                      <Eye className="h-3.5 w-3.5" />
+                    )}
                   </button>
                   <button
                     type="button"
@@ -682,7 +744,11 @@ function DashboardPage() {
                     className="p-1 text-muted-foreground hover:text-foreground transition"
                     title="Copy to Clipboard"
                   >
-                    {copiedApiKey ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+                    {copiedApiKey ? (
+                      <Check className="h-3.5 w-3.5 text-emerald-400" />
+                    ) : (
+                      <Copy className="h-3.5 w-3.5" />
+                    )}
                   </button>
                 </div>
                 <button
@@ -708,7 +774,13 @@ function DashboardPage() {
               iconColor: "text-amber-400",
               label: "Credits remaining",
               value: profile?.is_owner ? "Unlimited" : (profile?.credits ?? 0),
-              action: { label: "+ Buy More", onClick: () => { setCheckoutStep("select"); setBuyCreditsOpen(true); } }
+              action: {
+                label: "+ Buy More",
+                onClick: () => {
+                  setCheckoutStep("select");
+                  setBuyCreditsOpen(true);
+                },
+              },
             },
             {
               icon: TrendingUp,
@@ -792,12 +864,11 @@ function DashboardPage() {
                   {action.cost} credits
                 </span>
               </div>
-              <h3 className="mt-4 font-display text-lg font-semibold">
-                {action.title}
-              </h3>
+              <h3 className="mt-4 font-display text-lg font-semibold">{action.title}</h3>
               <p className="mt-1 text-sm text-muted-foreground">{action.desc}</p>
               <div className="mt-4 flex items-center gap-1 text-sm font-medium text-primary-glow opacity-0 transition group-hover:opacity-100">
-                Start <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                Start{" "}
+                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
               </div>
             </Link>
           ))}
@@ -806,9 +877,7 @@ function DashboardPage() {
         {/* Projects Section */}
         <div className="mb-10">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-display text-xl font-semibold tracking-tight">
-              My Projects
-            </h2>
+            <h2 className="font-display text-xl font-semibold tracking-tight">My Projects</h2>
             <button
               onClick={() => setCreateProjectOpen(true)}
               className="flex items-center gap-1.5 rounded-lg bg-primary/20 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/30 transition"
@@ -817,14 +886,12 @@ function DashboardPage() {
               New Project
             </button>
           </div>
-          
+
           <div className="flex gap-3 overflow-x-auto pb-2 custom-scrollbar">
             <button
               onClick={() => setSelectedProjectId(null)}
               className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition ${
-                selectedProjectId === null
-                  ? "bg-primary text-white"
-                  : "glass hover:bg-white/5"
+                selectedProjectId === null ? "bg-primary text-white" : "glass hover:bg-white/5"
               }`}
             >
               <Folder className="h-4 w-4" />
@@ -849,7 +916,9 @@ function DashboardPage() {
                     handleDeleteProject(proj.id);
                   }}
                   className={`absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md transition ${
-                    selectedProjectId === proj.id ? "text-white/70 hover:text-white hover:bg-white/20" : "text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive hover:bg-destructive/20"
+                    selectedProjectId === proj.id
+                      ? "text-white/70 hover:text-white hover:bg-white/20"
+                      : "text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive hover:bg-destructive/20"
                   }`}
                   title="Delete Project"
                 >
@@ -872,15 +941,12 @@ function DashboardPage() {
           ) : generations.length === 0 ? (
             <div className="glass rounded-2xl p-12 text-center">
               <Box className="mx-auto h-10 w-10 text-muted-foreground/40" />
-              <p className="mt-3 text-muted-foreground">
-                No generations yet. Start creating!
-              </p>
+              <p className="mt-3 text-muted-foreground">No generations yet. Start creating!</p>
               <Link
                 to="/generate"
                 className="mt-4 inline-flex h-10 items-center gap-2 rounded-xl bg-[var(--gradient-primary)] px-5 text-sm font-medium text-white transition hover:opacity-95"
               >
-                Generate your first asset{" "}
-                <ArrowRight className="h-3.5 w-3.5" />
+                Generate your first asset <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>
           ) : (
@@ -889,183 +955,201 @@ function DashboardPage() {
                 .filter((g) => (selectedProjectId ? g.project_id === selectedProjectId : true))
                 .slice(0, 10)
                 .map((gen, i) => {
-                const typeInfo = TYPE_LABELS[gen.generation_type] ?? TYPE_LABELS["image-to-3d"];
-                const statusInfo = STATUS_DISPLAY[gen.status] ?? STATUS_DISPLAY["pending"];
-                const TypeIcon = typeInfo.icon;
-                const StatusIcon = statusInfo.icon;
+                  const typeInfo = TYPE_LABELS[gen.generation_type] ?? TYPE_LABELS["image-to-3d"];
+                  const statusInfo = STATUS_DISPLAY[gen.status] ?? STATUS_DISPLAY["pending"];
+                  const TypeIcon = typeInfo.icon;
+                  const StatusIcon = statusInfo.icon;
 
-                // Calculate expiration timer
-                const expiry = getExpirationStatus(gen.created_at);
+                  // Calculate expiration timer
+                  const expiry = getExpirationStatus(gen.created_at);
 
-                return (
-                  <div
-                    key={gen.id}
-                    onClick={() => {
-                      if (gen.status === "completed") {
-                        setPreviewGen(gen);
-                      }
-                    }}
-                    className={`glass group flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-xl p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_-12px_rgba(0,0,0,0.4)] animate-fade-in ${
-                      gen.status === "completed" ? "cursor-pointer hover:bg-white/[0.04] hover:border-white/20" : ""
-                    }`}
-                    style={{ animationDelay: `${i * 60}ms`, animationFillMode: "both" }}
-                  >
-                    <div className="flex items-center gap-4 min-w-0 flex-1">
-                      {gen.status === "completed" && gen.result_data?.image_url ? (
-                        <div className="relative h-10 w-10 shrink-0 rounded-lg overflow-hidden border border-white/10 group/thumb">
-                          <img
-                            src={gen.result_data.image_url as string}
-                            alt="Preview Thumbnail"
-                            className="h-full w-full object-cover"
-                          />
-                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/thumb:opacity-100 transition-opacity">
-                            <Eye className="h-4 w-4 text-white" />
-                          </div>
-                        </div>
-                      ) : (
-                        <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-white/5 ${typeInfo.color}`}>
-                          <TypeIcon className="h-5 w-5" />
-                        </div>
-                      )}
-                      
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <p className="truncate text-sm font-medium">
-                            {gen.prompt}
-                          </p>
-                          {gen.status === "completed" && (
-                            <span className="text-[10px] text-primary-glow border border-primary/20 bg-primary/5 px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                              Click to Preview
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
-                          <span>{typeInfo.label}</span>
-                          <span>·</span>
-                          <span>{gen.credits_used} credits</span>
-                          <span>·</span>
-                          <span>{new Date(gen.created_at).toLocaleDateString()}</span>
-                          <span>·</span>
-                          <span className={`font-medium ${expiry.isExpired ? "text-red-400" : "text-amber-400"}`}>
-                            {expiry.text}
-                          </span>
-                        </div>
-
-                        {/* Progress Bar & Real-time Timer */}
-                        {(gen.status === "processing" || gen.status === "pending") && (() => {
-                          const progress = getProgressDetails(gen.created_at, gen.generation_type);
-                          return (
-                            <div className="mt-2.5 max-w-md w-full">
-                              <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1.5">
-                                <span className="flex items-center gap-1.5">
-                                  <Clock className="h-3 w-3 animate-pulse text-amber-400" />
-                                  Running: <span className="text-white font-mono">{progress.elapsedText}</span>
-                                </span>
-                                <span>
-                                  {gen.status === "pending" 
-                                    ? "Queued in database..." 
-                                    : `Generating... ${progress.progressPercent}% (ETA: ${progress.etaText})`
-                                  }
-                                </span>
-                              </div>
-                              <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-                                <div 
-                                  className={`h-full rounded-full transition-all duration-1000 ${
-                                    gen.status === "pending"
-                                      ? "bg-muted-foreground/40 animate-pulse w-[8%]"
-                                      : "bg-gradient-to-r from-amber-500 via-primary to-primary-glow"
-                                  }`} 
-                                  style={gen.status === "processing" ? { width: `${progress.progressPercent}%` } : undefined}
-                                />
-                              </div>
+                  return (
+                    <div
+                      key={gen.id}
+                      onClick={() => {
+                        if (gen.status === "completed") {
+                          setPreviewGen(gen);
+                        }
+                      }}
+                      className={`glass group flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-xl p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_-12px_rgba(0,0,0,0.4)] animate-fade-in ${
+                        gen.status === "completed"
+                          ? "cursor-pointer hover:bg-white/[0.04] hover:border-white/20"
+                          : ""
+                      }`}
+                      style={{ animationDelay: `${i * 60}ms`, animationFillMode: "both" }}
+                    >
+                      <div className="flex items-center gap-4 min-w-0 flex-1">
+                        {gen.status === "completed" && gen.result_data?.image_url ? (
+                          <div className="relative h-10 w-10 shrink-0 rounded-lg overflow-hidden border border-white/10 group/thumb">
+                            <img
+                              src={gen.result_data.image_url as string}
+                              alt="Preview Thumbnail"
+                              className="h-full w-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/thumb:opacity-100 transition-opacity">
+                              <Eye className="h-4 w-4 text-white" />
                             </div>
-                          );
-                        })()}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3 self-end md:self-auto shrink-0">
-                      <div className={`flex items-center gap-1.5 text-xs ${statusInfo.cls}`}>
-                        <StatusIcon className={`h-3.5 w-3.5 ${gen.status === "processing" ? "animate-spin" : ""}`} />
-                        {statusInfo.label}
-                      </div>
-
-                       {/* Upload & Download Buttons */}
-                      <div className="flex gap-2">
-                        {gen.status === "completed" && !!gen.result_data?.model_url && (
-                          <div className="flex rounded-lg border border-white/10 bg-white/5 overflow-hidden">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                downloadAsGLB(gen.result_data!.model_url as string, gen.prompt);
-                              }}
-                              className="flex items-center gap-1 hover:bg-white/10 transition text-xs font-semibold px-2 py-1.5 border-r border-white/10 text-white"
-                              title="Download GLB file"
-                            >
-                              GLB
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                downloadAsOBJ(gen.result_data!.model_url as string, gen.prompt);
-                              }}
-                              className="flex items-center gap-1 hover:bg-white/10 transition text-xs font-semibold px-2 py-1.5 border-r border-white/10 text-white"
-                              title="Download OBJ file"
-                            >
-                              OBJ
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                downloadAsSTL(gen.result_data!.model_url as string, gen.prompt);
-                              }}
-                              className="flex items-center gap-1 hover:bg-white/10 transition text-xs font-semibold px-2 py-1.5 border-r border-white/10 text-white"
-                              title="Download STL file"
-                            >
-                              STL
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                downloadAsFBX(gen.result_data!.model_url as string, gen.prompt);
-                              }}
-                              className="flex items-center gap-1 hover:bg-white/10 transition text-xs font-semibold px-2 py-1.5 text-white"
-                              title="Download FBX file"
-                            >
-                              FBX
-                            </button>
+                          </div>
+                        ) : (
+                          <div
+                            className={`grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-white/5 ${typeInfo.color}`}
+                          >
+                            <TypeIcon className="h-5 w-5" />
                           </div>
                         )}
-                        {gen.status === "completed" && !expiry.isExpired && (
+
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <p className="truncate text-sm font-medium">{gen.prompt}</p>
+                            {gen.status === "completed" && (
+                              <span className="text-[10px] text-primary-glow border border-primary/20 bg-primary/5 px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                                Click to Preview
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+                            <span>{typeInfo.label}</span>
+                            <span>·</span>
+                            <span>{gen.credits_used} credits</span>
+                            <span>·</span>
+                            <span>{new Date(gen.created_at).toLocaleDateString()}</span>
+                            <span>·</span>
+                            <span
+                              className={`font-medium ${expiry.isExpired ? "text-red-400" : "text-amber-400"}`}
+                            >
+                              {expiry.text}
+                            </span>
+                          </div>
+
+                          {/* Progress Bar & Real-time Timer */}
+                          {(gen.status === "processing" || gen.status === "pending") &&
+                            (() => {
+                              const progress = getProgressDetails(
+                                gen.created_at,
+                                gen.generation_type,
+                              );
+                              return (
+                                <div className="mt-2.5 max-w-md w-full">
+                                  <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1.5">
+                                    <span className="flex items-center gap-1.5">
+                                      <Clock className="h-3 w-3 animate-pulse text-amber-400" />
+                                      Running:{" "}
+                                      <span className="text-white font-mono">
+                                        {progress.elapsedText}
+                                      </span>
+                                    </span>
+                                    <span>
+                                      {gen.status === "pending"
+                                        ? "Queued in database..."
+                                        : `Generating... ${progress.progressPercent}% (ETA: ${progress.etaText})`}
+                                    </span>
+                                  </div>
+                                  <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                                    <div
+                                      className={`h-full rounded-full transition-all duration-1000 ${
+                                        gen.status === "pending"
+                                          ? "bg-muted-foreground/40 animate-pulse w-[8%]"
+                                          : "bg-gradient-to-r from-amber-500 via-primary to-primary-glow"
+                                      }`}
+                                      style={
+                                        gen.status === "processing"
+                                          ? { width: `${progress.progressPercent}%` }
+                                          : undefined
+                                      }
+                                    />
+                                  </div>
+                                </div>
+                              );
+                            })()}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 self-end md:self-auto shrink-0">
+                        <div className={`flex items-center gap-1.5 text-xs ${statusInfo.cls}`}>
+                          <StatusIcon
+                            className={`h-3.5 w-3.5 ${gen.status === "processing" ? "animate-spin" : ""}`}
+                          />
+                          {statusInfo.label}
+                        </div>
+
+                        {/* Upload & Download Buttons */}
+                        <div className="flex gap-2">
+                          {gen.status === "completed" && !!gen.result_data?.model_url && (
+                            <div className="flex rounded-lg border border-white/10 bg-white/5 overflow-hidden">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  downloadAsGLB(gen.result_data!.model_url as string, gen.prompt);
+                                }}
+                                className="flex items-center gap-1 hover:bg-white/10 transition text-xs font-semibold px-2 py-1.5 border-r border-white/10 text-white"
+                                title="Download GLB file"
+                              >
+                                GLB
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  downloadAsOBJ(gen.result_data!.model_url as string, gen.prompt);
+                                }}
+                                className="flex items-center gap-1 hover:bg-white/10 transition text-xs font-semibold px-2 py-1.5 border-r border-white/10 text-white"
+                                title="Download OBJ file"
+                              >
+                                OBJ
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  downloadAsSTL(gen.result_data!.model_url as string, gen.prompt);
+                                }}
+                                className="flex items-center gap-1 hover:bg-white/10 transition text-xs font-semibold px-2 py-1.5 border-r border-white/10 text-white"
+                                title="Download STL file"
+                              >
+                                STL
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  downloadAsFBX(gen.result_data!.model_url as string, gen.prompt);
+                                }}
+                                className="flex items-center gap-1 hover:bg-white/10 transition text-xs font-semibold px-2 py-1.5 text-white"
+                                title="Download FBX file"
+                              >
+                                FBX
+                              </button>
+                            </div>
+                          )}
+                          {gen.status === "completed" && !expiry.isExpired && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (!profile?.sl_username) {
+                                  alert(
+                                    "Please bind your Second Life Username first in the dashboard welcome card!",
+                                  );
+                                  return;
+                                }
+                                setSelectedGen(gen);
+                                setUploadStep("choice");
+                                setUploadOpen(true);
+                              }}
+                              className="flex items-center gap-1 rounded-lg border border-white/10 bg-primary/20 hover:bg-primary/30 transition text-xs font-semibold px-3 py-1.5"
+                            >
+                              <Upload className="h-3.5 w-3.5 text-primary-glow" />
+                              {gen.is_uploaded ? "Deliver Again" : "Upload to SL"}
+                            </button>
+                          )}
                           <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (!profile?.sl_username) {
-                                alert("Please bind your Second Life Username first in the dashboard welcome card!");
-                                return;
-                              }
-                              setSelectedGen(gen);
-                              setUploadStep("choice");
-                              setUploadOpen(true);
-                            }}
-                            className="flex items-center gap-1 rounded-lg border border-white/10 bg-primary/20 hover:bg-primary/30 transition text-xs font-semibold px-3 py-1.5"
+                            onClick={(e) => handleDeleteGen(gen.id, e)}
+                            className="p-1.5 rounded-lg border border-red-500/20 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 transition"
+                            title="Delete Generation"
                           >
-                            <Upload className="h-3.5 w-3.5 text-primary-glow" />
-                            {gen.is_uploaded ? "Deliver Again" : "Upload to SL"}
+                            <Trash2 className="h-3.5 w-3.5" />
                           </button>
-                        )}
-                        <button
-                          onClick={(e) => handleDeleteGen(gen.id, e)}
-                          className="p-1.5 rounded-lg border border-red-500/20 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 transition"
-                          title="Delete Generation"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
             </div>
           )}
         </div>
@@ -1074,14 +1158,17 @@ function DashboardPage() {
       {/* Buy Credits Modal */}
       {buyCreditsOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4 backdrop-blur-sm">
-          <PayPalScriptProvider options={{ clientId: "test", currency: "USD", "disable-funding": "card" }}>
+          <PayPalScriptProvider
+            options={{ clientId: "test", currency: "USD", "disable-funding": "card" }}
+          >
             <div className="glass w-full max-w-md rounded-2xl border border-white/10 p-6 shadow-2xl">
               <h3 className="font-display text-lg font-semibold mb-4">Buy Credits Package</h3>
 
               {checkoutStep === "select" && (
                 <div className="space-y-3">
                   <p className="text-sm text-muted-foreground mb-4">
-                    Purchase additional credits to generate text-to-3D models, images, and retexture assets.
+                    Purchase additional credits to generate text-to-3D models, images, and retexture
+                    assets.
                   </p>
                   <div
                     onClick={() => handleBuyCredits(50)}
@@ -1103,57 +1190,65 @@ function DashboardPage() {
                     </div>
                     <span className="font-semibold text-primary-glow">$12.00</span>
                   </div>
-                    <div
-                      onClick={() => handleBuyCredits(400)}
-                      className="flex items-center justify-between p-4 rounded-xl border border-white/10 hover:border-primary bg-white/5 cursor-pointer transition"
-                    >
-                      <div>
-                        <h4 className="font-bold text-sm">Gold Package</h4>
-                        <p className="text-xs text-muted-foreground">400 Generation Credits</p>
-                      </div>
-                      <span className="font-semibold text-primary-glow">$25.00</span>
+                  <div
+                    onClick={() => handleBuyCredits(400)}
+                    className="flex items-center justify-between p-4 rounded-xl border border-white/10 hover:border-primary bg-white/5 cursor-pointer transition"
+                  >
+                    <div>
+                      <h4 className="font-bold text-sm">Gold Package</h4>
+                      <p className="text-xs text-muted-foreground">400 Generation Credits</p>
                     </div>
-
-                    {/* Custom Package */}
-                    <div className="p-4 rounded-xl border border-white/10 bg-white/5 transition flex flex-col gap-3">
-                      <div>
-                        <h4 className="font-bold text-sm">Custom Package</h4>
-                        <p className="text-xs text-muted-foreground">Enter custom amount ($0.10 per credit)</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <input
-                          type="number"
-                          min="10"
-                          step="10"
-                          placeholder="Amount (e.g. 100)"
-                          id="customCreditInput"
-                          className="flex-1 rounded-lg border border-white/10 bg-black/30 px-3 py-1.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
-                        />
-                        <button
-                          onClick={() => {
-                            const val = parseInt((document.getElementById("customCreditInput") as HTMLInputElement)?.value || "0");
-                            if (val >= 10) {
-                              setCheckoutStep("pay");
-                              setSelectedPackage({ credits: val, cost: Math.max(1, Math.floor(val * 0.10)) });
-                            } else {
-                              alert("Minimum purchase is 10 credits ($1.00)");
-                            }
-                          }}
-                          className="rounded-lg bg-white/10 px-4 py-1.5 text-sm font-semibold hover:bg-white/20 transition"
-                        >
-                          Buy
-                        </button>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => setBuyCreditsOpen(false)}
-                      className="w-full mt-4 rounded-xl border border-white/10 py-2.5 text-sm font-semibold hover:bg-white/5"
-                    >
-                      Cancel
-                    </button>
+                    <span className="font-semibold text-primary-glow">$25.00</span>
                   </div>
-                )}
+
+                  {/* Custom Package */}
+                  <div className="p-4 rounded-xl border border-white/10 bg-white/5 transition flex flex-col gap-3">
+                    <div>
+                      <h4 className="font-bold text-sm">Custom Package</h4>
+                      <p className="text-xs text-muted-foreground">
+                        Enter custom amount ($0.10 per credit)
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        min="10"
+                        step="10"
+                        placeholder="Amount (e.g. 100)"
+                        id="customCreditInput"
+                        className="flex-1 rounded-lg border border-white/10 bg-black/30 px-3 py-1.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
+                      />
+                      <button
+                        onClick={() => {
+                          const val = parseInt(
+                            (document.getElementById("customCreditInput") as HTMLInputElement)
+                              ?.value || "0",
+                          );
+                          if (val >= 10) {
+                            setCheckoutStep("pay");
+                            setSelectedPackage({
+                              credits: val,
+                              cost: Math.max(1, Math.floor(val * 0.1)),
+                            });
+                          } else {
+                            alert("Minimum purchase is 10 credits ($1.00)");
+                          }
+                        }}
+                        className="rounded-lg bg-white/10 px-4 py-1.5 text-sm font-semibold hover:bg-white/20 transition"
+                      >
+                        Buy
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => setBuyCreditsOpen(false)}
+                    className="w-full mt-4 rounded-xl border border-white/10 py-2.5 text-sm font-semibold hover:bg-white/5"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
 
               {checkoutStep === "pay" && selectedPackage && (
                 <div className="space-y-4">
@@ -1162,13 +1257,20 @@ function DashboardPage() {
                       <span className="text-xs text-muted-foreground">Selected Package</span>
                       <h4 className="font-bold text-sm">{selectedPackage.credits} Credits</h4>
                     </div>
-                    <span className="text-lg font-bold text-emerald-400">${selectedPackage.cost}.00</span>
+                    <span className="text-lg font-bold text-emerald-400">
+                      ${selectedPackage.cost}.00
+                    </span>
                   </div>
 
                   {/* PayPal Buttons Integration */}
                   <div className="z-0 relative min-h-[150px]">
-                    <PayPalButtons 
-                      style={{ layout: "vertical", color: "blue", shape: "rect", label: "checkout" }}
+                    <PayPalButtons
+                      style={{
+                        layout: "vertical",
+                        color: "blue",
+                        shape: "rect",
+                        label: "checkout",
+                      }}
                       createOrder={(data, actions) => {
                         return actions.order.create({
                           intent: "CAPTURE",
@@ -1211,9 +1313,12 @@ function DashboardPage() {
                   <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-amber-500/20 text-amber-300">
                     <Check className="h-6 w-6" />
                   </div>
-                  <h4 className="font-display text-lg font-semibold text-amber-300">Payment submitted</h4>
+                  <h4 className="font-display text-lg font-semibold text-amber-300">
+                    Payment submitted
+                  </h4>
                   <p className="text-sm text-muted-foreground">
-                    Your payment for {selectedPackage.credits} credits is awaiting owner approval. Credits will appear in your balance once we verify the PayPal transaction.
+                    Your payment for {selectedPackage.credits} credits is awaiting owner approval.
+                    Credits will appear in your balance once we verify the PayPal transaction.
                   </p>
                   <button
                     onClick={() => {
@@ -1240,7 +1345,11 @@ function DashboardPage() {
             {uploadStep === "choice" && (
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  You can upload <span className="text-white font-semibold">"{selectedGen.prompt.slice(0, 30)}..."</span> to Second Life. The 24/7 online delivery bot will send it to your avatar:
+                  You can upload{" "}
+                  <span className="text-white font-semibold">
+                    "{selectedGen.prompt.slice(0, 30)}..."
+                  </span>{" "}
+                  to Second Life. The 24/7 online delivery bot will send it to your avatar:
                 </p>
                 <div className="rounded-xl bg-white/5 p-3 border border-white/10 flex justify-between items-center text-xs">
                   <span className="text-muted-foreground">Recipient Avatar:</span>
@@ -1257,9 +1366,13 @@ function DashboardPage() {
                         <Coins className="h-4 w-4 text-amber-400" />
                         Confirm & Upload
                       </h4>
-                      <p className="text-xs text-muted-foreground mt-0.5">Deducts 1 credit from your balance</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Deducts 1 credit from your balance
+                      </p>
                     </div>
-                    <span className="text-xs bg-white/10 px-2 py-1 rounded font-semibold">1 Credit</span>
+                    <span className="text-xs bg-white/10 px-2 py-1 rounded font-semibold">
+                      1 Credit
+                    </span>
                   </button>
                 </div>
 
@@ -1276,7 +1389,9 @@ function DashboardPage() {
               <div className="text-center py-10 space-y-4">
                 <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
                 <h4 className="font-display text-base font-semibold">Processing Upload...</h4>
-                <p className="text-xs text-muted-foreground">Contacting the KingDavez Studios 24/7 delivery server.</p>
+                <p className="text-xs text-muted-foreground">
+                  Contacting the KingDavez Studios 24/7 delivery server.
+                </p>
               </div>
             )}
 
@@ -1285,7 +1400,9 @@ function DashboardPage() {
                 <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-emerald-500/20 text-emerald-400">
                   <Check className="h-6 w-6" />
                 </div>
-                <h4 className="font-display text-lg font-semibold text-emerald-400">Upload Queued!</h4>
+                <h4 className="font-display text-lg font-semibold text-emerald-400">
+                  Upload Queued!
+                </h4>
                 <p className="text-sm text-muted-foreground px-2">
                   {uploadPaymentMethod === "credits"
                     ? "Successfully paid 1 Credit. Your model is queued for Delivery. Log in to Second Life and wear your HUD to receive the item!"
@@ -1349,9 +1466,6 @@ function DashboardPage() {
         </div>
       )}
 
-
-
-
       {/* 3D Preview Modal */}
       {previewGen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
@@ -1360,7 +1474,8 @@ function DashboardPage() {
               <div>
                 <h3 className="font-display text-lg font-bold text-white">{previewGen.prompt}</h3>
                 <p className="text-xs text-muted-foreground mt-0.5 capitalize">
-                  {previewGen.generation_type.replace("-", " → ")} • {new Date(previewGen.created_at).toLocaleDateString()}
+                  {previewGen.generation_type.replace("-", " → ")} •{" "}
+                  {new Date(previewGen.created_at).toLocaleDateString()}
                 </p>
               </div>
               <button
@@ -1374,7 +1489,10 @@ function DashboardPage() {
             {/* 3D Viewer Container */}
             <div className="relative aspect-video w-full rounded-xl border border-white/10 bg-black/40 overflow-hidden flex items-center justify-center">
               {previewGen.result_data?.model_url ? (
-                <ModelViewer url={previewGen.result_data.model_url as string} prompt={previewGen.prompt} />
+                <ModelViewer
+                  url={previewGen.result_data.model_url as string}
+                  prompt={previewGen.prompt}
+                />
               ) : (
                 <div className="flex flex-col items-center justify-center text-muted-foreground">
                   <Box className="h-10 w-10 mb-2 opacity-40 animate-pulse" />
@@ -1386,15 +1504,24 @@ function DashboardPage() {
             {/* Customization settings (if any) */}
             {previewGen.result_data?.settings && (
               <div className="mt-3 rounded-lg border border-primary/20 bg-primary/5 p-3">
-                <p className="text-[10px] font-semibold text-primary uppercase tracking-wider mb-1.5">Customization</p>
+                <p className="text-[10px] font-semibold text-primary uppercase tracking-wider mb-1.5">
+                  Customization
+                </p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-3 gap-y-1 text-[11px]">
                   {Object.entries(previewGen.result_data.settings as Record<string, unknown>)
                     .filter(([k]) => k !== "composed_prompt")
                     .slice(0, 12)
                     .map(([k, v]) => (
-                      <div key={k} className="flex justify-between gap-2 bg-white/[0.03] rounded px-2 py-0.5">
-                        <span className="text-muted-foreground capitalize truncate">{k.replace(/_/g, " ")}</span>
-                        <span className="font-mono text-foreground/90 truncate">{String(v ?? "—")}</span>
+                      <div
+                        key={k}
+                        className="flex justify-between gap-2 bg-white/[0.03] rounded px-2 py-0.5"
+                      >
+                        <span className="text-muted-foreground capitalize truncate">
+                          {k.replace(/_/g, " ")}
+                        </span>
+                        <span className="font-mono text-foreground/90 truncate">
+                          {String(v ?? "—")}
+                        </span>
                       </div>
                     ))}
                 </div>
@@ -1409,32 +1536,57 @@ function DashboardPage() {
                 {!!previewGen.result_data?.model_url && (
                   <>
                     <button
-                      onClick={() => downloadAsGLB(previewGen.result_data!.model_url as string, previewGen.prompt)}
+                      onClick={() =>
+                        downloadAsGLB(
+                          previewGen.result_data!.model_url as string,
+                          previewGen.prompt,
+                        )
+                      }
                       className="rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 px-4 py-2 text-xs font-semibold text-white transition flex items-center gap-1.5"
                     >
                       Download GLB
                     </button>
                     <button
-                      onClick={() => downloadAsOBJ(previewGen.result_data!.model_url as string, previewGen.prompt)}
+                      onClick={() =>
+                        downloadAsOBJ(
+                          previewGen.result_data!.model_url as string,
+                          previewGen.prompt,
+                        )
+                      }
                       className="rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 px-4 py-2 text-xs font-semibold text-white transition flex items-center gap-1.5"
                     >
                       Download OBJ
                     </button>
                     <button
-                      onClick={() => downloadAsSTL(previewGen.result_data!.model_url as string, previewGen.prompt)}
+                      onClick={() =>
+                        downloadAsSTL(
+                          previewGen.result_data!.model_url as string,
+                          previewGen.prompt,
+                        )
+                      }
                       className="rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 px-4 py-2 text-xs font-semibold text-white transition flex items-center gap-1.5"
                     >
                       Download STL
                     </button>
                     <button
-                      onClick={() => downloadAsFBX(previewGen.result_data!.model_url as string, previewGen.prompt)}
+                      onClick={() =>
+                        downloadAsFBX(
+                          previewGen.result_data!.model_url as string,
+                          previewGen.prompt,
+                        )
+                      }
                       className="rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 px-4 py-2 text-xs font-semibold text-white transition flex items-center gap-1.5"
                     >
                       Download FBX
                     </button>
                     {previewGen.result_data?.image_url && (
                       <button
-                        onClick={() => downloadTexture(previewGen.result_data!.image_url as string, previewGen.prompt.slice(0, 20))}
+                        onClick={() =>
+                          downloadTexture(
+                            previewGen.result_data!.image_url as string,
+                            previewGen.prompt.slice(0, 20),
+                          )
+                        }
                         className="rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 px-4 py-2 text-xs font-semibold text-white transition flex items-center gap-1.5"
                       >
                         Download Texture
@@ -1442,24 +1594,27 @@ function DashboardPage() {
                     )}
                   </>
                 )}
-                {previewGen.status === "completed" && !getExpirationStatus(previewGen.created_at).isExpired && (
-                  <button
-                    onClick={() => {
-                      if (!profile?.sl_username) {
-                        alert("Please bind your Second Life Username first in the dashboard welcome card!");
-                        return;
-                      }
-                      setSelectedGen(previewGen);
-                      setUploadStep("choice");
-                      setUploadOpen(true);
-                      setPreviewGen(null); // Close preview modal
-                    }}
-                    className="rounded-xl bg-primary hover:opacity-90 px-4 py-2 text-xs font-semibold text-white transition flex items-center gap-1.5"
-                  >
-                    <Upload className="h-3.5 w-3.5" />
-                    Upload to SL
-                  </button>
-                )}
+                {previewGen.status === "completed" &&
+                  !getExpirationStatus(previewGen.created_at).isExpired && (
+                    <button
+                      onClick={() => {
+                        if (!profile?.sl_username) {
+                          alert(
+                            "Please bind your Second Life Username first in the dashboard welcome card!",
+                          );
+                          return;
+                        }
+                        setSelectedGen(previewGen);
+                        setUploadStep("choice");
+                        setUploadOpen(true);
+                        setPreviewGen(null); // Close preview modal
+                      }}
+                      className="rounded-xl bg-primary hover:opacity-90 px-4 py-2 text-xs font-semibold text-white transition flex items-center gap-1.5"
+                    >
+                      <Upload className="h-3.5 w-3.5" />
+                      Upload to SL
+                    </button>
+                  )}
               </div>
             </div>
           </div>

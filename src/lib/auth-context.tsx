@@ -1,11 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  useCallback,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
 import type { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { getProfile, type Profile } from "./supabase";
@@ -15,7 +8,12 @@ interface AuthState {
   session: Session | null;
   profile: Profile | null;
   loading: boolean;
-  signUp: (email: string, password: string, displayName?: string, referralCode?: string) => Promise<{ error: string | null }>;
+  signUp: (
+    email: string,
+    password: string,
+    displayName?: string,
+    referralCode?: string,
+  ) => Promise<{ error: string | null }>;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signInWithGoogle: () => Promise<{ error: string | null }>;
   signInWithApple: () => Promise<{ error: string | null }>;
@@ -38,7 +36,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s);
       setUser(s?.user ?? null);
       if (s?.user) {
@@ -72,7 +72,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, [loadProfile]);
 
-  const signUp = async (email: string, password: string, displayName?: string, referralCode?: string) => {
+  const signUp = async (
+    email: string,
+    password: string,
+    displayName?: string,
+    referralCode?: string,
+  ) => {
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -97,7 +102,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: `${window.location.origin}/dashboard`,
     });
-    if (result.error) return { error: result.error instanceof Error ? result.error.message : String(result.error) };
+    if (result.error)
+      return { error: result.error instanceof Error ? result.error.message : String(result.error) };
     return { error: null };
   };
 
@@ -106,7 +112,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const result = await lovable.auth.signInWithOAuth("apple", {
       redirect_uri: `${window.location.origin}/dashboard`,
     });
-    if (result.error) return { error: result.error instanceof Error ? result.error.message : String(result.error) };
+    if (result.error)
+      return { error: result.error instanceof Error ? result.error.message : String(result.error) };
     return { error: null };
   };
 
@@ -141,7 +148,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await signOut();
       }, IDLE_MS);
     };
-    const events = ["mousemove", "mousedown", "keydown", "touchstart", "scroll", "visibilitychange"] as const;
+    const events = [
+      "mousemove",
+      "mousedown",
+      "keydown",
+      "touchstart",
+      "scroll",
+      "visibilitychange",
+    ] as const;
     events.forEach((e) => window.addEventListener(e, reset, { passive: true }));
     reset();
     return () => {
@@ -156,7 +170,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, session, profile, loading, signUp, signIn, signInWithGoogle, signInWithApple, resetPassword, signOut, refreshProfile }}
+      value={{
+        user,
+        session,
+        profile,
+        loading,
+        signUp,
+        signIn,
+        signInWithGoogle,
+        signInWithApple,
+        resetPassword,
+        signOut,
+        refreshProfile,
+      }}
     >
       {children}
     </AuthContext.Provider>

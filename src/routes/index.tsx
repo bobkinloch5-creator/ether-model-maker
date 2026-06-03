@@ -23,11 +23,16 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "KingDavez Studios — AI 3D Model & Texture Generator" },
       {
         property: "og:description",
-        content: "Text-to-3D, image-to-3D and PBR textures in seconds. Export to Blender, Unity, Unreal, Godot, Roblox and Second Life.",
+        content:
+          "Text-to-3D, image-to-3D and PBR textures in seconds. Export to Blender, Unity, Unreal, Godot, Roblox and Second Life.",
       },
       { property: "og:url", content: "https://kingdavez.click/" },
       { name: "twitter:title", content: "KingDavez Studios — AI 3D for every engine" },
-      { name: "twitter:description", content: "Text-to-3D, image-to-3D, and PBR texture generation that exports to Blender, Unity, Unreal, Godot, Roblox & Second Life." },
+      {
+        name: "twitter:description",
+        content:
+          "Text-to-3D, image-to-3D, and PBR texture generation that exports to Blender, Unity, Unreal, Godot, Roblox & Second Life.",
+      },
     ],
     links: [{ rel: "canonical", href: "https://kingdavez.click/" }],
   }),
@@ -42,7 +47,6 @@ function Home() {
         <Hero />
         <Marquee />
         <Features />
-
 
         <Workflow />
 

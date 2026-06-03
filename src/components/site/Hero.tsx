@@ -67,11 +67,9 @@ export function Hero() {
           {t("hero.subtitle")}
         </p>
 
-
         {/* Interactive prompt */}
         <form
           className="mx-auto mt-8 max-w-2xl animate-scale-in animate-delay-300 sm:mt-10"
-
           onSubmit={(e) => {
             e.preventDefault();
             go();

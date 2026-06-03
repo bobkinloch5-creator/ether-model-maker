@@ -50,13 +50,34 @@ export function ShareButtons({ url, title, description, hashtags = [], compact =
       <button onClick={nativeShare} className={btn} aria-label="Share" title="Share">
         <Share2 className="h-4 w-4" />
       </button>
-      <a href={twitter} target="_blank" rel="noopener noreferrer" className={btn} aria-label="Share on X" title="Share on X">
+      <a
+        href={twitter}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={btn}
+        aria-label="Share on X"
+        title="Share on X"
+      >
         <Twitter className="h-4 w-4" />
       </a>
-      <a href={facebook} target="_blank" rel="noopener noreferrer" className={btn} aria-label="Share on Facebook" title="Share on Facebook">
+      <a
+        href={facebook}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={btn}
+        aria-label="Share on Facebook"
+        title="Share on Facebook"
+      >
         <Facebook className="h-4 w-4" />
       </a>
-      <a href={linkedin} target="_blank" rel="noopener noreferrer" className={btn} aria-label="Share on LinkedIn" title="Share on LinkedIn">
+      <a
+        href={linkedin}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={btn}
+        aria-label="Share on LinkedIn"
+        title="Share on LinkedIn"
+      >
         <Linkedin className="h-4 w-4" />
       </a>
       <a

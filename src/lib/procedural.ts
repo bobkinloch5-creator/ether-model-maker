@@ -16,10 +16,17 @@ export function getProceduralColorAndMaterial(prompt: string) {
   if (p.includes("red") || p.includes("crimson") || p.includes("ruby")) color = "#ef4444";
   else if (p.includes("blue") || p.includes("sapphire") || p.includes("aqua")) color = "#3b82f6";
   else if (p.includes("green") || p.includes("emerald") || p.includes("lime")) color = "#10b981";
-  else if (p.includes("yellow") || p.includes("gold") || p.includes("golden") || p.includes("amber")) color = "#eab308";
+  else if (
+    p.includes("yellow") ||
+    p.includes("gold") ||
+    p.includes("golden") ||
+    p.includes("amber")
+  )
+    color = "#eab308";
   else if (p.includes("orange")) color = "#f97316";
   else if (p.includes("pink") || p.includes("rose")) color = "#ec4899";
-  else if (p.includes("purple") || p.includes("violet") || p.includes("amethyst")) color = "#a855f7";
+  else if (p.includes("purple") || p.includes("violet") || p.includes("amethyst"))
+    color = "#a855f7";
   else if (p.includes("white") || p.includes("silver") || p.includes("platinum")) color = "#f3f4f6";
   else if (p.includes("black") || p.includes("dark") || p.includes("obsidian")) color = "#111827";
   else if (p.includes("brown") || p.includes("wood") || p.includes("wooden")) color = "#78350f";
@@ -32,17 +39,38 @@ export function getProceduralColorAndMaterial(prompt: string) {
   let transparent = false;
   let opacity = 1;
 
-  if (p.includes("metal") || p.includes("metallic") || p.includes("steel") || p.includes("iron") || p.includes("gold") || p.includes("bronze") || p.includes("silver")) {
+  if (
+    p.includes("metal") ||
+    p.includes("metallic") ||
+    p.includes("steel") ||
+    p.includes("iron") ||
+    p.includes("gold") ||
+    p.includes("bronze") ||
+    p.includes("silver")
+  ) {
     metalness = 0.9;
     roughness = 0.15;
   }
-  if (p.includes("glass") || p.includes("crystal") || p.includes("ice") || p.includes("translucent")) {
+  if (
+    p.includes("glass") ||
+    p.includes("crystal") ||
+    p.includes("ice") ||
+    p.includes("translucent")
+  ) {
     metalness = 0.1;
     roughness = 0.05;
     transparent = true;
     opacity = 0.6;
   }
-  if (p.includes("glow") || p.includes("glowing") || p.includes("neon") || p.includes("magic") || p.includes("magical") || p.includes("runes") || p.includes("light")) {
+  if (
+    p.includes("glow") ||
+    p.includes("glowing") ||
+    p.includes("neon") ||
+    p.includes("magic") ||
+    p.includes("magical") ||
+    p.includes("runes") ||
+    p.includes("light")
+  ) {
     emissive = color;
     emissiveIntensity = 1.2;
   }
@@ -56,7 +84,11 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
   const matConfig = getProceduralColorAndMaterial(prompt);
 
   // Standard material constructor helper
-  const createMaterial = (color: string, metalness = matConfig.metalness, roughness = matConfig.roughness) => {
+  const createMaterial = (
+    color: string,
+    metalness = matConfig.metalness,
+    roughness = matConfig.roughness,
+  ) => {
     return new THREE.MeshStandardMaterial({
       color: new THREE.Color(color),
       metalness,
@@ -68,7 +100,13 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
     });
   };
 
-  if (p.includes("sword") || p.includes("blade") || p.includes("weapon") || p.includes("dagger") || p.includes("saber")) {
+  if (
+    p.includes("sword") ||
+    p.includes("blade") ||
+    p.includes("weapon") ||
+    p.includes("dagger") ||
+    p.includes("saber")
+  ) {
     // Blade
     const bladeGeo = new THREE.BoxGeometry(0.15, 1.8, 0.04);
     const bladeMat = new THREE.MeshStandardMaterial({
@@ -89,14 +127,20 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
 
     // Handle
     const handleGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.5, 32);
-    const handleMat = new THREE.MeshStandardMaterial({ color: new THREE.Color("#451a03"), roughness: 0.9 });
+    const handleMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color("#451a03"),
+      roughness: 0.9,
+    });
     const handle = new THREE.Mesh(handleGeo, handleMat);
     handle.position.y = -0.4;
     group.add(handle);
 
     // Pommel
     const pommelGeo = new THREE.SphereGeometry(0.09, 32, 32);
-    const pommelMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(matConfig.color), metalness: 0.8 });
+    const pommelMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(matConfig.color),
+      metalness: 0.8,
+    });
     const pommel = new THREE.Mesh(pommelGeo, pommelMat);
     pommel.position.y = -0.68;
     group.add(pommel);
@@ -109,7 +153,13 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
       rune.position.set(0, 0.8, 0.021);
       group.add(rune);
     }
-  } else if (p.includes("helmet") || p.includes("mask") || p.includes("head") || p.includes("visor") || p.includes("helm")) {
+  } else if (
+    p.includes("helmet") ||
+    p.includes("mask") ||
+    p.includes("head") ||
+    p.includes("visor") ||
+    p.includes("helm")
+  ) {
     // Dome
     const domeGeo = new THREE.SphereGeometry(0.7, 64, 64, 0, Math.PI * 2, 0, Math.PI * 0.85);
     const domeMat = createMaterial(matConfig.color);
@@ -131,8 +181,12 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
 
     // Cheek pads
     const cheekGeo = new THREE.BoxGeometry(0.25, 0.35, 0.35);
-    const cheekMat = new THREE.MeshStandardMaterial({ color: new THREE.Color("#1f2937"), metalness: 0.5, roughness: 0.5 });
-    
+    const cheekMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color("#1f2937"),
+      metalness: 0.5,
+      roughness: 0.5,
+    });
+
     const cheekL = new THREE.Mesh(cheekGeo, cheekMat);
     cheekL.position.set(-0.45, -0.2, 0.3);
     cheekL.rotation.set(0.2, -0.4, 0);
@@ -147,7 +201,11 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
 
     // Rim
     const rimGeo = new THREE.CylinderGeometry(0.9, 0.9, 0.1, 64);
-    const rimMat = new THREE.MeshStandardMaterial({ color: new THREE.Color("#9ca3af"), metalness: 0.9, roughness: 0.1 });
+    const rimMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color("#9ca3af"),
+      metalness: 0.9,
+      roughness: 0.1,
+    });
     const rim = new THREE.Mesh(rimGeo, rimMat);
     group.add(rim);
 
@@ -160,7 +218,11 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
 
     // Boss
     const bossGeo = new THREE.SphereGeometry(0.25, 32, 32, 0, Math.PI * 2, 0, Math.PI / 2);
-    const bossMat = new THREE.MeshStandardMaterial({ color: new THREE.Color("#eab308"), metalness: 0.9, roughness: 0.1 });
+    const bossMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color("#eab308"),
+      metalness: 0.9,
+      roughness: 0.1,
+    });
     const boss = new THREE.Mesh(bossGeo, bossMat);
     boss.position.z = 0.07;
     group.add(boss);
@@ -172,16 +234,25 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
       ring.position.z = 0.075;
       group.add(ring);
     }
-  } else if (p.includes("tree") || p.includes("forest") || p.includes("plant") || p.includes("flower") || p.includes("cactus")) {
+  } else if (
+    p.includes("tree") ||
+    p.includes("forest") ||
+    p.includes("plant") ||
+    p.includes("flower") ||
+    p.includes("cactus")
+  ) {
     // Trunk
     const trunkGeo = new THREE.CylinderGeometry(0.15, 0.22, 1.0, 24);
-    const trunkMat = new THREE.MeshStandardMaterial({ color: new THREE.Color("#78350f"), roughness: 0.9 });
+    const trunkMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color("#78350f"),
+      roughness: 0.9,
+    });
     const trunk = new THREE.Mesh(trunkGeo, trunkMat);
     trunk.position.y = -0.4;
     group.add(trunk);
 
     const leavesColor = matConfig.color === "#78350f" ? "#15803d" : matConfig.color;
-    
+
     // Bottom leaves
     const leavesGeo1 = new THREE.ConeGeometry(0.7, 1.2, 32);
     const leavesMat1 = createMaterial(leavesColor);
@@ -195,9 +266,14 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
     const leaves2 = new THREE.Mesh(leavesGeo2, leavesMat2);
     leaves2.position.y = 1.1;
     group.add(leaves2);
-  } else if (p.includes("chest") || p.includes("box") || p.includes("crate") || p.includes("coffin")) {
+  } else if (
+    p.includes("chest") ||
+    p.includes("box") ||
+    p.includes("crate") ||
+    p.includes("coffin")
+  ) {
     const woodColor = matConfig.color === "#111827" ? "#3b2314" : matConfig.color;
-    
+
     // Bottom
     const bottomGeo = new THREE.BoxGeometry(1.2, 0.6, 0.8);
     const bottomMat = createMaterial(woodColor);
@@ -214,8 +290,12 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
 
     // Gold bands
     const bandGeo = new THREE.BoxGeometry(0.06, 1.0, 0.82);
-    const bandMat = new THREE.MeshStandardMaterial({ color: new THREE.Color("#eab308"), metalness: 0.9, roughness: 0.2 });
-    
+    const bandMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color("#eab308"),
+      metalness: 0.9,
+      roughness: 0.2,
+    });
+
     const bandL = new THREE.Mesh(bandGeo, bandMat);
     bandL.position.x = -0.58;
     group.add(bandL);
@@ -226,13 +306,28 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
 
     // Lock
     const lockGeo = new THREE.BoxGeometry(0.15, 0.15, 0.05);
-    const lockMat = new THREE.MeshStandardMaterial({ color: new THREE.Color("#eab308"), metalness: 0.9, roughness: 0.1 });
+    const lockMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color("#eab308"),
+      metalness: 0.9,
+      roughness: 0.1,
+    });
     const lock = new THREE.Mesh(lockGeo, lockMat);
     lock.position.set(0, 0.05, 0.41);
     group.add(lock);
-  } else if (p.includes("potion") || p.includes("bottle") || p.includes("flask") || p.includes("glass")) {
-    const liquidColor = p.includes("red") ? "#ef4444" : p.includes("green") ? "#10b981" : p.includes("blue") ? "#3b82f6" : matConfig.color;
-    
+  } else if (
+    p.includes("potion") ||
+    p.includes("bottle") ||
+    p.includes("flask") ||
+    p.includes("glass")
+  ) {
+    const liquidColor = p.includes("red")
+      ? "#ef4444"
+      : p.includes("green")
+        ? "#10b981"
+        : p.includes("blue")
+          ? "#3b82f6"
+          : matConfig.color;
+
     // Glass bottle
     const glassGeo = new THREE.SphereGeometry(0.6, 64, 64);
     const glassMat = new THREE.MeshStandardMaterial({
@@ -266,11 +361,22 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
 
     // Cork
     const corkGeo = new THREE.CylinderGeometry(0.15, 0.13, 0.22, 32);
-    const corkMat = new THREE.MeshStandardMaterial({ color: new THREE.Color("#7c2d12"), roughness: 0.9 });
+    const corkMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color("#7c2d12"),
+      roughness: 0.9,
+    });
     const cork = new THREE.Mesh(corkGeo, corkMat);
     cork.position.y = 0.88;
     group.add(cork);
-  } else if (p.includes("dragon") || p.includes("monster") || p.includes("creature") || p.includes("animal") || p.includes("fox") || p.includes("wolf") || p.includes("dinosaur")) {
+  } else if (
+    p.includes("dragon") ||
+    p.includes("monster") ||
+    p.includes("creature") ||
+    p.includes("animal") ||
+    p.includes("fox") ||
+    p.includes("wolf") ||
+    p.includes("dinosaur")
+  ) {
     // Body
     const bodyGeo = new THREE.BoxGeometry(0.8, 0.6, 1.2);
     const bodyMat = createMaterial(matConfig.color);
@@ -285,15 +391,20 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
 
     // Snout
     const snoutGeo = new THREE.BoxGeometry(0.3, 0.25, 0.4);
-    const snoutMat = new THREE.MeshStandardMaterial({ color: new THREE.Color("#1f2937"), roughness: 0.9 });
+    const snoutMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color("#1f2937"),
+      roughness: 0.9,
+    });
     const snout = new THREE.Mesh(snoutGeo, snoutMat);
     snout.position.set(0, 0.4, 1.1);
     group.add(snout);
 
     // Eyes
     const eyeGeo = new THREE.SphereGeometry(0.06, 8, 8);
-    const eyeMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(p.includes("red") ? "#ef4444" : "#eab308") });
-    
+    const eyeMat = new THREE.MeshBasicMaterial({
+      color: new THREE.Color(p.includes("red") ? "#ef4444" : "#eab308"),
+    });
+
     const eyeL = new THREE.Mesh(eyeGeo, eyeMat);
     eyeL.position.set(-0.18, 0.55, 0.98);
     group.add(eyeL);
@@ -311,8 +422,11 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
 
     // Wings
     const wingGeo = new THREE.BoxGeometry(0.8, 0.05, 0.5);
-    const wingMat = new THREE.MeshStandardMaterial({ color: new THREE.Color("#111827"), roughness: 0.9 });
-    
+    const wingMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color("#111827"),
+      roughness: 0.9,
+    });
+
     const wingL = new THREE.Mesh(wingGeo, wingMat);
     wingL.position.set(-0.6, 0.4, -0.1);
     wingL.rotation.set(0.2, 0, 0.4);
@@ -322,10 +436,19 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
     wingR.position.set(0.6, 0.4, -0.1);
     wingR.rotation.set(0.2, 0, -0.4);
     group.add(wingR);
-  } else if (p.includes("crown") || p.includes("ring") || p.includes("necklace") || p.includes("jewelry")) {
+  } else if (
+    p.includes("crown") ||
+    p.includes("ring") ||
+    p.includes("necklace") ||
+    p.includes("jewelry")
+  ) {
     // Base ring
     const ringGeo = new THREE.TorusGeometry(0.55, 0.1, 16, 48);
-    const ringMat = new THREE.MeshStandardMaterial({ color: new THREE.Color("#eab308"), metalness: 0.95, roughness: 0.08 });
+    const ringMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color("#eab308"),
+      metalness: 0.95,
+      roughness: 0.08,
+    });
     const ring = new THREE.Mesh(ringGeo, ringMat);
     ring.rotation.x = Math.PI / 2;
     group.add(ring);
@@ -358,7 +481,12 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
 
       group.add(peakGroup);
     }
-  } else if (p.includes("robot") || p.includes("android") || p.includes("cyborg") || p.includes("mech")) {
+  } else if (
+    p.includes("robot") ||
+    p.includes("android") ||
+    p.includes("cyborg") ||
+    p.includes("mech")
+  ) {
     // Torso
     const torsoGeo = new THREE.BoxGeometry(0.7, 0.8, 0.5);
     const torsoMat = createMaterial(matConfig.color);
@@ -368,7 +496,13 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
 
     // Power core
     const coreGeo = new THREE.SphereGeometry(0.12, 16, 16);
-    const coreColor = p.includes("red") ? "#ef4444" : p.includes("green") ? "#10b981" : p.includes("blue") ? "#3b82f6" : matConfig.color;
+    const coreColor = p.includes("red")
+      ? "#ef4444"
+      : p.includes("green")
+        ? "#10b981"
+        : p.includes("blue")
+          ? "#3b82f6"
+          : matConfig.color;
     const coreMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(coreColor) });
     const core = new THREE.Mesh(coreGeo, coreMat);
     core.position.set(0, 0.2, 0.26);
@@ -376,14 +510,24 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
 
     // Head
     const headGeo = new THREE.BoxGeometry(0.45, 0.4, 0.45);
-    const headMat = new THREE.MeshStandardMaterial({ color: new THREE.Color("#1f2937"), metalness: 0.7, roughness: 0.3 });
+    const headMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color("#1f2937"),
+      metalness: 0.7,
+      roughness: 0.3,
+    });
     const head = new THREE.Mesh(headGeo, headMat);
     head.position.y = 0.7;
     group.add(head);
 
     // Visor
     const visorGeo = new THREE.BoxGeometry(0.3, 0.08, 0.05);
-    const visorColor = p.includes("red") ? "#ef4444" : p.includes("green") ? "#10b981" : p.includes("blue") ? "#3b82f6" : matConfig.color;
+    const visorColor = p.includes("red")
+      ? "#ef4444"
+      : p.includes("green")
+        ? "#10b981"
+        : p.includes("blue")
+          ? "#3b82f6"
+          : matConfig.color;
     const visorMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(visorColor) });
     const visor = new THREE.Mesh(visorGeo, visorMat);
     visor.position.set(0, 0.72, 0.23);
@@ -391,8 +535,11 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
 
     // Shoulders
     const shoulderGeo = new THREE.SphereGeometry(0.15, 12, 12);
-    const shoulderMat = new THREE.MeshStandardMaterial({ color: new THREE.Color("#eab308"), metalness: 0.8 });
-    
+    const shoulderMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color("#eab308"),
+      metalness: 0.8,
+    });
+
     const shoulderL = new THREE.Mesh(shoulderGeo, shoulderMat);
     shoulderL.position.set(-0.45, 0.35, 0);
     group.add(shoulderL);
@@ -400,7 +547,14 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
     const shoulderR = new THREE.Mesh(shoulderGeo, shoulderMat);
     shoulderR.position.set(0.45, 0.35, 0);
     group.add(shoulderR);
-  } else if (p.includes("car") || p.includes("vehicle") || p.includes("truck") || p.includes("spaceship") || p.includes("plane") || p.includes("rocket")) {
+  } else if (
+    p.includes("car") ||
+    p.includes("vehicle") ||
+    p.includes("truck") ||
+    p.includes("spaceship") ||
+    p.includes("plane") ||
+    p.includes("rocket")
+  ) {
     // Body
     const bodyGeo = new THREE.BoxGeometry(0.6, 0.4, 1.4);
     const bodyMat = createMaterial(matConfig.color);
@@ -423,8 +577,11 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
 
     // Wings
     const wingGeo = new THREE.BoxGeometry(0.4, 0.08, 0.8);
-    const wingMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(matConfig.color), metalness: 0.7 });
-    
+    const wingMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(matConfig.color),
+      metalness: 0.7,
+    });
+
     const wingL = new THREE.Mesh(wingGeo, wingMat);
     wingL.position.set(-0.5, -0.05, -0.2);
     group.add(wingL);
@@ -435,16 +592,28 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
 
     // Thruster
     const thrusterGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.05, 32);
-    const thrusterMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(p.includes("green") ? "#10b981" : "#ef4444") });
+    const thrusterMat = new THREE.MeshBasicMaterial({
+      color: new THREE.Color(p.includes("green") ? "#10b981" : "#ef4444"),
+    });
     const thruster = new THREE.Mesh(thrusterGeo, thrusterMat);
     thruster.position.set(0, 0.05, -0.71);
     thruster.rotation.x = Math.PI / 2;
     group.add(thruster);
-  } else if (p.includes("sphere") || p.includes("ball") || p.includes("orb") || p.includes("crystal ball")) {
+  } else if (
+    p.includes("sphere") ||
+    p.includes("ball") ||
+    p.includes("orb") ||
+    p.includes("crystal ball")
+  ) {
     const geo = new THREE.SphereGeometry(0.8, 64, 64);
     const mesh = new THREE.Mesh(geo, createMaterial(matConfig.color));
     group.add(mesh);
-  } else if (p.includes("cylinder") || p.includes("pillar") || p.includes("column") || p.includes("pipe")) {
+  } else if (
+    p.includes("cylinder") ||
+    p.includes("pillar") ||
+    p.includes("column") ||
+    p.includes("pipe")
+  ) {
     const geo = new THREE.CylinderGeometry(0.45, 0.45, 1.4, 64);
     const mesh = new THREE.Mesh(geo, createMaterial(matConfig.color));
     group.add(mesh);
@@ -457,30 +626,50 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
     const mesh = new THREE.Mesh(geo, createMaterial(matConfig.color));
     mesh.rotation.x = Math.PI / 2;
     group.add(mesh);
-  } else if (p.includes("house") || p.includes("cabin") || p.includes("cottage") || p.includes("building") || p.includes("home")) {
-    const wallColor = matConfig.color === `hsl(${Math.abs(0) % 360}, 85%, 60%)` ? "#a8a29e" : matConfig.color;
+  } else if (
+    p.includes("house") ||
+    p.includes("cabin") ||
+    p.includes("cottage") ||
+    p.includes("building") ||
+    p.includes("home")
+  ) {
+    const wallColor =
+      matConfig.color === `hsl(${Math.abs(0) % 360}, 85%, 60%)` ? "#a8a29e" : matConfig.color;
     // Walls
     const wallGeo = new THREE.BoxGeometry(1.2, 0.9, 1.0);
-    const wallMat = createMaterial(p.includes("stone") ? "#78716c" : p.includes("wood") ? "#78350f" : wallColor);
+    const wallMat = createMaterial(
+      p.includes("stone") ? "#78716c" : p.includes("wood") ? "#78350f" : wallColor,
+    );
     const walls = new THREE.Mesh(wallGeo, wallMat);
     walls.position.y = 0.0;
     group.add(walls);
     // Roof
     const roofGeo = new THREE.ConeGeometry(1.0, 0.6, 4);
-    const roofMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(p.includes("stone") ? "#44403c" : "#7c2d12"), roughness: 0.9 });
+    const roofMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(p.includes("stone") ? "#44403c" : "#7c2d12"),
+      roughness: 0.9,
+    });
     const roof = new THREE.Mesh(roofGeo, roofMat);
     roof.position.y = 0.75;
     roof.rotation.y = Math.PI / 4;
     group.add(roof);
     // Door
     const doorGeo = new THREE.BoxGeometry(0.25, 0.4, 0.05);
-    const doorMat = new THREE.MeshStandardMaterial({ color: new THREE.Color("#451a03"), roughness: 0.9 });
+    const doorMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color("#451a03"),
+      roughness: 0.9,
+    });
     const door = new THREE.Mesh(doorGeo, doorMat);
     door.position.set(0, -0.25, 0.51);
     group.add(door);
     // Windows
     const winGeo = new THREE.BoxGeometry(0.18, 0.18, 0.05);
-    const winMat = new THREE.MeshStandardMaterial({ color: new THREE.Color("#93c5fd"), emissive: new THREE.Color("#60a5fa"), emissiveIntensity: 0.5, roughness: 0.05 });
+    const winMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color("#93c5fd"),
+      emissive: new THREE.Color("#60a5fa"),
+      emissiveIntensity: 0.5,
+      roughness: 0.05,
+    });
     const winL = new THREE.Mesh(winGeo, winMat);
     winL.position.set(-0.35, 0.1, 0.51);
     group.add(winL);
@@ -489,11 +678,19 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
     group.add(winR);
     // Chimney
     const chimGeo = new THREE.BoxGeometry(0.15, 0.4, 0.15);
-    const chimMat = new THREE.MeshStandardMaterial({ color: new THREE.Color("#57534e"), roughness: 0.8 });
+    const chimMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color("#57534e"),
+      roughness: 0.8,
+    });
     const chimney = new THREE.Mesh(chimGeo, chimMat);
     chimney.position.set(0.35, 0.9, -0.2);
     group.add(chimney);
-  } else if (p.includes("castle") || p.includes("fortress") || p.includes("tower") || p.includes("keep")) {
+  } else if (
+    p.includes("castle") ||
+    p.includes("fortress") ||
+    p.includes("tower") ||
+    p.includes("keep")
+  ) {
     // Main tower
     const towerGeo = new THREE.CylinderGeometry(0.5, 0.55, 1.6, 32);
     const towerMat = createMaterial(p.includes("stone") ? "#78716c" : matConfig.color);
@@ -509,37 +706,55 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
     }
     // Conical roof
     const cRoofGeo = new THREE.ConeGeometry(0.6, 0.5, 32);
-    const cRoofMat = new THREE.MeshStandardMaterial({ color: new THREE.Color("#7c2d12"), roughness: 0.8 });
+    const cRoofMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color("#7c2d12"),
+      roughness: 0.8,
+    });
     const cRoof = new THREE.Mesh(cRoofGeo, cRoofMat);
     cRoof.position.y = 1.15;
     group.add(cRoof);
     // Door arch
     const archGeo = new THREE.BoxGeometry(0.22, 0.35, 0.1);
-    const archMat = new THREE.MeshStandardMaterial({ color: new THREE.Color("#1c1917"), roughness: 0.9 });
+    const archMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color("#1c1917"),
+      roughness: 0.9,
+    });
     const arch = new THREE.Mesh(archGeo, archMat);
     arch.position.set(0, -0.55, 0.52);
     group.add(arch);
   } else if (p.includes("bow") || p.includes("longbow") || p.includes("crossbow")) {
     // Bow arc
     const bowGeo = new THREE.TorusGeometry(0.7, 0.04, 16, 48, Math.PI);
-    const bowMat = createMaterial(p.includes("wood") || !p.includes("metal") ? "#78350f" : matConfig.color);
+    const bowMat = createMaterial(
+      p.includes("wood") || !p.includes("metal") ? "#78350f" : matConfig.color,
+    );
     const bow = new THREE.Mesh(bowGeo, bowMat);
     bow.rotation.z = Math.PI / 2;
     group.add(bow);
     // String
     const strGeo = new THREE.CylinderGeometry(0.005, 0.005, 1.4, 8);
-    const strMat = new THREE.MeshStandardMaterial({ color: new THREE.Color("#d6d3d1"), roughness: 0.9 });
+    const strMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color("#d6d3d1"),
+      roughness: 0.9,
+    });
     const string = new THREE.Mesh(strGeo, strMat);
     group.add(string);
     // Arrow
     const shaftGeo = new THREE.CylinderGeometry(0.015, 0.015, 1.0, 8);
-    const shaftMat = new THREE.MeshStandardMaterial({ color: new THREE.Color("#78350f"), roughness: 0.8 });
+    const shaftMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color("#78350f"),
+      roughness: 0.8,
+    });
     const shaft = new THREE.Mesh(shaftGeo, shaftMat);
     shaft.rotation.z = Math.PI / 2;
     shaft.position.x = 0.1;
     group.add(shaft);
     const tipGeo = new THREE.ConeGeometry(0.04, 0.12, 8);
-    const tipMat = new THREE.MeshStandardMaterial({ color: new THREE.Color("#9ca3af"), metalness: 0.9, roughness: 0.1 });
+    const tipMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color("#9ca3af"),
+      metalness: 0.9,
+      roughness: 0.1,
+    });
     const tip = new THREE.Mesh(tipGeo, tipMat);
     tip.rotation.z = -Math.PI / 2;
     tip.position.x = 0.62;
@@ -547,7 +762,10 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
   } else if (p.includes("axe") || p.includes("hatchet")) {
     // Handle
     const handleGeo = new THREE.CylinderGeometry(0.04, 0.04, 1.3, 16);
-    const handleMat = new THREE.MeshStandardMaterial({ color: new THREE.Color("#78350f"), roughness: 0.9 });
+    const handleMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color("#78350f"),
+      roughness: 0.9,
+    });
     const handle = new THREE.Mesh(handleGeo, handleMat);
     group.add(handle);
     // Axe head
@@ -569,8 +787,20 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
     group.add(shaft);
     // Orb
     const orbGeo = new THREE.SphereGeometry(0.15, 32, 32);
-    const orbColor = p.includes("red") ? "#ef4444" : p.includes("blue") ? "#3b82f6" : p.includes("green") ? "#10b981" : matConfig.color;
-    const orbMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(orbColor), emissive: new THREE.Color(orbColor), emissiveIntensity: 1.5, roughness: 0.05, metalness: 0.1 });
+    const orbColor = p.includes("red")
+      ? "#ef4444"
+      : p.includes("blue")
+        ? "#3b82f6"
+        : p.includes("green")
+          ? "#10b981"
+          : matConfig.color;
+    const orbMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(orbColor),
+      emissive: new THREE.Color(orbColor),
+      emissiveIntensity: 1.5,
+      roughness: 0.05,
+      metalness: 0.1,
+    });
     const orb = new THREE.Mesh(orbGeo, orbMat);
     orb.position.y = 1.05;
     group.add(orb);
@@ -600,17 +830,31 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
     group.add(shR);
     // Belt
     const beltGeo = new THREE.BoxGeometry(0.82, 0.1, 0.52);
-    const beltMat = new THREE.MeshStandardMaterial({ color: new THREE.Color("#78350f"), roughness: 0.8 });
+    const beltMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color("#78350f"),
+      roughness: 0.8,
+    });
     const belt = new THREE.Mesh(beltGeo, beltMat);
     belt.position.y = -0.45;
     group.add(belt);
     // Buckle
     const buckleGeo = new THREE.BoxGeometry(0.1, 0.1, 0.06);
-    const buckleMat = new THREE.MeshStandardMaterial({ color: new THREE.Color("#eab308"), metalness: 0.9, roughness: 0.1 });
+    const buckleMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color("#eab308"),
+      metalness: 0.9,
+      roughness: 0.1,
+    });
     const buckle = new THREE.Mesh(buckleGeo, buckleMat);
     buckle.position.set(0, -0.45, 0.27);
     group.add(buckle);
-  } else if (p.includes("table") || p.includes("desk") || p.includes("bench") || p.includes("chair") || p.includes("throne") || p.includes("stool")) {
+  } else if (
+    p.includes("table") ||
+    p.includes("desk") ||
+    p.includes("bench") ||
+    p.includes("chair") ||
+    p.includes("throne") ||
+    p.includes("stool")
+  ) {
     const woodCol = p.includes("stone") ? "#78716c" : "#78350f";
     // Top/seat
     const topGeo = new THREE.BoxGeometry(1.2, 0.08, 0.7);
@@ -620,8 +864,16 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
     group.add(top);
     // Legs
     const legGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.7, 8);
-    const legMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(woodCol), roughness: 0.8 });
-    const positions = [[-0.5, 0, -0.28], [0.5, 0, -0.28], [-0.5, 0, 0.28], [0.5, 0, 0.28]];
+    const legMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(woodCol),
+      roughness: 0.8,
+    });
+    const positions = [
+      [-0.5, 0, -0.28],
+      [0.5, 0, -0.28],
+      [-0.5, 0, 0.28],
+      [0.5, 0, 0.28],
+    ];
     for (const pos of positions) {
       const leg = new THREE.Mesh(legGeo, legMat);
       leg.position.set(pos[0], pos[1], pos[2]);
@@ -634,10 +886,19 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
       back.position.set(0, 0.7, -0.32);
       group.add(back);
     }
-  } else if (p.includes("gun") || p.includes("pistol") || p.includes("rifle") || p.includes("blaster")) {
+  } else if (
+    p.includes("gun") ||
+    p.includes("pistol") ||
+    p.includes("rifle") ||
+    p.includes("blaster")
+  ) {
     // Barrel
     const barrelGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.9, 16);
-    const barrelMat = new THREE.MeshStandardMaterial({ color: new THREE.Color("#1f2937"), metalness: 0.8, roughness: 0.2 });
+    const barrelMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color("#1f2937"),
+      metalness: 0.8,
+      roughness: 0.2,
+    });
     const barrel = new THREE.Mesh(barrelGeo, barrelMat);
     barrel.rotation.z = Math.PI / 2;
     barrel.position.set(0.3, 0.1, 0);
@@ -650,7 +911,10 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
     group.add(body);
     // Grip
     const gripGeo = new THREE.BoxGeometry(0.12, 0.3, 0.1);
-    const gripMat = new THREE.MeshStandardMaterial({ color: new THREE.Color("#78350f"), roughness: 0.9 });
+    const gripMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color("#78350f"),
+      roughness: 0.9,
+    });
     const grip = new THREE.Mesh(gripGeo, gripMat);
     grip.position.set(-0.2, -0.12, 0);
     grip.rotation.z = 0.15;
@@ -681,7 +945,11 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
     });
     group.add(new THREE.Mesh(bodyGeo, bodyMat));
     // Iron bands
-    const bandMat = new THREE.MeshStandardMaterial({ color: new THREE.Color("#3f3f46"), metalness: 0.9, roughness: 0.4 });
+    const bandMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color("#3f3f46"),
+      metalness: 0.9,
+      roughness: 0.4,
+    });
     [-0.4, 0, 0.4].forEach((y) => {
       const r = 0.45 + Math.sin(((y + 0.6) / 1.2) * Math.PI) * 0.12 + 0.005;
       const bandGeo = new THREE.TorusGeometry(r, 0.025, 12, 64);
@@ -692,7 +960,10 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
     });
     // Top and bottom lids
     const lidGeo = new THREE.CircleGeometry(0.45, 48);
-    const lidMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(woodColor).multiplyScalar(0.85), roughness: 0.9 });
+    const lidMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(woodColor).multiplyScalar(0.85),
+      roughness: 0.9,
+    });
     const topLid = new THREE.Mesh(lidGeo, lidMat);
     topLid.rotation.x = -Math.PI / 2;
     topLid.position.y = 0.6;
@@ -701,7 +972,12 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
     botLid.rotation.x = Math.PI / 2;
     botLid.position.y = -0.6;
     group.add(botLid);
-  } else if (p.includes("rock") || p.includes("stone") || p.includes("boulder") || p.includes("asteroid")) {
+  } else if (
+    p.includes("rock") ||
+    p.includes("stone") ||
+    p.includes("boulder") ||
+    p.includes("asteroid")
+  ) {
     const geo = new THREE.IcosahedronGeometry(0.6, 1);
     const pos = geo.attributes.position;
     for (let i = 0; i < pos.count; i++) {
@@ -709,21 +985,54 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
       pos.setXYZ(i, pos.getX(i) + n, pos.getY(i) + n * 0.6, pos.getZ(i) + n);
     }
     geo.computeVertexNormals();
-    group.add(new THREE.Mesh(geo, createMaterial(p.includes("stone") || !p.includes("rock") ? "#78716c" : matConfig.color, 0.05, 0.95)));
-  } else if (p.includes("coin") || p.includes("medallion") || p.includes("disc") || p.includes("disk")) {
+    group.add(
+      new THREE.Mesh(
+        geo,
+        createMaterial(
+          p.includes("stone") || !p.includes("rock") ? "#78716c" : matConfig.color,
+          0.05,
+          0.95,
+        ),
+      ),
+    );
+  } else if (
+    p.includes("coin") ||
+    p.includes("medallion") ||
+    p.includes("disc") ||
+    p.includes("disk")
+  ) {
     const geo = new THREE.CylinderGeometry(0.55, 0.55, 0.08, 64);
-    group.add(new THREE.Mesh(geo, createMaterial(p.includes("silver") ? "#d4d4d8" : "#eab308", 0.95, 0.2)));
-  } else if (p.includes("book") || p.includes("tome") || p.includes("grimoire") || p.includes("journal")) {
-    const cover = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.15, 1.2), createMaterial(p.includes("red") ? "#7f1d1d" : "#451a03", 0.1, 0.9));
+    group.add(
+      new THREE.Mesh(geo, createMaterial(p.includes("silver") ? "#d4d4d8" : "#eab308", 0.95, 0.2)),
+    );
+  } else if (
+    p.includes("book") ||
+    p.includes("tome") ||
+    p.includes("grimoire") ||
+    p.includes("journal")
+  ) {
+    const cover = new THREE.Mesh(
+      new THREE.BoxGeometry(0.9, 0.15, 1.2),
+      createMaterial(p.includes("red") ? "#7f1d1d" : "#451a03", 0.1, 0.9),
+    );
     group.add(cover);
-    const pages = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.1, 1.15), createMaterial("#f5f5dc", 0, 1));
+    const pages = new THREE.Mesh(
+      new THREE.BoxGeometry(0.85, 0.1, 1.15),
+      createMaterial("#f5f5dc", 0, 1),
+    );
     pages.position.y = 0.01;
     group.add(pages);
   } else if (p.includes("mushroom") || p.includes("toadstool")) {
-    const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.18, 0.6, 24), createMaterial("#f5f5dc", 0, 0.95));
+    const stem = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.12, 0.18, 0.6, 24),
+      createMaterial("#f5f5dc", 0, 0.95),
+    );
     stem.position.y = -0.05;
     group.add(stem);
-    const cap = new THREE.Mesh(new THREE.SphereGeometry(0.4, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), createMaterial(p.includes("blue") ? "#3b82f6" : "#ef4444", 0.1, 0.7));
+    const cap = new THREE.Mesh(
+      new THREE.SphereGeometry(0.4, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2),
+      createMaterial(p.includes("blue") ? "#3b82f6" : "#ef4444", 0.1, 0.7),
+    );
     cap.position.y = 0.25;
     group.add(cap);
   } else {
@@ -744,7 +1053,9 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
       const base = new THREE.IcosahedronGeometry(0.55, 2);
       const pos = base.attributes.position;
       for (let i = 0; i < pos.count; i++) {
-        const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
+        const x = pos.getX(i),
+          y = pos.getY(i),
+          z = pos.getZ(i);
         const n = Math.sin(x * 4) * Math.cos(y * 4) * Math.sin(z * 4) * 0.08;
         pos.setXYZ(i, x + n, y + n, z + n);
       }
@@ -762,7 +1073,6 @@ export function buildProceduralMesh(prompt: string): THREE.Group {
       group.add(ring);
     }
   }
-
 
   // Set shadows for all child meshes
   group.traverse((child) => {

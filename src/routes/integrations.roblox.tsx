@@ -20,9 +20,13 @@ export const Route = createFileRoute("/integrations/roblox")({
           "Generate 3D models from a text prompt directly inside Roblox Studio using the KingDavez Studios API.",
       },
       { property: "og:url", content: "https://kingdavez.click/integrations/roblox" },
-    { name: "twitter:card", content: "summary_large_image" },
-    { name: "twitter:title", content: "Roblox — Import AI 3D Models (GLB/FBX)" },
-    { name: "twitter:description", content: "Import AI-generated GLB and FBX models into Roblox Studio with material conversion." },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Roblox — Import AI 3D Models (GLB/FBX)" },
+      {
+        name: "twitter:description",
+        content:
+          "Import AI-generated GLB and FBX models into Roblox Studio with material conversion.",
+      },
     ],
     links: [{ rel: "canonical", href: "https://kingdavez.click/integrations/roblox" }],
   }),
@@ -63,7 +67,10 @@ function RobloxPage() {
     <div className="min-h-screen bg-background text-foreground">
       <Header />
       <main className="mx-auto max-w-3xl px-4 py-16">
-        <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6"
+        >
           <ArrowLeft className="h-4 w-4" /> Home
         </Link>
 
@@ -74,9 +81,8 @@ function RobloxPage() {
           Generate AI 3D inside Roblox Studio
         </h1>
         <p className="mt-3 text-muted-foreground">
-          A single-file Luau plugin that adds a dock widget to Roblox Studio.
-          Type a prompt → get a 3D asset spawned in your Workspace, with the
-          model URL ready for Asset Manager import.
+          A single-file Luau plugin that adds a dock widget to Roblox Studio. Type a prompt → get a
+          3D asset spawned in your Workspace, with the model URL ready for Asset Manager import.
         </p>
 
         <div className="mt-8 flex flex-wrap gap-3">
@@ -98,10 +104,24 @@ function RobloxPage() {
         <section className="mt-12">
           <h2 className="font-display text-2xl font-semibold">Install (60 seconds)</h2>
           <ol className="mt-4 space-y-3 list-decimal pl-5 text-sm text-muted-foreground">
-            <li>Download <code className="text-foreground">KingDavezStudios.lua</code> above.</li>
-            <li>In Roblox Studio: <code className="text-foreground">View → Plugins Folder</code>. Drop the file in.</li>
-            <li>Restart Studio. Open the <strong>Plugins</strong> tab — click <strong>AI 3D Generator</strong>.</li>
-            <li>Paste your API key from <Link to="/profile" className="underline">your profile</Link>, type a prompt, hit <strong>Generate</strong>.</li>
+            <li>
+              Download <code className="text-foreground">KingDavezStudios.lua</code> above.
+            </li>
+            <li>
+              In Roblox Studio: <code className="text-foreground">View → Plugins Folder</code>. Drop
+              the file in.
+            </li>
+            <li>
+              Restart Studio. Open the <strong>Plugins</strong> tab — click{" "}
+              <strong>AI 3D Generator</strong>.
+            </li>
+            <li>
+              Paste your API key from{" "}
+              <Link to="/profile" className="underline">
+                your profile
+              </Link>
+              , type a prompt, hit <strong>Generate</strong>.
+            </li>
             <li>A MeshPart spawns in Workspace with the model URL stored as an Attribute.</li>
           </ol>
         </section>
@@ -109,13 +129,19 @@ function RobloxPage() {
         <section className="mt-12">
           <h2 className="font-display text-2xl font-semibold">Importing the mesh</h2>
           <p className="mt-3 text-sm text-muted-foreground">
-            Roblox Studio doesn't support importing <code>.glb</code> at runtime via script —
-            that's an engine limitation. The plugin therefore:
+            Roblox Studio doesn't support importing <code>.glb</code> at runtime via script — that's
+            an engine limitation. The plugin therefore:
           </p>
           <ul className="mt-3 list-disc pl-5 space-y-2 text-sm text-muted-foreground">
             <li>spawns a placeholder MeshPart so the asset is selectable in Workspace,</li>
-            <li>saves the <code>model_url</code>, <code>image_url</code>, and prompt as Attributes,</li>
-            <li>copies the <code>.glb</code> URL to your clipboard so you can paste it in your browser, drop the file into Blender (or any DCC) to convert to <code>.fbx</code>, and bulk-import via Asset Manager.</li>
+            <li>
+              saves the <code>model_url</code>, <code>image_url</code>, and prompt as Attributes,
+            </li>
+            <li>
+              copies the <code>.glb</code> URL to your clipboard so you can paste it in your
+              browser, drop the file into Blender (or any DCC) to convert to <code>.fbx</code>, and
+              bulk-import via Asset Manager.
+            </li>
           </ul>
         </section>
 
@@ -130,21 +156,25 @@ function RobloxPage() {
             </button>
           </div>
           <pre className="mt-3 rounded-xl border border-white/10 bg-black/60 p-4 text-xs leading-relaxed overflow-x-auto font-mono text-emerald-200">
-{SNIPPET}
+            {SNIPPET}
           </pre>
           <p className="mt-2 text-xs text-muted-foreground">
-            Works in any Roblox server script with HTTP Requests enabled
-            (<code>Game Settings → Security → Allow HTTP Requests</code>).
+            Works in any Roblox server script with HTTP Requests enabled (
+            <code>Game Settings → Security → Allow HTTP Requests</code>).
           </p>
         </section>
 
         <section className="mt-12 rounded-2xl border border-white/10 bg-white/5 p-6">
           <h3 className="font-display text-lg font-semibold">Endpoint reference</h3>
           <dl className="mt-3 grid grid-cols-[120px_1fr] gap-y-2 text-xs">
-            <dt className="text-muted-foreground">POST</dt><dd className="font-mono">/api/public/v1/generations</dd>
-            <dt className="text-muted-foreground">Auth</dt><dd className="font-mono">Authorization: Bearer kd_live_…</dd>
-            <dt className="text-muted-foreground">Body</dt><dd className="font-mono">{`{ prompt, type, source? }`}</dd>
-            <dt className="text-muted-foreground">Poll</dt><dd className="font-mono">GET /api/public/v1/generations?limit=1</dd>
+            <dt className="text-muted-foreground">POST</dt>
+            <dd className="font-mono">/api/public/v1/generations</dd>
+            <dt className="text-muted-foreground">Auth</dt>
+            <dd className="font-mono">Authorization: Bearer kd_live_…</dd>
+            <dt className="text-muted-foreground">Body</dt>
+            <dd className="font-mono">{`{ prompt, type, source? }`}</dd>
+            <dt className="text-muted-foreground">Poll</dt>
+            <dd className="font-mono">GET /api/public/v1/generations?limit=1</dd>
           </dl>
         </section>
       </main>

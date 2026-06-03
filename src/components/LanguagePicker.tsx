@@ -63,12 +63,16 @@ export function LanguagePicker({ compact = false }: { compact?: boolean }) {
                 role="option"
                 aria-selected={active}
                 className={`w-full flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-sm transition ${
-                  active ? "bg-primary/15 text-foreground" : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
+                  active
+                    ? "bg-primary/15 text-foreground"
+                    : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
                 }`}
               >
                 <span className="text-lg leading-none">{l.flag}</span>
                 <span className="flex-1 text-left">{l.label}</span>
-                <span className="text-[10px] font-mono uppercase text-muted-foreground">{l.code}</span>
+                <span className="text-[10px] font-mono uppercase text-muted-foreground">
+                  {l.code}
+                </span>
                 {active && <Check className="h-3.5 w-3.5 text-primary-glow" />}
               </button>
             );

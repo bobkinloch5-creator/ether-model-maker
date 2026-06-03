@@ -6,7 +6,6 @@ import { createClient } from "@supabase/supabase-js";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import type { Database } from "@/integrations/supabase/types";
 
-
 // Owner/admin emails that bypass the one-account-per-device rule.
 // Sourced from ADMIN_EMAILS env (comma-separated) so privileged identities
 // are not hardcoded in source.
@@ -39,10 +38,12 @@ function clientIpFromHeaders(req: Request): string | null {
 // device fingerprint OR this IP has already been used for an account.
 export const checkSignupAllowed = createServerFn({ method: "POST" })
   .inputValidator((input) =>
-    z.object({
-      fingerprint: z.string().regex(/^[a-zA-Z0-9+/=_-]{8,128}$/),
-      email: z.string().email().optional(),
-    }).parse(input),
+    z
+      .object({
+        fingerprint: z.string().regex(/^[a-zA-Z0-9+/=_-]{8,128}$/),
+        email: z.string().email().optional(),
+      })
+      .parse(input),
   )
 
   .handler(async ({ data }) => {
@@ -98,15 +99,20 @@ export const recordSignupFingerprint = createServerFn({ method: "POST" })
       req = getRequest();
     } catch {}
     const authHeader = req?.headers.get("authorization") ?? null;
-    const token = authHeader?.startsWith("Bearer ")
-      ? authHeader.slice(7).trim()
-      : null;
+    const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7).trim() : null;
 
     if (token) {
       try {
-        const SUPABASE_URL = (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "https://uufwzownbmohsdctytiq.supabase.co")!;
-        const SUPABASE_PUBLISHABLE_KEY =
-          (process.env.SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV1Znd6b3duYm1vaHNkY3R5dGlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MzMxMTUsImV4cCI6MjA5NTEwOTExNX0.E1CeHZ3U2t_PpgpLvVUbCOu03sCAs30GtcNT1AmVZrM")!;
+        const SUPABASE_URL = (process.env.SUPABASE_URL ||
+          process.env.VITE_SUPABASE_URL ||
+          process.env.NEXT_PUBLIC_SUPABASE_URL ||
+          "https://kxvblxlyawnozipeehnl.supabase.co")!;
+        const SUPABASE_PUBLISHABLE_KEY = (process.env.SUPABASE_PUBLISHABLE_KEY ||
+          process.env.SUPABASE_ANON_KEY ||
+          process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+          process.env.VITE_SUPABASE_ANON_KEY ||
+          process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+          "sb_publishable_j3SZg71aI6tBrOKP2sIMOQ_nOYb7Xp5")!;
         const sb = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
           auth: { persistSession: false, autoRefreshToken: false },
         });

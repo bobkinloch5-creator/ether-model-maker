@@ -38,7 +38,7 @@ export const chatViaGateway = createServerFn({ method: "POST" })
       const errText = await res.text().catch(() => "");
       throw new Error(`AI gateway error ${res.status}: ${errText.slice(0, 300)}`);
     }
-    const json = await res.json() as { choices?: Array<{ message?: { content?: string } }> };
+    const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
     const text = json.choices?.[0]?.message?.content?.trim() ?? "";
     return { text };
   });

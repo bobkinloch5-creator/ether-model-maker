@@ -2,11 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { authenticateApiKey, corsPreflight, jsonResponse } from "@/lib/api-auth.server";
 
-const ALLOWED_TYPES = new Set([
-  "text-to-3d",
-  "image-to-3d",
-  "retexture",
-]);
+const ALLOWED_TYPES = new Set(["text-to-3d", "image-to-3d", "retexture"]);
 
 const CREDIT_COSTS: Record<string, number> = {
   "text-to-3d": 2,
@@ -57,7 +53,8 @@ export const Route = createFileRoute("/api/public/v1/generations")({
         const prompt = typeof body.prompt === "string" ? body.prompt.trim() : "";
         const type = typeof body.type === "string" ? body.type.trim() : "text-to-3d";
         const imageUrl = typeof body.image_url === "string" ? body.image_url.trim() : null;
-        const source = typeof body.source === "string" ? body.source.trim().slice(0, 32) : "secondlife";
+        const source =
+          typeof body.source === "string" ? body.source.trim().slice(0, 32) : "secondlife";
         const clientJobId =
           typeof body.client_job_id === "string" ? body.client_job_id.trim().slice(0, 128) : null;
         const externalId =
@@ -67,7 +64,10 @@ export const Route = createFileRoute("/api/public/v1/generations")({
           return jsonResponse({ error: "Prompt must be 3-1000 chars." }, 400);
         }
         if (!ALLOWED_TYPES.has(type)) {
-          return jsonResponse({ error: `Invalid type. Use one of: ${[...ALLOWED_TYPES].join(", ")}` }, 400);
+          return jsonResponse(
+            { error: `Invalid type. Use one of: ${[...ALLOWED_TYPES].join(", ")}` },
+            400,
+          );
         }
         if (type === "image-to-3d" && !imageUrl) {
           return jsonResponse({ error: "image_url is required for image-to-3d." }, 400);
@@ -94,7 +94,6 @@ export const Route = createFileRoute("/api/public/v1/generations")({
         if (imageUrl) resultData.image_url = imageUrl;
         if (clientJobId) resultData.client_job_id = clientJobId;
         if (externalId) resultData.external_id = externalId;
-
 
         const { data, error } = await supabaseAdmin
           .from("generations")
@@ -132,7 +131,6 @@ export const Route = createFileRoute("/api/public/v1/generations")({
           201,
         );
       },
-
     },
   },
 });

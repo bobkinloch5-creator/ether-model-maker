@@ -8,10 +8,20 @@ interface Props {
   defaultBottom: number; // px from bottom
   size: number; // approx button size for clamping
   zIndex?: number;
-  children: (api: { dragging: boolean; onClickGuard: (fn: () => void) => (e: React.MouseEvent) => void }) => ReactNode;
+  children: (api: {
+    dragging: boolean;
+    onClickGuard: (fn: () => void) => (e: React.MouseEvent) => void;
+  }) => ReactNode;
 }
 
-export function DraggableFab({ storageKey, defaultRight, defaultBottom, size, zIndex = 40, children }: Props) {
+export function DraggableFab({
+  storageKey,
+  defaultRight,
+  defaultBottom,
+  size,
+  zIndex = 40,
+  children,
+}: Props) {
   const [pos, setPos] = useState<Pos | null>(null);
   const [dragging, setDragging] = useState(false);
   const movedRef = useRef(false);
@@ -67,7 +77,9 @@ export function DraggableFab({ storageKey, defaultRight, defaultBottom, size, zI
   }
   function onPointerUp() {
     if (movedRef.current && pos) {
-      try { localStorage.setItem(storageKey, JSON.stringify(pos)); } catch {}
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(pos));
+      } catch {}
     }
     startRef.current = null;
     setDragging(false);
@@ -90,7 +102,14 @@ export function DraggableFab({ storageKey, defaultRight, defaultBottom, size, zI
   return (
     <div
       ref={ref}
-      style={{ position: "fixed", left: pos.x, top: pos.y, zIndex, touchAction: "none", cursor: dragging ? "grabbing" : "grab" }}
+      style={{
+        position: "fixed",
+        left: pos.x,
+        top: pos.y,
+        zIndex,
+        touchAction: "none",
+        cursor: dragging ? "grabbing" : "grab",
+      }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}

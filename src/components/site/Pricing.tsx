@@ -6,14 +6,24 @@ const tiers = [
     price: 9.99,
     credits: 100,
     desc: "Quick test runs for new ideas and small texture jobs.",
-    features: ["100 generation credits", "Text-to-3D tests", "Texture prompt experiments", "Community support"],
+    features: [
+      "100 generation credits",
+      "Text-to-3D tests",
+      "Texture prompt experiments",
+      "Community support",
+    ],
   },
   {
     name: "Creator",
     price: 39.99,
     credits: 500,
     desc: "The best fit for active SL creators building weekly.",
-    features: ["500 generation credits", "Image-to-3D workflows", "PBR material generation", "Priority queue"],
+    features: [
+      "500 generation credits",
+      "Image-to-3D workflows",
+      "PBR material generation",
+      "Priority queue",
+    ],
     popular: true,
   },
   {
@@ -21,7 +31,12 @@ const tiers = [
     price: 99.99,
     credits: 1500,
     desc: "Higher-volume production for full asset packs and launches.",
-    features: ["1,500 generation credits", "Full SL asset sessions", "Marketplace-ready iteration", "Dedicated support"],
+    features: [
+      "1,500 generation credits",
+      "Full SL asset sessions",
+      "Marketplace-ready iteration",
+      "Dedicated support",
+    ],
   },
 ];
 
@@ -40,8 +55,8 @@ export function Pricing() {
             Pay only for <span className="gradient-text">what you create.</span>
           </h2>
           <p className="mt-4 text-muted-foreground">
-            Credit packs never expire. Use them on text-to-3D, image-to-3D,
-            re-texturing — anything on the platform.
+            Credit packs never expire. Use them on text-to-3D, image-to-3D, re-texturing — anything
+            on the platform.
           </p>
         </div>
 
@@ -61,10 +76,16 @@ export function Pricing() {
                 </span>
               )}
               <h3 className="font-display text-xl font-semibold">{t.name}</h3>
-              <p className={`mt-1 text-sm ${t.popular ? "text-white/80" : "text-muted-foreground"}`}>{t.desc}</p>
+              <p
+                className={`mt-1 text-sm ${t.popular ? "text-white/80" : "text-muted-foreground"}`}
+              >
+                {t.desc}
+              </p>
               <div className="mt-6 flex items-baseline gap-1">
                 <span className="font-display text-5xl font-semibold">${t.price}</span>
-                <span className={`text-sm ${t.popular ? "text-white/70" : "text-muted-foreground"}`}>
+                <span
+                  className={`text-sm ${t.popular ? "text-white/70" : "text-muted-foreground"}`}
+                >
                   / {t.credits} credits
                 </span>
               </div>
@@ -83,7 +104,9 @@ export function Pricing() {
               <ul className="mt-8 space-y-3 text-sm">
                 {t.features.map((f) => (
                   <li key={f} className="flex items-start gap-2">
-                    <Check className={`mt-0.5 h-4 w-4 shrink-0 ${t.popular ? "text-white" : "text-primary-glow"}`} />
+                    <Check
+                      className={`mt-0.5 h-4 w-4 shrink-0 ${t.popular ? "text-white" : "text-primary-glow"}`}
+                    />
                     <span className={t.popular ? "text-white/90" : "text-foreground/90"}>{f}</span>
                   </li>
                 ))}

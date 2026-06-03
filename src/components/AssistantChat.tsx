@@ -78,11 +78,7 @@ function linkNode(label: string, url: string, key: number) {
     );
   }
   return (
-    <Link
-      key={key}
-      to={url}
-      className="underline underline-offset-2 text-primary hover:opacity-80"
-    >
+    <Link key={key} to={url} className="underline underline-offset-2 text-primary hover:opacity-80">
       {label}
     </Link>
   );
@@ -130,7 +126,10 @@ export function AssistantChat() {
       toast.error(msg);
       setMessages([
         ...next,
-        { role: "assistant", content: "Sorry — I couldn't reach the AI service. Please try again in a moment." },
+        {
+          role: "assistant",
+          content: "Sorry — I couldn't reach the AI service. Please try again in a moment.",
+        },
       ]);
     } finally {
       setBusy(false);
@@ -140,7 +139,13 @@ export function AssistantChat() {
   return (
     <>
       {!open && (
-        <DraggableFab storageKey="fab-pos:chat" defaultRight={20} defaultBottom={96} size={56} zIndex={40}>
+        <DraggableFab
+          storageKey="fab-pos:chat"
+          defaultRight={20}
+          defaultBottom={96}
+          size={56}
+          zIndex={40}
+        >
           {({ onClickGuard }) => (
             <button
               onClick={onClickGuard(() => setOpen(true))}

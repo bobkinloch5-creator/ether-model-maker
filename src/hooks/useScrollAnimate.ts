@@ -15,7 +15,7 @@ export function useScrollAnimate<T extends HTMLElement>(options?: IntersectionOb
           observer.unobserve(el);
         }
       },
-      { threshold: 0.1, ...options }
+      { threshold: 0.1, ...options },
     );
 
     observer.observe(el);
@@ -48,7 +48,7 @@ export function useStaggeredScroll<T extends HTMLElement>(itemCount: number, bas
           }
         });
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     Array.from(children).forEach((child) => observer.observe(child));

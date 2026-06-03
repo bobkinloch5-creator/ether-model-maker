@@ -32,7 +32,12 @@ describe("ShareButtons — rendering", () => {
 
   it("opens external share links in a new tab with safe rel attributes", () => {
     setup();
-    for (const label of [/Share on X/i, /Share on Facebook/i, /Share on LinkedIn/i, /Share on Reddit/i]) {
+    for (const label of [
+      /Share on X/i,
+      /Share on Facebook/i,
+      /Share on LinkedIn/i,
+      /Share on Reddit/i,
+    ]) {
       const a = getLink(label);
       expect(a.target).toBe("_blank");
       expect(a.rel).toMatch(/noopener/);

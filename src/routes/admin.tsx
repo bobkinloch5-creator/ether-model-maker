@@ -35,14 +35,20 @@ export const Route = createFileRoute("/admin")({
       { title: "Admin Panel — KingDavez Studios (Beta)" },
       { name: "description", content: "Owner-only admin control panel." },
       { name: "robots", content: "noindex,nofollow" },
-    { name: "twitter:description", content: "Owner-only admin control panel for KingDavez Studios." },
-    { name: "twitter:title", content: "Admin Panel — KingDavez Studios" },
-    { name: "twitter:card", content: "summary" },
-    { property: "og:url", content: "https://kingdavez.click/admin" },
-    { property: "og:description", content: "Owner-only admin control panel for KingDavez Studios." },
-    { property: "og:title", content: "Admin Panel — KingDavez Studios" },
+      {
+        name: "twitter:description",
+        content: "Owner-only admin control panel for KingDavez Studios.",
+      },
+      { name: "twitter:title", content: "Admin Panel — KingDavez Studios" },
+      { name: "twitter:card", content: "summary" },
+      { property: "og:url", content: "https://kingdavez.click/admin" },
+      {
+        property: "og:description",
+        content: "Owner-only admin control panel for KingDavez Studios.",
+      },
+      { property: "og:title", content: "Admin Panel — KingDavez Studios" },
     ],
-  links: [{ rel: "canonical", href: "https://kingdavez.click/admin" }],
+    links: [{ rel: "canonical", href: "https://kingdavez.click/admin" }],
   }),
   component: AdminPage,
 });
@@ -81,10 +87,36 @@ type Analytics = {
     generations_30d: number;
     referrals_count: number;
   };
-  daily: Array<{ day: string; new_users: number; generations: number; revenue: number; credits_sold: number }>;
-  top_spenders: Array<{ email: string; display_name: string | null; spent: number; credits: number }>;
-  recent_purchases: Array<{ id: string; created_at: string; amount_paid: number; credits: number; payment_method: string; email: string; display_name: string | null }>;
-  recent_generations: Array<{ id: string; created_at: string; generation_type: string; credits_used: number; status: string; email: string }>;
+  daily: Array<{
+    day: string;
+    new_users: number;
+    generations: number;
+    revenue: number;
+    credits_sold: number;
+  }>;
+  top_spenders: Array<{
+    email: string;
+    display_name: string | null;
+    spent: number;
+    credits: number;
+  }>;
+  recent_purchases: Array<{
+    id: string;
+    created_at: string;
+    amount_paid: number;
+    credits: number;
+    payment_method: string;
+    email: string;
+    display_name: string | null;
+  }>;
+  recent_generations: Array<{
+    id: string;
+    created_at: string;
+    generation_type: string;
+    credits_used: number;
+    status: string;
+    email: string;
+  }>;
 };
 
 function AdminPage() {
@@ -138,7 +170,9 @@ function AdminPage() {
       const [profsRes, gensRes, pchsRes, analyticsRes] = await Promise.all([
         supabase
           .from("profiles")
-          .select("id,email,display_name,credits,is_owner,is_manager,is_banned,ban_reason,created_at")
+          .select(
+            "id,email,display_name,credits,is_owner,is_manager,is_banned,ban_reason,created_at",
+          )
           .order("created_at", { ascending: false })
           .limit(500),
         supabase.from("generations").select("*", { count: "exact", head: true }),
@@ -158,7 +192,9 @@ function AdminPage() {
         setAnalytics(null);
       } else if (analyticsRes.data) {
         // Defensive: coerce missing arrays/numbers so the UI never crashes.
-        const a = analyticsRes.data as Partial<Analytics> & { totals?: Partial<Analytics["totals"]> };
+        const a = analyticsRes.data as Partial<Analytics> & {
+          totals?: Partial<Analytics["totals"]>;
+        };
         setAnalytics({
           totals: {
             users: Number(a.totals?.users ?? 0),
@@ -221,7 +257,9 @@ function AdminPage() {
     });
     if (error) setMsg(`Error: ${error.message}`);
     else {
-      setMsg(`${amount >= 0 ? "Gifted" : "Removed"} ${Math.abs(amount).toLocaleString()} credits ${amount >= 0 ? "to" : "from"} ${target?.email}`);
+      setMsg(
+        `${amount >= 0 ? "Gifted" : "Removed"} ${Math.abs(amount).toLocaleString()} credits ${amount >= 0 ? "to" : "from"} ${target?.email}`,
+      );
       await loadData();
     }
     setBusyId(null);
@@ -237,24 +275,44 @@ function AdminPage() {
       note: "Set unlimited from admin panel",
     });
     if (error) setMsg(`Error: ${error.message}`);
-    else { setMsg(`${target?.email} now has unlimited credits`); await loadData(); }
+    else {
+      setMsg(`${target?.email} now has unlimited credits`);
+      await loadData();
+    }
     setBusyId(null);
   };
 
   const toggleManager = async (p: AdminProfile) => {
     setBusyId(p.id);
-    const { error } = await supabase.rpc("admin_set_manager", { target_user_id: p.id, value: !p.is_manager });
+    const { error } = await supabase.rpc("admin_set_manager", {
+      target_user_id: p.id,
+      value: !p.is_manager,
+    });
     if (error) setMsg(`Error: ${error.message}`);
-    else { setMsg(`${p.email} is ${!p.is_manager ? "now a manager" : "no longer a manager"}`); await loadData(); }
+    else {
+      setMsg(`${p.email} is ${!p.is_manager ? "now a manager" : "no longer a manager"}`);
+      await loadData();
+    }
     setBusyId(null);
   };
 
   const toggleOwner = async (p: AdminProfile) => {
-    if (!confirm(`${p.is_owner ? "Demote" : "Promote"} ${p.email} ${p.is_owner ? "from" : "to"} owner?`)) return;
+    if (
+      !confirm(
+        `${p.is_owner ? "Demote" : "Promote"} ${p.email} ${p.is_owner ? "from" : "to"} owner?`,
+      )
+    )
+      return;
     setBusyId(p.id);
-    const { error } = await supabase.rpc("admin_set_owner", { target_user_id: p.id, value: !p.is_owner });
+    const { error } = await supabase.rpc("admin_set_owner", {
+      target_user_id: p.id,
+      value: !p.is_owner,
+    });
     if (error) setMsg(`Error: ${error.message}`);
-    else { setMsg(`${p.email} ${!p.is_owner ? "promoted to owner" : "demoted from owner"}`); await loadData(); }
+    else {
+      setMsg(`${p.email} ${!p.is_owner ? "promoted to owner" : "demoted from owner"}`);
+      await loadData();
+    }
     setBusyId(null);
   };
 
@@ -267,18 +325,30 @@ function AdminPage() {
       if (!confirm(`Unban ${p.email}?`)) return;
     }
     setBusyId(p.id);
-    const { error } = await supabase.rpc("admin_set_banned", { target_user_id: p.id, value: !p.is_banned, reason: reason ?? undefined });
+    const { error } = await supabase.rpc("admin_set_banned", {
+      target_user_id: p.id,
+      value: !p.is_banned,
+      reason: reason ?? undefined,
+    });
     if (error) setMsg(`Error: ${error.message}`);
-    else { setMsg(`${p.email} ${!p.is_banned ? "banned" : "unbanned"}`); await loadData(); }
+    else {
+      setMsg(`${p.email} ${!p.is_banned ? "banned" : "unbanned"}`);
+      await loadData();
+    }
     setBusyId(null);
   };
 
   const wipeGenerations = async (p: AdminProfile) => {
     if (!confirm(`Delete ALL of ${p.email}'s generation history? This cannot be undone.`)) return;
     setBusyId(p.id);
-    const { data, error } = await supabase.rpc("admin_wipe_user_generations", { target_user_id: p.id });
+    const { data, error } = await supabase.rpc("admin_wipe_user_generations", {
+      target_user_id: p.id,
+    });
     if (error) setMsg(`Error: ${error.message}`);
-    else { setMsg(`Wiped ${data ?? 0} generations from ${p.email}`); await loadData(); }
+    else {
+      setMsg(`Wiped ${data ?? 0} generations from ${p.email}`);
+      await loadData();
+    }
     setBusyId(null);
   };
 
@@ -303,8 +373,13 @@ function AdminPage() {
       <div className="grid min-h-screen place-items-center px-4 py-24">
         <div className="glass w-full max-w-lg rounded-3xl p-8 text-center shadow-[var(--shadow-elegant)]">
           <Shield className="mx-auto h-10 w-10 text-primary-glow" />
-          <h1 className="mt-4 font-display text-2xl font-semibold tracking-tight">Owner access required</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Your account is signed in, but it does not currently have owner access for the admin panel.</p>
+          <h1 className="mt-4 font-display text-2xl font-semibold tracking-tight">
+            Owner access required
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Your account is signed in, but it does not currently have owner access for the admin
+            panel.
+          </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <button
               onClick={() => navigate({ to: "/dashboard" })}
@@ -324,17 +399,25 @@ function AdminPage() {
     );
   }
 
-  const maxRevenue = analytics && analytics.daily.length > 0
-    ? Math.max(1, ...analytics.daily.map((d) => Number(d?.revenue ?? 0)))
-    : 1;
-  const maxGens = analytics && analytics.daily.length > 0
-    ? Math.max(1, ...analytics.daily.map((d) => Number(d?.generations ?? 0)))
-    : 1;
+  const maxRevenue =
+    analytics && analytics.daily.length > 0
+      ? Math.max(1, ...analytics.daily.map((d) => Number(d?.revenue ?? 0)))
+      : 1;
+  const maxGens =
+    analytics && analytics.daily.length > 0
+      ? Math.max(1, ...analytics.daily.map((d) => Number(d?.generations ?? 0)))
+      : 1;
 
   return (
     <div className="min-h-screen px-4 py-24">
       <div className="grid-bg absolute inset-0 -z-10" />
-      <div className="absolute inset-x-0 top-0 -z-10 h-[40vh] opacity-30" style={{ background: "radial-gradient(ellipse 60% 50% at 50% 0%, oklch(0.7 0.22 305 / 0.4), transparent 70%)" }} />
+      <div
+        className="absolute inset-x-0 top-0 -z-10 h-[40vh] opacity-30"
+        style={{
+          background:
+            "radial-gradient(ellipse 60% 50% at 50% 0%, oklch(0.7 0.22 305 / 0.4), transparent 70%)",
+        }}
+      />
 
       <div className="mx-auto max-w-6xl">
         {/* Header */}
@@ -349,13 +432,22 @@ function AdminPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={loadData} className="inline-flex h-10 items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 text-sm text-muted-foreground transition hover:bg-white/10">
+            <button
+              onClick={loadData}
+              className="inline-flex h-10 items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 text-sm text-muted-foreground transition hover:bg-white/10"
+            >
               <RefreshCw className="h-4 w-4" /> Refresh
             </button>
-            <Link to="/admin/ledger" className="inline-flex h-10 items-center gap-2 rounded-full bg-[var(--gradient-primary)] px-4 text-sm font-medium text-white hover:opacity-95">
+            <Link
+              to="/admin/ledger"
+              className="inline-flex h-10 items-center gap-2 rounded-full bg-[var(--gradient-primary)] px-4 text-sm font-medium text-white hover:opacity-95"
+            >
               <CreditCard className="h-4 w-4" /> Ledger
             </Link>
-            <Link to="/dashboard" className="inline-flex h-10 items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 text-sm text-muted-foreground transition hover:bg-white/10">
+            <Link
+              to="/dashboard"
+              className="inline-flex h-10 items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 text-sm text-muted-foreground transition hover:bg-white/10"
+            >
               <ArrowLeft className="h-4 w-4" /> Dashboard
             </Link>
           </div>
@@ -364,14 +456,54 @@ function AdminPage() {
         {/* KPI grid */}
         <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
           {[
-            { icon: DollarSign, label: "Revenue (all-time)", value: analytics ? `$${Number(analytics.totals.revenue_total).toFixed(2)}` : "—", accent: "text-emerald-300" },
-            { icon: TrendingUp, label: "Revenue (30d)", value: analytics ? `$${Number(analytics.totals.revenue_30d).toFixed(2)}` : "—", accent: "text-emerald-300" },
-            { icon: CreditCard, label: "Credits Sold", value: analytics?.totals.credits_sold.toLocaleString() ?? "—", accent: "text-primary-glow" },
-            { icon: Users, label: "Users", value: stats?.users ?? "—", accent: "text-primary-glow" },
-            { icon: Activity, label: "Generations", value: stats?.generations?.toLocaleString() ?? "—", accent: "text-primary-glow" },
-            { icon: BarChart3, label: "Gens (30d)", value: analytics?.totals.generations_30d.toLocaleString() ?? "—", accent: "text-primary-glow" },
-            { icon: Star, label: "New Users (30d)", value: analytics?.totals.new_users_30d ?? "—", accent: "text-amber-300" },
-            { icon: Gift, label: "Referrals", value: analytics?.totals.referrals_count ?? "—", accent: "text-amber-300" },
+            {
+              icon: DollarSign,
+              label: "Revenue (all-time)",
+              value: analytics ? `$${Number(analytics.totals.revenue_total).toFixed(2)}` : "—",
+              accent: "text-emerald-300",
+            },
+            {
+              icon: TrendingUp,
+              label: "Revenue (30d)",
+              value: analytics ? `$${Number(analytics.totals.revenue_30d).toFixed(2)}` : "—",
+              accent: "text-emerald-300",
+            },
+            {
+              icon: CreditCard,
+              label: "Credits Sold",
+              value: analytics?.totals.credits_sold.toLocaleString() ?? "—",
+              accent: "text-primary-glow",
+            },
+            {
+              icon: Users,
+              label: "Users",
+              value: stats?.users ?? "—",
+              accent: "text-primary-glow",
+            },
+            {
+              icon: Activity,
+              label: "Generations",
+              value: stats?.generations?.toLocaleString() ?? "—",
+              accent: "text-primary-glow",
+            },
+            {
+              icon: BarChart3,
+              label: "Gens (30d)",
+              value: analytics?.totals.generations_30d.toLocaleString() ?? "—",
+              accent: "text-primary-glow",
+            },
+            {
+              icon: Star,
+              label: "New Users (30d)",
+              value: analytics?.totals.new_users_30d ?? "—",
+              accent: "text-amber-300",
+            },
+            {
+              icon: Gift,
+              label: "Referrals",
+              value: analytics?.totals.referrals_count ?? "—",
+              accent: "text-amber-300",
+            },
           ].map(({ icon: Icon, label, value, accent }) => (
             <div key={label} className="glass rounded-2xl p-5">
               <Icon className={`h-5 w-5 ${accent}`} />
@@ -382,7 +514,9 @@ function AdminPage() {
         </div>
 
         {msg && (
-          <div className="mb-4 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm">{msg}</div>
+          <div className="mb-4 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm">
+            {msg}
+          </div>
         )}
 
         {/* Pending purchases — owner approval queue */}
@@ -390,20 +524,25 @@ function AdminPage() {
           <PendingPurchases onChange={loadData} />
         </div>
 
-
         {/* Charts: 30d sparklines */}
         {analytics && (
           <div className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
             <div className="glass rounded-3xl p-6">
               <div className="mb-3 flex items-center justify-between">
                 <h3 className="font-display text-lg font-semibold">Revenue · 30 days</h3>
-                <span className="text-xs text-muted-foreground">${Number(analytics.totals.revenue_30d).toFixed(2)} total</span>
+                <span className="text-xs text-muted-foreground">
+                  ${Number(analytics.totals.revenue_30d).toFixed(2)} total
+                </span>
               </div>
               <div className="flex h-32 items-end gap-1">
                 {analytics.daily.map((d) => {
                   const h = (Number(d.revenue) / maxRevenue) * 100;
                   return (
-                    <div key={d.day} className="group relative flex-1" style={{ height: `${Math.max(h, 2)}%` }}>
+                    <div
+                      key={d.day}
+                      className="group relative flex-1"
+                      style={{ height: `${Math.max(h, 2)}%` }}
+                    >
                       <div className="h-full w-full rounded-t bg-gradient-to-t from-emerald-500/40 to-emerald-300/80 transition group-hover:opacity-100" />
                       <div className="pointer-events-none absolute -top-8 left-1/2 z-10 hidden -translate-x-1/2 whitespace-nowrap rounded bg-black/80 px-2 py-1 text-[10px] text-white group-hover:block">
                         {d.day} · ${Number(d.revenue).toFixed(2)}
@@ -416,13 +555,19 @@ function AdminPage() {
             <div className="glass rounded-3xl p-6">
               <div className="mb-3 flex items-center justify-between">
                 <h3 className="font-display text-lg font-semibold">Generations · 30 days</h3>
-                <span className="text-xs text-muted-foreground">{analytics.totals.generations_30d.toLocaleString()} total</span>
+                <span className="text-xs text-muted-foreground">
+                  {analytics.totals.generations_30d.toLocaleString()} total
+                </span>
               </div>
               <div className="flex h-32 items-end gap-1">
                 {analytics.daily.map((d) => {
                   const h = (d.generations / maxGens) * 100;
                   return (
-                    <div key={d.day} className="group relative flex-1" style={{ height: `${Math.max(h, 2)}%` }}>
+                    <div
+                      key={d.day}
+                      className="group relative flex-1"
+                      style={{ height: `${Math.max(h, 2)}%` }}
+                    >
                       <div className="h-full w-full rounded-t bg-gradient-to-t from-fuchsia-500/40 to-violet-300/80" />
                       <div className="pointer-events-none absolute -top-8 left-1/2 z-10 hidden -translate-x-1/2 whitespace-nowrap rounded bg-black/80 px-2 py-1 text-[10px] text-white group-hover:block">
                         {d.day} · {d.generations}
@@ -445,17 +590,26 @@ function AdminPage() {
               ) : (
                 <ul className="space-y-2">
                   {analytics.top_spenders.map((s, i) => (
-                    <li key={s.email} className="flex items-center justify-between rounded-lg border border-white/5 bg-white/[0.02] px-3 py-2 text-sm">
+                    <li
+                      key={s.email}
+                      className="flex items-center justify-between rounded-lg border border-white/5 bg-white/[0.02] px-3 py-2 text-sm"
+                    >
                       <div className="flex items-center gap-3">
-                        <span className="grid h-7 w-7 place-items-center rounded-full bg-[var(--gradient-primary)] text-xs font-bold text-white">{i + 1}</span>
+                        <span className="grid h-7 w-7 place-items-center rounded-full bg-[var(--gradient-primary)] text-xs font-bold text-white">
+                          {i + 1}
+                        </span>
                         <div>
                           <div className="font-medium">{s.display_name || s.email}</div>
                           <div className="text-xs text-muted-foreground">{s.email}</div>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-mono font-semibold text-emerald-300">${Number(s?.spent ?? 0).toFixed(2)}</div>
-                        <div className="text-xs text-muted-foreground">{Number(s?.credits ?? 0).toLocaleString()} cr</div>
+                        <div className="font-mono font-semibold text-emerald-300">
+                          ${Number(s?.spent ?? 0).toFixed(2)}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {Number(s?.credits ?? 0).toLocaleString()} cr
+                        </div>
                       </div>
                     </li>
                   ))}
@@ -469,14 +623,23 @@ function AdminPage() {
               ) : (
                 <ul className="max-h-72 space-y-2 overflow-y-auto pr-1">
                   {analytics.recent_purchases.map((r) => (
-                    <li key={r.id} className="flex items-center justify-between rounded-lg border border-white/5 bg-white/[0.02] px-3 py-2 text-sm">
+                    <li
+                      key={r.id}
+                      className="flex items-center justify-between rounded-lg border border-white/5 bg-white/[0.02] px-3 py-2 text-sm"
+                    >
                       <div className="min-w-0">
                         <div className="truncate font-medium">{r.display_name || r.email}</div>
-                        <div className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()} · {r.payment_method}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {new Date(r.created_at).toLocaleString()} · {r.payment_method}
+                        </div>
                       </div>
                       <div className="ml-3 shrink-0 text-right">
-                        <div className="font-mono font-semibold text-emerald-300">${Number(r?.amount_paid ?? 0).toFixed(2)}</div>
-                        <div className="text-xs text-muted-foreground">+{Number(r?.credits ?? 0).toLocaleString()} cr</div>
+                        <div className="font-mono font-semibold text-emerald-300">
+                          ${Number(r?.amount_paid ?? 0).toFixed(2)}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          +{Number(r?.credits ?? 0).toLocaleString()} cr
+                        </div>
                       </div>
                     </li>
                   ))}
@@ -506,9 +669,17 @@ function AdminPage() {
                     <tr key={g.id} className="border-b border-white/5">
                       <td className="py-2 pr-4">{g.email}</td>
                       <td className="py-2 pr-4 capitalize">{g.generation_type}</td>
-                      <td className="py-2 pr-4"><span className={`rounded-full px-2 py-0.5 text-xs ${g.status === "completed" ? "bg-emerald-400/10 text-emerald-300" : g.status === "failed" ? "bg-red-400/10 text-red-300" : "bg-amber-400/10 text-amber-300"}`}>{g.status}</span></td>
+                      <td className="py-2 pr-4">
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-xs ${g.status === "completed" ? "bg-emerald-400/10 text-emerald-300" : g.status === "failed" ? "bg-red-400/10 text-red-300" : "bg-amber-400/10 text-amber-300"}`}
+                        >
+                          {g.status}
+                        </span>
+                      </td>
                       <td className="py-2 pr-4 text-right font-mono">{g.credits_used}</td>
-                      <td className="py-2 pr-4 text-xs text-muted-foreground">{new Date(g.created_at).toLocaleString()}</td>
+                      <td className="py-2 pr-4 text-xs text-muted-foreground">
+                        {new Date(g.created_at).toLocaleString()}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -521,9 +692,13 @@ function AdminPage() {
         <div className="mb-6 glass rounded-3xl p-6 shadow-[var(--shadow-elegant)]">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary/15"><Scale className="h-5 w-5 text-primary-glow" /></div>
+              <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary/15">
+                <Scale className="h-5 w-5 text-primary-glow" />
+              </div>
               <div>
-                <h2 className="font-display text-xl font-semibold tracking-tight">Credit Reconciliation</h2>
+                <h2 className="font-display text-xl font-semibold tracking-tight">
+                  Credit Reconciliation
+                </h2>
                 <p className="text-xs text-muted-foreground">
                   Compares <span className="font-mono">profiles.credits</span> against ledger sum.
                   {reconRanAt && <> Last run {reconRanAt.toLocaleTimeString()}.</>}
@@ -532,51 +707,101 @@ function AdminPage() {
             </div>
             <div className="flex items-center gap-2">
               <label className="flex items-center gap-2 text-xs text-muted-foreground">
-                <input type="checkbox" checked={onlyMismatches} onChange={(e) => setOnlyMismatches(e.target.checked)} className="accent-primary" />
+                <input
+                  type="checkbox"
+                  checked={onlyMismatches}
+                  onChange={(e) => setOnlyMismatches(e.target.checked)}
+                  className="accent-primary"
+                />
                 Only mismatches
               </label>
-              <button onClick={runReconciliation} disabled={reconLoading} className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-[var(--gradient-primary)] px-3 text-xs font-medium text-white hover:opacity-95 disabled:opacity-50">
-                {reconLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+              <button
+                onClick={runReconciliation}
+                disabled={reconLoading}
+                className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-[var(--gradient-primary)] px-3 text-xs font-medium text-white hover:opacity-95 disabled:opacity-50"
+              >
+                {reconLoading ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-3.5 w-3.5" />
+                )}
                 Run check
               </button>
             </div>
           </div>
 
           {recon === null ? (
-            <p className="text-sm text-muted-foreground">Click <span className="font-medium text-foreground">Run check</span> to audit all balances.</p>
-          ) : (() => {
-            const mismatches = recon.filter((r) => r.diff !== 0);
-            const visible = onlyMismatches ? mismatches : recon;
-            return (
-              <div className="overflow-x-auto">
-                <div className={`mb-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs ${mismatches.length === 0 ? "bg-emerald-400/10 text-emerald-300" : "bg-amber-400/10 text-amber-300"}`}>
-                  {mismatches.length === 0 ? <CheckCircle2 className="h-3.5 w-3.5" /> : <AlertTriangle className="h-3.5 w-3.5" />}
-                  {mismatches.length === 0 ? "All balanced" : `${mismatches.length} mismatch${mismatches.length === 1 ? "" : "es"}`}
-                </div>
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-white/10 text-left text-xs uppercase tracking-wider text-muted-foreground">
-                      <th className="py-3 pr-4 font-medium">User</th>
-                      <th className="py-3 pr-4 font-medium text-right">Profile</th>
-                      <th className="py-3 pr-4 font-medium text-right">Ledger</th>
-                      <th className="py-3 pr-4 font-medium text-right">Diff</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {visible.map((r) => (
-                      <tr key={r.user_id} className={`border-b border-white/5 ${r.diff !== 0 ? "bg-amber-400/[0.04]" : ""}`}>
-                        <td className="py-3 pr-4"><div className="font-medium">{r.display_name || "—"}</div><div className="text-xs text-muted-foreground">{r.email}</div></td>
-                        <td className="py-3 pr-4 text-right font-mono">{Number(r?.profile_credits ?? 0).toLocaleString()}</td>
-                        <td className="py-3 pr-4 text-right font-mono">{Number(r?.ledger_sum ?? 0).toLocaleString()}</td>
-                        <td className={`py-3 pr-4 text-right font-mono font-semibold ${r.diff !== 0 ? "text-amber-300" : "text-emerald-400"}`}>{r.diff > 0 ? "+" : ""}{Number(r?.diff ?? 0).toLocaleString()}</td>
+            <p className="text-sm text-muted-foreground">
+              Click <span className="font-medium text-foreground">Run check</span> to audit all
+              balances.
+            </p>
+          ) : (
+            (() => {
+              const mismatches = recon.filter((r) => r.diff !== 0);
+              const visible = onlyMismatches ? mismatches : recon;
+              return (
+                <div className="overflow-x-auto">
+                  <div
+                    className={`mb-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs ${mismatches.length === 0 ? "bg-emerald-400/10 text-emerald-300" : "bg-amber-400/10 text-amber-300"}`}
+                  >
+                    {mismatches.length === 0 ? (
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                    ) : (
+                      <AlertTriangle className="h-3.5 w-3.5" />
+                    )}
+                    {mismatches.length === 0
+                      ? "All balanced"
+                      : `${mismatches.length} mismatch${mismatches.length === 1 ? "" : "es"}`}
+                  </div>
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-white/10 text-left text-xs uppercase tracking-wider text-muted-foreground">
+                        <th className="py-3 pr-4 font-medium">User</th>
+                        <th className="py-3 pr-4 font-medium text-right">Profile</th>
+                        <th className="py-3 pr-4 font-medium text-right">Ledger</th>
+                        <th className="py-3 pr-4 font-medium text-right">Diff</th>
                       </tr>
-                    ))}
-                    {visible.length === 0 && (<tr><td colSpan={4} className="py-8 text-center text-sm text-muted-foreground">No mismatches.</td></tr>)}
-                  </tbody>
-                </table>
-              </div>
-            );
-          })()}
+                    </thead>
+                    <tbody>
+                      {visible.map((r) => (
+                        <tr
+                          key={r.user_id}
+                          className={`border-b border-white/5 ${r.diff !== 0 ? "bg-amber-400/[0.04]" : ""}`}
+                        >
+                          <td className="py-3 pr-4">
+                            <div className="font-medium">{r.display_name || "—"}</div>
+                            <div className="text-xs text-muted-foreground">{r.email}</div>
+                          </td>
+                          <td className="py-3 pr-4 text-right font-mono">
+                            {Number(r?.profile_credits ?? 0).toLocaleString()}
+                          </td>
+                          <td className="py-3 pr-4 text-right font-mono">
+                            {Number(r?.ledger_sum ?? 0).toLocaleString()}
+                          </td>
+                          <td
+                            className={`py-3 pr-4 text-right font-mono font-semibold ${r.diff !== 0 ? "text-amber-300" : "text-emerald-400"}`}
+                          >
+                            {r.diff > 0 ? "+" : ""}
+                            {Number(r?.diff ?? 0).toLocaleString()}
+                          </td>
+                        </tr>
+                      ))}
+                      {visible.length === 0 && (
+                        <tr>
+                          <td
+                            colSpan={4}
+                            className="py-8 text-center text-sm text-muted-foreground"
+                          >
+                            No mismatches.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })()
+          )}
         </div>
 
         {/* Promo codes */}
@@ -585,15 +810,24 @@ function AdminPage() {
         {/* Users table */}
         <div className="glass rounded-3xl p-6 shadow-[var(--shadow-elegant)]">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <h2 className="font-display text-xl font-semibold tracking-tight">Users ({filtered.length})</h2>
+            <h2 className="font-display text-xl font-semibold tracking-tight">
+              Users ({filtered.length})
+            </h2>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by email or name…" className="h-10 w-72 rounded-xl border border-white/10 bg-black/30 pl-10 pr-4 text-sm placeholder:text-muted-foreground focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search by email or name…"
+                className="h-10 w-72 rounded-xl border border-white/10 bg-black/30 pl-10 pr-4 text-sm placeholder:text-muted-foreground focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
             </div>
           </div>
 
           {loading ? (
-            <div className="grid place-items-center py-16"><Loader2 className="h-6 w-6 animate-spin text-primary/60" /></div>
+            <div className="grid place-items-center py-16">
+              <Loader2 className="h-6 w-6 animate-spin text-primary/60" />
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -608,56 +842,123 @@ function AdminPage() {
                 </thead>
                 <tbody>
                   {filtered.map((p) => (
-                    <tr key={p.id} className="border-b border-white/5 hover:bg-white/[0.02] transition">
+                    <tr
+                      key={p.id}
+                      className="border-b border-white/5 hover:bg-white/[0.02] transition"
+                    >
                       <td className="py-3 pr-4">
                         <div className="font-medium">{p.display_name || "—"}</div>
                         <div className="text-xs text-muted-foreground">{p.email}</div>
                       </td>
-                      <td className="py-3 pr-4 font-mono">{Number(p?.credits ?? 0).toLocaleString()}</td>
+                      <td className="py-3 pr-4 font-mono">
+                        {Number(p?.credits ?? 0).toLocaleString()}
+                      </td>
                       <td className="py-3 pr-4">
                         <div className="flex flex-wrap gap-1">
                           {p.is_owner && (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-[var(--gradient-primary)] px-2 py-0.5 text-[10px] font-medium text-white"><Crown className="h-2.5 w-2.5" /> Owner</span>
+                            <span className="inline-flex items-center gap-1 rounded-full bg-[var(--gradient-primary)] px-2 py-0.5 text-[10px] font-medium text-white">
+                              <Crown className="h-2.5 w-2.5" /> Owner
+                            </span>
                           )}
                           {p.is_manager && (
-                            <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/50 bg-amber-400/15 px-2 py-0.5 text-[10px] font-medium text-amber-300"><Shield className="h-2.5 w-2.5" /> Manager</span>
+                            <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/50 bg-amber-400/15 px-2 py-0.5 text-[10px] font-medium text-amber-300">
+                              <Shield className="h-2.5 w-2.5" /> Manager
+                            </span>
                           )}
                           {p.is_banned && (
-                            <span className="inline-flex items-center gap-1 rounded-full border border-rose-500/50 bg-rose-500/15 px-2 py-0.5 text-[10px] font-medium text-rose-300" title={p.ban_reason ?? "Banned"}><Ban className="h-2.5 w-2.5" /> Banned</span>
+                            <span
+                              className="inline-flex items-center gap-1 rounded-full border border-rose-500/50 bg-rose-500/15 px-2 py-0.5 text-[10px] font-medium text-rose-300"
+                              title={p.ban_reason ?? "Banned"}
+                            >
+                              <Ban className="h-2.5 w-2.5" /> Banned
+                            </span>
                           )}
                           {!p.is_owner && !p.is_manager && !p.is_banned && (
-                            <span className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] text-muted-foreground">User</span>
+                            <span className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] text-muted-foreground">
+                              User
+                            </span>
                           )}
                         </div>
                       </td>
-                      <td className="py-3 pr-4 text-xs text-muted-foreground">{new Date(p.created_at).toLocaleDateString()}</td>
+                      <td className="py-3 pr-4 text-xs text-muted-foreground">
+                        {new Date(p.created_at).toLocaleDateString()}
+                      </td>
                       <td className="py-3 pr-4">
                         <div className="flex flex-wrap items-center justify-end gap-1.5">
-                          <button disabled={busyId === p.id} onClick={() => setGiftDialog(p)} className="inline-flex h-8 items-center gap-1 rounded-lg bg-emerald-500/20 px-2.5 text-xs text-emerald-300 transition hover:bg-emerald-500/30 disabled:opacity-50">
+                          <button
+                            disabled={busyId === p.id}
+                            onClick={() => setGiftDialog(p)}
+                            className="inline-flex h-8 items-center gap-1 rounded-lg bg-emerald-500/20 px-2.5 text-xs text-emerald-300 transition hover:bg-emerald-500/30 disabled:opacity-50"
+                          >
                             <Gift className="h-3 w-3" /> Gift
                           </button>
-                          <button disabled={busyId === p.id} onClick={() => adjustCredits(p.id, 100, "Quick grant +100")} className="inline-flex h-8 items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-2.5 text-xs transition hover:bg-white/10 disabled:opacity-50"><Plus className="h-3 w-3" /> 100</button>
-                          <button disabled={busyId === p.id} onClick={() => adjustCredits(p.id, 1000, "Quick grant +1000")} className="inline-flex h-8 items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-2.5 text-xs transition hover:bg-white/10 disabled:opacity-50"><Plus className="h-3 w-3" /> 1k</button>
-                          <button disabled={busyId === p.id} onClick={() => setUnlimited(p.id)} className="inline-flex h-8 items-center gap-1 rounded-lg bg-[var(--gradient-primary)] px-2.5 text-xs text-white transition hover:opacity-95 disabled:opacity-50" title="Set unlimited"><Crown className="h-3 w-3" /> ∞</button>
-                          <button disabled={busyId === p.id} onClick={() => toggleManager(p)} className={`inline-flex h-8 items-center gap-1 rounded-lg px-2.5 text-xs transition disabled:opacity-50 ${p.is_manager ? "bg-amber-400/30 text-amber-100 hover:bg-amber-400/40" : "border border-amber-400/40 text-amber-300 hover:bg-amber-400/10"}`} title={p.is_manager ? "Remove manager" : "Promote to manager"}>
+                          <button
+                            disabled={busyId === p.id}
+                            onClick={() => adjustCredits(p.id, 100, "Quick grant +100")}
+                            className="inline-flex h-8 items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-2.5 text-xs transition hover:bg-white/10 disabled:opacity-50"
+                          >
+                            <Plus className="h-3 w-3" /> 100
+                          </button>
+                          <button
+                            disabled={busyId === p.id}
+                            onClick={() => adjustCredits(p.id, 1000, "Quick grant +1000")}
+                            className="inline-flex h-8 items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-2.5 text-xs transition hover:bg-white/10 disabled:opacity-50"
+                          >
+                            <Plus className="h-3 w-3" /> 1k
+                          </button>
+                          <button
+                            disabled={busyId === p.id}
+                            onClick={() => setUnlimited(p.id)}
+                            className="inline-flex h-8 items-center gap-1 rounded-lg bg-[var(--gradient-primary)] px-2.5 text-xs text-white transition hover:opacity-95 disabled:opacity-50"
+                            title="Set unlimited"
+                          >
+                            <Crown className="h-3 w-3" /> ∞
+                          </button>
+                          <button
+                            disabled={busyId === p.id}
+                            onClick={() => toggleManager(p)}
+                            className={`inline-flex h-8 items-center gap-1 rounded-lg px-2.5 text-xs transition disabled:opacity-50 ${p.is_manager ? "bg-amber-400/30 text-amber-100 hover:bg-amber-400/40" : "border border-amber-400/40 text-amber-300 hover:bg-amber-400/10"}`}
+                            title={p.is_manager ? "Remove manager" : "Promote to manager"}
+                          >
                             <Shield className="h-3 w-3" /> {p.is_manager ? "Mgr ✓" : "Mgr"}
                           </button>
-                          <button disabled={busyId === p.id} onClick={() => toggleOwner(p)} className={`inline-flex h-8 items-center gap-1 rounded-lg px-2.5 text-xs transition disabled:opacity-50 ${p.is_owner ? "bg-fuchsia-400/30 text-white hover:bg-fuchsia-400/40" : "border border-fuchsia-400/40 text-fuchsia-300 hover:bg-fuchsia-400/10"}`} title={p.is_owner ? "Demote from owner" : "Promote to owner"}>
+                          <button
+                            disabled={busyId === p.id}
+                            onClick={() => toggleOwner(p)}
+                            className={`inline-flex h-8 items-center gap-1 rounded-lg px-2.5 text-xs transition disabled:opacity-50 ${p.is_owner ? "bg-fuchsia-400/30 text-white hover:bg-fuchsia-400/40" : "border border-fuchsia-400/40 text-fuchsia-300 hover:bg-fuchsia-400/10"}`}
+                            title={p.is_owner ? "Demote from owner" : "Promote to owner"}
+                          >
                             <ShieldCheck className="h-3 w-3" /> {p.is_owner ? "Own ✓" : "Own"}
                           </button>
-                          <button disabled={busyId === p.id} onClick={() => toggleBan(p)} className={`inline-flex h-8 items-center gap-1 rounded-lg px-2.5 text-xs transition disabled:opacity-50 ${p.is_banned ? "bg-rose-500/30 text-rose-100 hover:bg-rose-500/40" : "border border-rose-500/40 text-rose-300 hover:bg-rose-500/10"}`} title={p.is_banned ? "Unban user" : "Ban user"}>
+                          <button
+                            disabled={busyId === p.id}
+                            onClick={() => toggleBan(p)}
+                            className={`inline-flex h-8 items-center gap-1 rounded-lg px-2.5 text-xs transition disabled:opacity-50 ${p.is_banned ? "bg-rose-500/30 text-rose-100 hover:bg-rose-500/40" : "border border-rose-500/40 text-rose-300 hover:bg-rose-500/10"}`}
+                            title={p.is_banned ? "Unban user" : "Ban user"}
+                          >
                             <Ban className="h-3 w-3" /> {p.is_banned ? "Unban" : "Ban"}
                           </button>
-                          <button disabled={busyId === p.id} onClick={() => wipeGenerations(p)} className="inline-flex h-8 items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-2.5 text-xs text-muted-foreground transition hover:bg-rose-500/10 hover:text-rose-300 disabled:opacity-50" title="Wipe all generations">
+                          <button
+                            disabled={busyId === p.id}
+                            onClick={() => wipeGenerations(p)}
+                            className="inline-flex h-8 items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-2.5 text-xs text-muted-foreground transition hover:bg-rose-500/10 hover:text-rose-300 disabled:opacity-50"
+                            title="Wipe all generations"
+                          >
                             <Trash2 className="h-3 w-3" /> Wipe
                           </button>
-                          {busyId === p.id && <Loader2 className="h-3 w-3 animate-spin text-primary" />}
+                          {busyId === p.id && (
+                            <Loader2 className="h-3 w-3 animate-spin text-primary" />
+                          )}
                         </div>
                       </td>
                     </tr>
                   ))}
                   {filtered.length === 0 && (
-                    <tr><td colSpan={5} className="py-12 text-center text-sm text-muted-foreground">No users found.</td></tr>
+                    <tr>
+                      <td colSpan={5} className="py-12 text-center text-sm text-muted-foreground">
+                        No users found.
+                      </td>
+                    </tr>
                   )}
                 </tbody>
               </table>
@@ -668,35 +969,65 @@ function AdminPage() {
 
       {/* Gift dialog */}
       {giftDialog && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 px-4" onClick={() => setGiftDialog(null)}>
-          <div onClick={(e) => e.stopPropagation()} className="glass w-full max-w-sm rounded-3xl p-6 shadow-[var(--shadow-elegant)]">
+        <div
+          className="fixed inset-0 z-50 grid place-items-center bg-black/70 px-4"
+          onClick={() => setGiftDialog(null)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="glass w-full max-w-sm rounded-3xl p-6 shadow-[var(--shadow-elegant)]"
+          >
             <div className="mb-4 flex items-center gap-3">
-              <div className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-500/20"><Gift className="h-5 w-5 text-emerald-300" /></div>
+              <div className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-500/20">
+                <Gift className="h-5 w-5 text-emerald-300" />
+              </div>
               <div>
                 <h3 className="font-display text-lg font-semibold">Gift credits</h3>
                 <p className="text-xs text-muted-foreground">to {giftDialog.email}</p>
               </div>
             </div>
             <label className="text-xs text-muted-foreground">Amount (use negative to remove)</label>
-            <input type="number" value={giftAmount} onChange={(e) => setGiftAmount(e.target.value)} className="mt-1 h-11 w-full rounded-xl border border-white/10 bg-black/30 px-4 text-sm focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20" />
+            <input
+              type="number"
+              value={giftAmount}
+              onChange={(e) => setGiftAmount(e.target.value)}
+              className="mt-1 h-11 w-full rounded-xl border border-white/10 bg-black/30 px-4 text-sm focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
             <div className="mt-2 flex flex-wrap gap-1.5">
               {[100, 500, 1000, 5000].map((n) => (
-                <button key={n} onClick={() => setGiftAmount(String(n))} className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs hover:bg-white/10">+{n.toLocaleString()}</button>
+                <button
+                  key={n}
+                  onClick={() => setGiftAmount(String(n))}
+                  className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs hover:bg-white/10"
+                >
+                  +{n.toLocaleString()}
+                </button>
               ))}
             </div>
             <div className="mt-5 flex gap-2">
-              <button onClick={() => setGiftDialog(null)} className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm hover:bg-white/10">Cancel</button>
+              <button
+                onClick={() => setGiftDialog(null)}
+                className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm hover:bg-white/10"
+              >
+                Cancel
+              </button>
               <button
                 onClick={async () => {
                   const amt = parseInt(giftAmount, 10);
                   if (!isNaN(amt) && amt !== 0) {
                     const target = giftDialog;
                     setGiftDialog(null);
-                    await adjustCredits(target.id, amt, `Gift ${amt >= 0 ? "+" : ""}${amt} from admin`);
+                    await adjustCredits(
+                      target.id,
+                      amt,
+                      `Gift ${amt >= 0 ? "+" : ""}${amt} from admin`,
+                    );
                   }
                 }}
                 className="flex-1 rounded-xl bg-[var(--gradient-primary)] px-4 py-2.5 text-sm font-medium text-white hover:opacity-95"
-              >Send gift</button>
+              >
+                Send gift
+              </button>
             </div>
           </div>
         </div>

@@ -40,7 +40,6 @@ async function openExternalUrl(url: string, label: string) {
   }
 }
 
-
 function LocalServerPanel() {
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; msg: string } | null>(null);
@@ -52,7 +51,10 @@ function LocalServerPanel() {
       const { testLocal3DServer } = await import("@/lib/local-3d.functions");
       const res = await testLocal3DServer();
       if (res.ok) {
-        setResult({ ok: true, msg: `${res.message}${res.version ? ` (Gradio ${res.version})` : ""}` });
+        setResult({
+          ok: true,
+          msg: `${res.message}${res.version ? ` (Gradio ${res.version})` : ""}`,
+        });
         toast.success("Local 3D server online");
       } else {
         setResult({ ok: false, msg: res.error });
@@ -73,11 +75,16 @@ function LocalServerPanel() {
         <div>
           <h2 className="text-lg font-semibold">Local 3D server (ngrok)</h2>
           <p className="text-xs text-muted-foreground">
-            Pings <code>LOCAL_3D_API_URL/config</code> or <code>LOCAL_3D_API_URL/health</code> to verify your local 3D server is reachable.
+            Pings <code>LOCAL_3D_API_URL/config</code> or <code>LOCAL_3D_API_URL/health</code> to
+            verify your local 3D server is reachable.
           </p>
         </div>
         <Button onClick={runTest} size="sm" disabled={busy} className="gap-2">
-          {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+          {busy ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <CheckCircle2 className="w-4 h-4" />
+          )}
           Test Local 3D Server
         </Button>
       </div>
@@ -96,21 +103,30 @@ function LocalServerPanel() {
   );
 }
 
-
 export const Route = createFileRoute("/settings/backend")({
   head: () => ({
     meta: [
       { title: "3D Backend Settings — KingDavez Studios (Beta)" },
-      { name: "description", content: "Switch between TripoSR, TRELLIS, Hunyuan3D, and other AI 3D generation backends. Owner-only infrastructure configuration panel." },
+      {
+        name: "description",
+        content:
+          "Switch between TripoSR, TRELLIS, Hunyuan3D, and other AI 3D generation backends. Owner-only infrastructure configuration panel.",
+      },
       { name: "robots", content: "noindex,nofollow" },
-    { name: "twitter:description", content: "Owner-only 3D generation backend configuration panel." },
-    { name: "twitter:title", content: "Backend Settings — KingDavez Studios" },
-    { name: "twitter:card", content: "summary" },
-    { property: "og:url", content: "https://kingdavez.click/settings/backend" },
-    { property: "og:description", content: "Owner-only 3D generation backend configuration panel." },
-    { property: "og:title", content: "Backend Settings — KingDavez Studios" },
+      {
+        name: "twitter:description",
+        content: "Owner-only 3D generation backend configuration panel.",
+      },
+      { name: "twitter:title", content: "Backend Settings — KingDavez Studios" },
+      { name: "twitter:card", content: "summary" },
+      { property: "og:url", content: "https://kingdavez.click/settings/backend" },
+      {
+        property: "og:description",
+        content: "Owner-only 3D generation backend configuration panel.",
+      },
+      { property: "og:title", content: "Backend Settings — KingDavez Studios" },
     ],
-  links: [{ rel: "canonical", href: "https://kingdavez.click/settings/backend" }],
+    links: [{ rel: "canonical", href: "https://kingdavez.click/settings/backend" }],
   }),
   component: BackendSettingsPage,
 });
@@ -126,7 +142,9 @@ function BackendSettingsPage() {
     void openExternalUrl(cfg.spaceUrl, "Space");
   }, [cfg.spaceUrl]);
 
-  useEffect(() => { setCfg(getBackendConfig()); }, []);
+  useEffect(() => {
+    setCfg(getBackendConfig());
+  }, []);
 
   // Auto-fill the Space URL from the live LOCAL_3D_API_URL secret. Gated on
   // `session` so the server fn call goes out with a bearer token — otherwise
@@ -148,9 +166,13 @@ function BackendSettingsPage() {
           saveBackendConfig(next);
           return next;
         });
-      } catch { /* non-fatal */ }
+      } catch {
+        /* non-fatal */
+      }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [session]);
 
   if (authLoading) {
@@ -168,7 +190,8 @@ function BackendSettingsPage() {
           <Server className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
           <h1 className="text-2xl font-bold mb-2">Owner access only</h1>
           <p className="text-muted-foreground mb-6">
-            This page configures the underlying 3D generation infrastructure and is restricted to the workspace owner.
+            This page configures the underlying 3D generation infrastructure and is restricted to
+            the workspace owner.
           </p>
           <Link
             to="/profile"
@@ -213,18 +236,29 @@ function BackendSettingsPage() {
       //   ComfyUI    → /system_stats / /queue / /
       //   Local      → /gradio_api/info → /config
       const provider: "hf" | "comfyui" | "local" =
-        cfg.presetId === "auto" || cfg.presetId === "stable-fast-3d" || cfg.presetId === "triposr-official" || cfg.presetId === "triposr"
+        cfg.presetId === "auto" ||
+        cfg.presetId === "stable-fast-3d" ||
+        cfg.presetId === "triposr-official" ||
+        cfg.presetId === "triposr"
           ? "hf"
           : cfg.presetId === "local-comfyui"
-          ? "comfyui"
-          : "local";
+            ? "comfyui"
+            : "local";
       const res = await testGradioSpace({
         data: { spaceUrl: cfg.spaceUrl, apiName: cfg.apiName, provider },
       });
       if (res.ok) {
         setTestResult({ ok: true, msg: res.message });
       } else {
-        setTestResult({ ok: false, msg: ("error" in res && res.error) ? res.error : ("message" in res ? res.message : "Connection failed") });
+        setTestResult({
+          ok: false,
+          msg:
+            "error" in res && res.error
+              ? res.error
+              : "message" in res
+                ? res.message
+                : "Connection failed",
+        });
       }
     } catch (e) {
       setTestResult({ ok: false, msg: e instanceof Error ? e.message : "Connection failed" });
@@ -250,19 +284,11 @@ function BackendSettingsPage() {
           <h1 className="text-3xl font-bold">3D Backend</h1>
         </div>
         <p className="text-muted-foreground mb-8">
-          Connect your own local TripoSR server via an ngrok / Cloudflare tunnel. Settings are stored on this device.
+          Connect your own local TripoSR server via an ngrok / Cloudflare tunnel. Settings are
+          stored on this device.
         </p>
 
         <LocalServerPanel />
-
-
-
-
-
-
-
-
-
 
         <div className="space-y-6 rounded-2xl border border-border bg-card/50 p-6 backdrop-blur">
           <div className="space-y-2">
@@ -273,14 +299,14 @@ function BackendSettingsPage() {
               </SelectTrigger>
               <SelectContent>
                 {BACKEND_PRESETS.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.label}
+                  </SelectItem>
                 ))}
                 <SelectItem value="custom">Custom Space…</SelectItem>
               </SelectContent>
             </Select>
-            {activePreset && (
-              <p className="text-xs text-muted-foreground">{activePreset.notes}</p>
-            )}
+            {activePreset && <p className="text-xs text-muted-foreground">{activePreset.notes}</p>}
           </div>
 
           <div className="space-y-2">
@@ -292,8 +318,8 @@ function BackendSettingsPage() {
               onChange={(e) => setCfg({ ...cfg, spaceUrl: e.target.value, presetId: "custom" })}
             />
             <p className="text-xs text-muted-foreground">
-              Either the gradio host (<code>https://user-space.hf.space</code>) or the page URL
-              (<code>https://huggingface.co/spaces/user/space</code>).
+              Either the gradio host (<code>https://user-space.hf.space</code>) or the page URL (
+              <code>https://huggingface.co/spaces/user/space</code>).
             </p>
           </div>
 
@@ -306,7 +332,8 @@ function BackendSettingsPage() {
               onChange={(e) => setCfg({ ...cfg, apiName: e.target.value, presetId: "custom" })}
             />
             <p className="text-xs text-muted-foreground">
-              Find this in the Space's <strong>Use via API</strong> panel — must start with <code>/</code>.
+              Find this in the Space's <strong>Use via API</strong> panel — must start with{" "}
+              <code>/</code>.
             </p>
           </div>
 
@@ -319,9 +346,13 @@ function BackendSettingsPage() {
               onChange={(e) => setCfg({ ...cfg, extraArgs: e.target.value, presetId: "custom" })}
             />
             <p className="text-xs text-muted-foreground">
-              Appended after the image/prompt. Example: <code>[256]</code> for TripoSR mc_resolution.
+              Appended after the image/prompt. Example: <code>[256]</code> for TripoSR
+              mc_resolution.
               {cfg.extraArgs && (
-                <> Parsed as: <code>{JSON.stringify(resolveExtraArgs(cfg.extraArgs))}</code></>
+                <>
+                  {" "}
+                  Parsed as: <code>{JSON.stringify(resolveExtraArgs(cfg.extraArgs))}</code>
+                </>
               )}
             </p>
           </div>
@@ -330,8 +361,17 @@ function BackendSettingsPage() {
             <Button onClick={save} className="gap-2">
               <Save className="w-4 h-4" /> Save
             </Button>
-            <Button onClick={testConnection} variant="outline" className="gap-2" disabled={testing || !cfg.spaceUrl}>
-              {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+            <Button
+              onClick={testConnection}
+              variant="outline"
+              className="gap-2"
+              disabled={testing || !cfg.spaceUrl}
+            >
+              {testing ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <CheckCircle2 className="w-4 h-4" />
+              )}
               Test connection
             </Button>
             {cfg.spaceUrl && (

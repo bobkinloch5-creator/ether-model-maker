@@ -29,14 +29,7 @@ function buildResponse(row: GenerationRow) {
   const r = row.result_data ?? {};
 
   // Common URL fields that downstream pipelines may have written.
-  const modelUrl = pickString(
-    r,
-    "model_url",
-    "glb_url",
-    "mesh_url",
-    "download_url",
-    "result_url",
-  );
+  const modelUrl = pickString(r, "model_url", "glb_url", "mesh_url", "download_url", "result_url");
   const previewUrl = pickString(r, "preview_url", "thumbnail_url", "image_url");
   const textureUrl = pickString(r, "texture_url", "texture_png_url", "albedo_url");
   const downloadUrl = pickString(r, "download_url", "result_url") ?? modelUrl;
@@ -85,7 +78,9 @@ export const Route = createFileRoute("/api/public/v1/generations/$id")({
         if (UUID_RE.test(id)) {
           const { data, error } = await supabaseAdmin
             .from("generations")
-            .select("id, user_id, prompt, generation_type, status, result_data, credits_used, created_at")
+            .select(
+              "id, user_id, prompt, generation_type, status, result_data, credits_used, created_at",
+            )
             .eq("id", id)
             .eq("user_id", auth.user.userId)
             .maybeSingle();
@@ -103,7 +98,9 @@ export const Route = createFileRoute("/api/public/v1/generations/$id")({
 
         const { data, error } = await supabaseAdmin
           .from("generations")
-          .select("id, user_id, prompt, generation_type, status, result_data, credits_used, created_at")
+          .select(
+            "id, user_id, prompt, generation_type, status, result_data, credits_used, created_at",
+          )
           .eq("user_id", auth.user.userId)
           .or(orFilter)
           .order("created_at", { ascending: false })

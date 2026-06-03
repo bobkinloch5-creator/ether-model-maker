@@ -2,33 +2,42 @@
 // Server-side Supabase client with service role key - bypasses RLS.
 // Use this for admin operations in server functions and server routes only.
 // For user-authenticated queries (with RLS), use the auth middleware instead.
-import { createClient } from '@supabase/supabase-js';
-import type { Database } from './types';
+import { createClient } from "@supabase/supabase-js";
+import type { Database } from "./types";
 
 // Hardcoded fallback values (PUBLIC anon keys, safe as last resort)
-const FALLBACK_SUPABASE_URL = "https://uufwzownbmohsdctytiq.supabase.co";
-const FALLBACK_SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV1Znd6b3duYm1vaHNkY3R5dGlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MzMxMTUsImV4cCI6MjA5NTEwOTExNX0.E1CeHZ3U2t_PpgpLvVUbCOu03sCAs30GtcNT1AmVZrM";
+const FALLBACK_SUPABASE_URL = "https://kxvblxlyawnozipeehnl.supabase.co";
+const FALLBACK_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_j3SZg71aI6tBrOKP2sIMOQ_nOYb7Xp5";
 
 function createSupabaseAdminClient() {
-  const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || FALLBACK_SUPABASE_URL;
+  const SUPABASE_URL =
+    process.env.SUPABASE_URL ||
+    process.env.VITE_SUPABASE_URL ||
+    process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    FALLBACK_SUPABASE_URL;
   const SUPABASE_SERVICE_ROLE_KEY =
     process.env.SUPABASE_SERVICE_ROLE_KEY ||
     process.env.SUPABASE_PUBLISHABLE_KEY ||
+    process.env.SUPABASE_ANON_KEY ||
     process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.VITE_SUPABASE_ANON_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
     FALLBACK_SUPABASE_PUBLISHABLE_KEY;
 
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     const missing = [
-      ...(!SUPABASE_URL ? ['SUPABASE_URL'] : []),
-      ...(!SUPABASE_SERVICE_ROLE_KEY ? ['SUPABASE_SERVICE_ROLE_KEY'] : []),
+      ...(!SUPABASE_URL ? ["SUPABASE_URL"] : []),
+      ...(!SUPABASE_SERVICE_ROLE_KEY ? ["SUPABASE_SERVICE_ROLE_KEY"] : []),
     ];
-    const message = `Missing Supabase environment variable(s): ${missing.join(', ')}. Check your .env file or Lovable Supabase connection.`;
+    const message = `Missing Supabase environment variable(s): ${missing.join(", ")}. Check your .env file or Lovable Supabase connection.`;
     console.error(`[Supabase] ${message}`);
     throw new Error(message);
   }
 
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    console.warn("[Supabase] SUPABASE_SERVICE_ROLE_KEY is missing. Falling back to publishable key for local testing. Admin functions (e.g. bypassing RLS) may fail unless configured.");
+    console.warn(
+      "[Supabase] SUPABASE_SERVICE_ROLE_KEY is missing. Falling back to publishable key for local testing. Admin functions (e.g. bypassing RLS) may fail unless configured.",
+    );
   }
 
   return createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
@@ -36,7 +45,7 @@ function createSupabaseAdminClient() {
       storage: undefined,
       persistSession: false,
       autoRefreshToken: false,
-    }
+    },
   });
 }
 

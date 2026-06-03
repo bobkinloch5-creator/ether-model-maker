@@ -20,9 +20,13 @@ export const Route = createFileRoute("/integrations/blender")({
           "One-file Python add-on. Type a prompt in Blender, get a fully-imported 3D model in your scene.",
       },
       { property: "og:url", content: "https://kingdavez.click/integrations/blender" },
-    { name: "twitter:card", content: "summary_large_image" },
-    { name: "twitter:title", content: "Blender — Import AI 3D Models (GLB/FBX)" },
-    { name: "twitter:description", content: "Import AI-generated GLB and FBX models into Blender with full PBR material support." },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Blender — Import AI 3D Models (GLB/FBX)" },
+      {
+        name: "twitter:description",
+        content:
+          "Import AI-generated GLB and FBX models into Blender with full PBR material support.",
+      },
     ],
     links: [{ rel: "canonical", href: "https://kingdavez.click/integrations/blender" }],
   }),
@@ -76,7 +80,10 @@ function BlenderPage() {
     <div className="min-h-screen bg-background text-foreground">
       <Header />
       <main className="mx-auto max-w-3xl px-4 py-16">
-        <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6"
+        >
           <ArrowLeft className="h-4 w-4" /> Home
         </Link>
 
@@ -87,9 +94,9 @@ function BlenderPage() {
           Generate AI 3D inside Blender
         </h1>
         <p className="mt-3 text-muted-foreground">
-          A single-file Python add-on that puts a panel in Blender's 3D viewport.
-          Type a prompt → the generated GLB is downloaded and imported straight
-          into your scene, ready to sculpt, retopo, or bake.
+          A single-file Python add-on that puts a panel in Blender's 3D viewport. Type a prompt →
+          the generated GLB is downloaded and imported straight into your scene, ready to sculpt,
+          retopo, or bake.
         </p>
 
         <div className="mt-8 flex flex-wrap gap-3">
@@ -111,19 +118,43 @@ function BlenderPage() {
         <section className="mt-12">
           <h2 className="font-display text-2xl font-semibold">Install (60 seconds)</h2>
           <ol className="mt-4 space-y-3 list-decimal pl-5 text-sm text-muted-foreground">
-            <li>Download <code className="text-foreground">kingdavez_studios_addon.py</code> above.</li>
-            <li>In Blender: <code className="text-foreground">Edit → Preferences → Add-ons → Install…</code> and pick the file.</li>
-            <li>Enable <strong>KingDavez Studios — AI 3D Generator</strong>, expand it, and paste your API key from <Link to="/profile" className="underline">your profile</Link>.</li>
-            <li>In the 3D viewport press <code>N</code> to open the sidebar → <strong>KingDavez</strong> tab.</li>
-            <li>Type a prompt, hit <strong>Generate 3D Model</strong>. The GLB imports automatically when ready.</li>
+            <li>
+              Download <code className="text-foreground">kingdavez_studios_addon.py</code> above.
+            </li>
+            <li>
+              In Blender:{" "}
+              <code className="text-foreground">Edit → Preferences → Add-ons → Install…</code> and
+              pick the file.
+            </li>
+            <li>
+              Enable <strong>KingDavez Studios — AI 3D Generator</strong>, expand it, and paste your
+              API key from{" "}
+              <Link to="/profile" className="underline">
+                your profile
+              </Link>
+              .
+            </li>
+            <li>
+              In the 3D viewport press <code>N</code> to open the sidebar →{" "}
+              <strong>KingDavez</strong> tab.
+            </li>
+            <li>
+              Type a prompt, hit <strong>Generate 3D Model</strong>. The GLB imports automatically
+              when ready.
+            </li>
           </ol>
         </section>
 
         <section className="mt-12">
           <h2 className="font-display text-2xl font-semibold">What you get</h2>
           <ul className="mt-3 list-disc pl-5 space-y-2 text-sm text-muted-foreground">
-            <li>Native <code>.glb</code> import — materials, normals, and PBR maps wired up.</li>
-            <li>Non-blocking generation: Blender stays responsive while the model is queued, generated, and downloaded.</li>
+            <li>
+              Native <code>.glb</code> import — materials, normals, and PBR maps wired up.
+            </li>
+            <li>
+              Non-blocking generation: Blender stays responsive while the model is queued,
+              generated, and downloaded.
+            </li>
             <li>Works with the same credits as the web app — no separate billing.</li>
           </ul>
         </section>
@@ -139,20 +170,25 @@ function BlenderPage() {
             </button>
           </div>
           <pre className="mt-3 rounded-xl border border-white/10 bg-black/60 p-4 text-xs leading-relaxed overflow-x-auto font-mono text-emerald-200">
-{SNIPPET}
+            {SNIPPET}
           </pre>
           <p className="mt-2 text-xs text-muted-foreground">
-            Paste into Blender's <strong>Scripting</strong> tab to test without installing the add-on.
+            Paste into Blender's <strong>Scripting</strong> tab to test without installing the
+            add-on.
           </p>
         </section>
 
         <section className="mt-12 rounded-2xl border border-white/10 bg-white/5 p-6">
           <h3 className="font-display text-lg font-semibold">Endpoint reference</h3>
           <dl className="mt-3 grid grid-cols-[120px_1fr] gap-y-2 text-xs">
-            <dt className="text-muted-foreground">POST</dt><dd className="font-mono">/api/public/v1/generations</dd>
-            <dt className="text-muted-foreground">Auth</dt><dd className="font-mono">Authorization: Bearer kd_live_…</dd>
-            <dt className="text-muted-foreground">Body</dt><dd className="font-mono">{`{ prompt, type, source? }`}</dd>
-            <dt className="text-muted-foreground">Poll</dt><dd className="font-mono">GET /api/public/v1/generations?limit=1</dd>
+            <dt className="text-muted-foreground">POST</dt>
+            <dd className="font-mono">/api/public/v1/generations</dd>
+            <dt className="text-muted-foreground">Auth</dt>
+            <dd className="font-mono">Authorization: Bearer kd_live_…</dd>
+            <dt className="text-muted-foreground">Body</dt>
+            <dd className="font-mono">{`{ prompt, type, source? }`}</dd>
+            <dt className="text-muted-foreground">Poll</dt>
+            <dd className="font-mono">GET /api/public/v1/generations?limit=1</dd>
           </dl>
         </section>
       </main>

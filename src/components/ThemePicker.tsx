@@ -10,7 +10,9 @@ function hexToOklch(hex: string): string {
   const g = parseInt(m.slice(2, 4), 16) / 255;
   const b = parseInt(m.slice(4, 6), 16) / 255;
   const lin = (c: number) => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
-  const R = lin(r), G = lin(g), B = lin(b);
+  const R = lin(r),
+    G = lin(g),
+    B = lin(b);
   const l = Math.cbrt(0.4122214708 * R + 0.5363325363 * G + 0.0514459929 * B);
   const m2 = Math.cbrt(0.2119034982 * R + 0.6806995451 * G + 0.1073969566 * B);
   const s = Math.cbrt(0.0883024619 * R + 0.2817188376 * G + 0.6299787005 * B);
@@ -30,7 +32,13 @@ export function ThemePicker() {
 
   return (
     <>
-      <DraggableFab storageKey="fab-pos:theme" defaultRight={20} defaultBottom={20} size={48} zIndex={40}>
+      <DraggableFab
+        storageKey="fab-pos:theme"
+        defaultRight={20}
+        defaultBottom={20}
+        size={48}
+        zIndex={40}
+      >
         {({ onClickGuard }) => (
           <button
             onClick={onClickGuard(() => setOpen(true))}
@@ -51,7 +59,6 @@ export function ThemePicker() {
             onClick={(e) => e.stopPropagation()}
             className="absolute bottom-3 right-3 left-3 sm:left-auto sm:right-5 sm:bottom-5 sm:w-[340px] sm:max-w-[calc(100vw-2.5rem)] max-h-[85vh] overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-card p-5 shadow-2xl animate-scale-in"
           >
-
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Palette className="h-4 w-4 text-primary-glow" />
@@ -70,91 +77,114 @@ export function ThemePicker() {
               Core themes
             </p>
             <div className="grid grid-cols-2 gap-2">
-              {presets.filter((p) => p.group !== "Seasonal").map((p) => (
-                <button
-                  key={p.id}
-                  onClick={() => setPreset(p.id)}
-                  className={`flex items-center gap-2 rounded-xl border p-2 text-left text-xs transition ${
-                    p.id === preset.id
-                      ? "border-primary/60 bg-primary/10"
-                      : "border-white/10 bg-white/5 hover:border-white/20"
-                  }`}
-                >
-                  <div className="flex -space-x-1">
-                    <span className="h-5 w-5 rounded-full border border-black/20" style={{ background: `oklch(${p.background})` }} />
-                    <span className="h-5 w-5 rounded-full border border-black/20" style={{ background: `oklch(${p.primary})` }} />
-                    <span className="h-5 w-5 rounded-full border border-black/20" style={{ background: `oklch(${p.primaryGlow})` }} />
-                  </div>
-                  <span className="flex-1 truncate">{p.name}</span>
-                  {p.id === preset.id && <Check className="h-3.5 w-3.5 text-primary-glow" />}
-                </button>
-              ))}
+              {presets
+                .filter((p) => p.group !== "Seasonal")
+                .map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => setPreset(p.id)}
+                    className={`flex items-center gap-2 rounded-xl border p-2 text-left text-xs transition ${
+                      p.id === preset.id
+                        ? "border-primary/60 bg-primary/10"
+                        : "border-white/10 bg-white/5 hover:border-white/20"
+                    }`}
+                  >
+                    <div className="flex -space-x-1">
+                      <span
+                        className="h-5 w-5 rounded-full border border-black/20"
+                        style={{ background: `oklch(${p.background})` }}
+                      />
+                      <span
+                        className="h-5 w-5 rounded-full border border-black/20"
+                        style={{ background: `oklch(${p.primary})` }}
+                      />
+                      <span
+                        className="h-5 w-5 rounded-full border border-black/20"
+                        style={{ background: `oklch(${p.primaryGlow})` }}
+                      />
+                    </div>
+                    <span className="flex-1 truncate">{p.name}</span>
+                    {p.id === preset.id && <Check className="h-3.5 w-3.5 text-primary-glow" />}
+                  </button>
+                ))}
             </div>
 
             <p className="text-[11px] uppercase tracking-wider text-muted-foreground mt-5 mb-2 flex items-center gap-1.5">
               <span>Seasonal & holiday</span>
-              <span className="text-[10px] normal-case tracking-normal text-primary-glow/80">— with wallpaper</span>
+              <span className="text-[10px] normal-case tracking-normal text-primary-glow/80">
+                — with wallpaper
+              </span>
             </p>
             <div className="grid grid-cols-2 gap-2">
-              {presets.filter((p) => p.group === "Seasonal").map((p) => (
-                <button
-                  key={p.id}
-                  onClick={() => setPreset(p.id)}
-                  className={`group relative overflow-hidden rounded-xl border text-left transition ${
-                    p.id === preset.id
-                      ? "border-primary/60 ring-2 ring-primary/40"
-                      : "border-white/10 hover:border-white/30"
-                  }`}
-                  style={{
-                    backgroundImage: p.wallpaper ? `url(${p.wallpaper})` : undefined,
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
-                    minHeight: 64,
-                  }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-                  <div className="relative flex items-end justify-between gap-1 p-2 h-full min-h-[64px]">
-                    <span className="text-[11px] font-medium text-white drop-shadow flex items-center gap-1">
-                      <span className="text-sm">{p.icon}</span>
-                      {p.name}
-                    </span>
-                    {p.id === preset.id && <Check className="h-3.5 w-3.5 text-white drop-shadow" />}
-                  </div>
-                </button>
-              ))}
+              {presets
+                .filter((p) => p.group === "Seasonal")
+                .map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => setPreset(p.id)}
+                    className={`group relative overflow-hidden rounded-xl border text-left transition ${
+                      p.id === preset.id
+                        ? "border-primary/60 ring-2 ring-primary/40"
+                        : "border-white/10 hover:border-white/30"
+                    }`}
+                    style={{
+                      backgroundImage: p.wallpaper ? `url(${p.wallpaper})` : undefined,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      minHeight: 64,
+                    }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                    <div className="relative flex items-end justify-between gap-1 p-2 h-full min-h-[64px]">
+                      <span className="text-[11px] font-medium text-white drop-shadow flex items-center gap-1">
+                        <span className="text-sm">{p.icon}</span>
+                        {p.name}
+                      </span>
+                      {p.id === preset.id && (
+                        <Check className="h-3.5 w-3.5 text-white drop-shadow" />
+                      )}
+                    </div>
+                  </button>
+                ))}
             </div>
 
             <p className="text-[11px] uppercase tracking-wider text-muted-foreground mt-5 mb-2 flex items-center gap-1.5">
               <span>Scenic & atmosphere</span>
-              <span className="text-[10px] normal-case tracking-normal text-primary-glow/80">— with wallpaper</span>
+              <span className="text-[10px] normal-case tracking-normal text-primary-glow/80">
+                — with wallpaper
+              </span>
             </p>
             <div className="grid grid-cols-2 gap-2">
-              {presets.filter((p) => p.group === "Scenic").map((p) => (
-                <button
-                  key={p.id}
-                  onClick={() => setPreset(p.id)}
-                  className={`group relative overflow-hidden rounded-xl border text-left transition ${
-                    p.id === preset.id
-                      ? "border-primary/60 ring-2 ring-primary/40"
-                      : "border-white/10 hover:border-white/30"
-                  }`}
-                  style={{
-                    backgroundImage: p.wallpaper ? `url(${p.wallpaper})` : undefined,
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
-                    minHeight: 64,
-                  }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-                  <div className="relative flex items-end justify-between gap-1 p-2 h-full min-h-[64px]">
-                    <span className="text-[11px] font-medium text-white drop-shadow flex items-center gap-1">
-                      <span className="text-sm">{p.icon}</span>
-                      {p.name}
-                    </span>
-                    {p.id === preset.id && <Check className="h-3.5 w-3.5 text-white drop-shadow" />}
-                  </div>
-                </button>
-              ))}
+              {presets
+                .filter((p) => p.group === "Scenic")
+                .map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => setPreset(p.id)}
+                    className={`group relative overflow-hidden rounded-xl border text-left transition ${
+                      p.id === preset.id
+                        ? "border-primary/60 ring-2 ring-primary/40"
+                        : "border-white/10 hover:border-white/30"
+                    }`}
+                    style={{
+                      backgroundImage: p.wallpaper ? `url(${p.wallpaper})` : undefined,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      minHeight: 64,
+                    }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                    <div className="relative flex items-end justify-between gap-1 p-2 h-full min-h-[64px]">
+                      <span className="text-[11px] font-medium text-white drop-shadow flex items-center gap-1">
+                        <span className="text-sm">{p.icon}</span>
+                        {p.name}
+                      </span>
+                      {p.id === preset.id && (
+                        <Check className="h-3.5 w-3.5 text-white drop-shadow" />
+                      )}
+                    </div>
+                  </button>
+                ))}
             </div>
 
             <p className="text-[11px] uppercase tracking-wider text-muted-foreground mt-5 mb-2">

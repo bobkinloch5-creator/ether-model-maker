@@ -10,7 +10,16 @@ import {
 } from "@/lib/community.functions";
 import { ModelViewer } from "@/components/ModelViewer";
 import { ShareButtons } from "@/components/ShareButtons";
-import { ArrowLeft, Heart, MessageCircle, Loader2, Trash2, Send, Box, Download } from "lucide-react";
+import {
+  ArrowLeft,
+  Heart,
+  MessageCircle,
+  Loader2,
+  Trash2,
+  Send,
+  Box,
+  Download,
+} from "lucide-react";
 import { toast } from "sonner";
 
 type LoadedPost = {
@@ -85,7 +94,11 @@ function PostPage() {
   const handleLike = async () => {
     if (!post) return;
     const optimistic = !post.liked_by_me;
-    setPost({ ...post, liked_by_me: optimistic, likes_count: post.likes_count + (optimistic ? 1 : -1) });
+    setPost({
+      ...post,
+      liked_by_me: optimistic,
+      likes_count: post.likes_count + (optimistic ? 1 : -1),
+    });
     const res = await toggleCommunityLike({ data: { postId: post.id } });
     if (!res.ok) {
       setPost(post);
@@ -154,7 +167,9 @@ function PostPage() {
       <div className="min-h-screen grid place-items-center bg-background text-foreground p-6 text-center">
         <div>
           <h1 className="text-xl font-semibold">Post not found</h1>
-          <Link to="/community" className="text-sm text-primary-glow mt-2 inline-block">← Back to community</Link>
+          <Link to="/community" className="text-sm text-primary-glow mt-2 inline-block">
+            ← Back to community
+          </Link>
         </div>
       </div>
     );
@@ -165,7 +180,10 @@ function PostPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="mx-auto max-w-5xl px-4 py-8">
-        <Link to="/community" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-5">
+        <Link
+          to="/community"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-5"
+        >
           <ArrowLeft className="h-4 w-4" /> Community
         </Link>
 
@@ -177,14 +195,22 @@ function PostPage() {
                 <ModelViewer url={post.model_url} prompt={post.title} />
               </div>
             ) : post.image_url ? (
-              <img src={post.image_url} alt={post.title} className="w-full aspect-square object-cover" />
+              <img
+                src={post.image_url}
+                alt={post.title}
+                className="w-full aspect-square object-cover"
+              />
             ) : (
               <div className="aspect-square grid place-items-center text-muted-foreground">
                 <Box className="h-12 w-12" />
               </div>
             )}
             {post.image_url && post.model_url && (
-              <img src={post.image_url} alt="" className="w-full max-h-40 object-cover border-t border-white/10" />
+              <img
+                src={post.image_url}
+                alt=""
+                className="w-full max-h-40 object-cover border-t border-white/10"
+              />
             )}
           </div>
 
@@ -205,13 +231,18 @@ function PostPage() {
             </div>
 
             {post.description && (
-              <p className="text-sm text-muted-foreground whitespace-pre-wrap">{post.description}</p>
+              <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                {post.description}
+              </p>
             )}
 
             {post.tags.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
                 {post.tags.map((t) => (
-                  <span key={t} className="text-[11px] rounded-full bg-white/5 border border-white/10 px-2 py-0.5 text-muted-foreground">
+                  <span
+                    key={t}
+                    className="text-[11px] rounded-full bg-white/5 border border-white/10 px-2 py-0.5 text-muted-foreground"
+                  >
                     #{t}
                   </span>
                 ))}
@@ -222,7 +253,9 @@ function PostPage() {
               <button
                 onClick={handleLike}
                 className={`inline-flex h-10 items-center gap-1.5 rounded-full border border-white/10 px-4 text-sm transition ${
-                  post.liked_by_me ? "text-pink-400 bg-pink-500/10 border-pink-500/30" : "bg-white/5 hover:bg-white/10"
+                  post.liked_by_me
+                    ? "text-pink-400 bg-pink-500/10 border-pink-500/30"
+                    : "bg-white/5 hover:bg-white/10"
                 }`}
               >
                 <Heart className={`h-4 w-4 ${post.liked_by_me ? "fill-current" : ""}`} />
@@ -253,14 +286,16 @@ function PostPage() {
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs text-muted-foreground mr-1">Share:</span>
               <ShareButtons
-                url={typeof window !== "undefined" ? window.location.href : `https://kingdavez.click/community/${post.id}`}
+                url={
+                  typeof window !== "undefined"
+                    ? window.location.href
+                    : `https://kingdavez.click/community/${post.id}`
+                }
                 title={post.title}
                 description={post.description ?? undefined}
                 hashtags={["KingDavezStudios", "AI3D", ...post.tags].slice(0, 5)}
               />
             </div>
-
-
 
             {/* Comments */}
             <div className="mt-2">
@@ -279,7 +314,11 @@ function PostPage() {
                   className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[var(--gradient-primary)] text-white glow disabled:opacity-40"
                   aria-label="Post comment"
                 >
-                  {posting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                  {posting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
                 </button>
               </form>
               <div className="flex flex-col gap-3">
@@ -289,14 +328,20 @@ function PostPage() {
                   comments.map((c) => (
                     <div key={c.id} className="flex gap-2.5">
                       {c.author_avatar ? (
-                        <img src={c.author_avatar} alt="" className="h-7 w-7 rounded-full shrink-0" />
+                        <img
+                          src={c.author_avatar}
+                          alt=""
+                          className="h-7 w-7 rounded-full shrink-0"
+                        />
                       ) : (
                         <div className="h-7 w-7 rounded-full bg-white/10 shrink-0" />
                       )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 text-xs">
                           <span className="font-medium">{c.author_name ?? "anon"}</span>
-                          <span className="text-muted-foreground">{new Date(c.created_at).toLocaleString()}</span>
+                          <span className="text-muted-foreground">
+                            {new Date(c.created_at).toLocaleString()}
+                          </span>
                           {c.user_id === user.id && (
                             <button
                               onClick={() => handleDeleteComment(c.id)}

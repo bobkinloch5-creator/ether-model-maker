@@ -32,10 +32,17 @@ export function PendingPurchases({ onChange }: { onChange?: () => void }) {
     setLoading(false);
   };
 
-  useEffect(() => { void load(); }, []);
+  useEffect(() => {
+    void load();
+  }, []);
 
   const approve = async (p: PendingPurchase) => {
-    if (!confirm(`Approve ${p.credits} credits for ${p.email}?\n\nTransaction: ${p.transaction_id ?? "(none)"}\nAmount: $${Number(p.amount_paid).toFixed(2)}`)) return;
+    if (
+      !confirm(
+        `Approve ${p.credits} credits for ${p.email}?\n\nTransaction: ${p.transaction_id ?? "(none)"}\nAmount: $${Number(p.amount_paid).toFixed(2)}`,
+      )
+    )
+      return;
     setBusyId(p.id);
     setMsg(null);
     const { error } = await supabase.rpc("admin_approve_purchase", { _purchase_id: p.id });
@@ -49,11 +56,17 @@ export function PendingPurchases({ onChange }: { onChange?: () => void }) {
   };
 
   const reject = async (p: PendingPurchase) => {
-    const note = prompt(`Reject this purchase from ${p.email}?\n\nReason (optional, shown in audit log):`, "Could not verify PayPal transaction");
+    const note = prompt(
+      `Reject this purchase from ${p.email}?\n\nReason (optional, shown in audit log):`,
+      "Could not verify PayPal transaction",
+    );
     if (note === null) return;
     setBusyId(p.id);
     setMsg(null);
-    const { error } = await supabase.rpc("admin_reject_purchase", { _purchase_id: p.id, _note: note || undefined });
+    const { error } = await supabase.rpc("admin_reject_purchase", {
+      _purchase_id: p.id,
+      _note: note || undefined,
+    });
     if (error) setMsg(`Error: ${error.message}`);
     else {
       setMsg(`Rejected purchase from ${p.email}`);
@@ -83,14 +96,20 @@ export function PendingPurchases({ onChange }: { onChange?: () => void }) {
         </button>
       </div>
 
-      {msg && <div className="mb-3 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-xs">{msg}</div>}
+      {msg && (
+        <div className="mb-3 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-xs">
+          {msg}
+        </div>
+      )}
 
       {loading ? (
         <div className="grid place-items-center py-8 text-muted-foreground">
           <Loader2 className="h-6 w-6 animate-spin" />
         </div>
       ) : rows.length === 0 ? (
-        <p className="py-6 text-center text-sm text-muted-foreground">No pending purchases — you're all caught up.</p>
+        <p className="py-6 text-center text-sm text-muted-foreground">
+          No pending purchases — you're all caught up.
+        </p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -112,10 +131,15 @@ export function PendingPurchases({ onChange }: { onChange?: () => void }) {
                     <div className="font-medium">{p.display_name || p.email}</div>
                     <div className="text-xs text-muted-foreground">{p.email}</div>
                   </td>
-                  <td className="py-3 pr-3 font-semibold text-primary-glow">{p.credits.toLocaleString()}</td>
+                  <td className="py-3 pr-3 font-semibold text-primary-glow">
+                    {p.credits.toLocaleString()}
+                  </td>
                   <td className="py-3 pr-3">${Number(p.amount_paid).toFixed(2)}</td>
                   <td className="py-3 pr-3 text-xs text-muted-foreground">{p.payment_method}</td>
-                  <td className="py-3 pr-3 max-w-[200px] truncate font-mono text-xs" title={p.transaction_id ?? ""}>
+                  <td
+                    className="py-3 pr-3 max-w-[200px] truncate font-mono text-xs"
+                    title={p.transaction_id ?? ""}
+                  >
                     {p.transaction_id ?? "—"}
                   </td>
                   <td className="py-3 pr-3 text-xs text-muted-foreground">
@@ -128,7 +152,11 @@ export function PendingPurchases({ onChange }: { onChange?: () => void }) {
                         disabled={busyId === p.id}
                         className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-emerald-500/20 px-3 text-xs font-semibold text-emerald-300 hover:bg-emerald-500/30 disabled:opacity-50"
                       >
-                        {busyId === p.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
+                        {busyId === p.id ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <CheckCircle2 className="h-3.5 w-3.5" />
+                        )}
                         Approve
                       </button>
                       <button

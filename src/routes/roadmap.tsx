@@ -28,7 +28,10 @@ import {
 } from "lucide-react";
 
 function slugify(s: string) {
-  return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  return s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
 }
 
 export const Route = createFileRoute("/roadmap")({
@@ -46,9 +49,12 @@ export const Route = createFileRoute("/roadmap")({
         content: "Upcoming features and what's next for KingDavez Studios.",
       },
       { property: "og:url", content: "https://kingdavez.click/roadmap" },
-    { name: "twitter:card", content: "summary_large_image" },
-    { name: "twitter:title", content: "Product Roadmap — KingDavez Studios" },
-    { name: "twitter:description", content: "See what's next for KingDavez Studios AI 3D generation platform." },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Product Roadmap — KingDavez Studios" },
+      {
+        name: "twitter:description",
+        content: "See what's next for KingDavez Studios AI 3D generation platform.",
+      },
     ],
     links: [{ rel: "canonical", href: "https://kingdavez.click/roadmap" }],
   }),
@@ -276,8 +282,7 @@ const roadmapItems: RoadmapItem[] = [
   },
   {
     title: "Community Model Marketplace",
-    description:
-      "Browse, buy, and sell community-generated 3D models. Revenue split for creators.",
+    description: "Browse, buy, and sell community-generated 3D models. Revenue split for creators.",
     status: "planned",
     quarter: "Q4 2026",
     category: "Community",
@@ -820,7 +825,9 @@ function RoadmapPage() {
   useEffect(() => {
     let active = true;
     (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!active) return;
       const uid = session?.user?.id ?? null;
       setUserId(uid);
@@ -865,7 +872,8 @@ function RoadmapPage() {
     // optimistic
     setMyVotes((m) => {
       const n = new Set(m);
-      if (hasVoted) n.delete(slug); else n.add(slug);
+      if (hasVoted) n.delete(slug);
+      else n.add(slug);
       return n;
     });
     setVoteCounts((c) => ({ ...c, [slug]: (c[slug] ?? 0) + (hasVoted ? -1 : 1) }));
@@ -878,7 +886,8 @@ function RoadmapPage() {
       // revert
       setMyVotes((m) => {
         const n = new Set(m);
-        if (hasVoted) n.add(slug); else n.delete(slug);
+        if (hasVoted) n.add(slug);
+        else n.delete(slug);
         return n;
       });
       setVoteCounts((c) => ({ ...c, [slug]: (c[slug] ?? 0) + (hasVoted ? 1 : -1) }));
@@ -916,8 +925,8 @@ function RoadmapPage() {
             Product Roadmap
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            See where we're headed. Track what's shipping now, what's in
-            development, and what's planned for the future of AI 3D generation.
+            See where we're headed. Track what's shipping now, what's in development, and what's
+            planned for the future of AI 3D generation.
           </p>
 
           <div className="mt-8 flex flex-wrap justify-center gap-4">
@@ -941,7 +950,9 @@ function RoadmapPage() {
         {/* Vision Pillars */}
         <section className="mx-auto max-w-6xl px-4 mb-16">
           <div className="text-center mb-8">
-            <p className="text-sm font-medium text-primary-glow uppercase tracking-wider">The North Star</p>
+            <p className="text-sm font-medium text-primary-glow uppercase tracking-wider">
+              The North Star
+            </p>
             <h2 className="mt-2 font-display text-3xl sm:text-4xl font-semibold tracking-tight">
               Four pillars driving everything we build
             </h2>
@@ -966,7 +977,6 @@ function RoadmapPage() {
 
         {/* Stats */}
         <section className="mx-auto max-w-4xl px-4 mb-12">
-
           <div className="grid grid-cols-3 gap-4">
             <StatCard
               count={counts.shipped}
@@ -1009,10 +1019,10 @@ function RoadmapPage() {
                 {f === "all"
                   ? "All"
                   : f === "shipped"
-                  ? "Shipped"
-                  : f === "progress"
-                  ? "In Progress"
-                  : "Planned"}
+                    ? "Shipped"
+                    : f === "progress"
+                      ? "In Progress"
+                      : "Planned"}
               </button>
             ))}
 
@@ -1082,9 +1092,7 @@ function StatCard({
 }) {
   return (
     <div className="glass rounded-2xl p-6 text-center hover-lift border-white/10">
-      <div
-        className={`mx-auto mb-3 grid h-10 w-10 place-items-center rounded-xl ${bg} ${color}`}
-      >
+      <div className={`mx-auto mb-3 grid h-10 w-10 place-items-center rounded-xl ${bg} ${color}`}>
         <Icon className="h-5 w-5" />
       </div>
       <div className="text-3xl font-bold font-display">{count}</div>
@@ -1122,9 +1130,7 @@ function RoadmapCard({
     >
       {/* Top row */}
       <div className="flex items-start justify-between mb-4">
-        <div
-          className={`grid h-10 w-10 place-items-center rounded-xl bg-white/5 ${catColor}`}
-        >
+        <div className={`grid h-10 w-10 place-items-center rounded-xl bg-white/5 ${catColor}`}>
           <Icon className="h-5 w-5" />
         </div>
         <span
@@ -1153,9 +1159,7 @@ function RoadmapCard({
       </h3>
 
       {/* Description */}
-      <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-        {item.description}
-      </p>
+      <p className="text-sm text-muted-foreground leading-relaxed mb-4">{item.description}</p>
 
       {/* Vote */}
       <div className="mt-auto pt-3 border-t border-white/5 flex items-center justify-between">

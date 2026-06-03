@@ -1,5 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ShoppingBag, Users, MapPin, ArrowRight, Sparkles, Zap, Box, Image as ImageIcon, Mail, MessageSquare } from "lucide-react";
+import {
+  ShoppingBag,
+  Users,
+  MapPin,
+  ArrowRight,
+  Sparkles,
+  Zap,
+  Box,
+  Image as ImageIcon,
+  Mail,
+  MessageSquare,
+} from "lucide-react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { SL_LINKS } from "@/lib/second-life";
@@ -97,7 +108,10 @@ function SecondLifePage() {
                 AI mesh & textures, <span className="gradient-text">built for Second Life</span>
               </h1>
               <p className="mx-auto mt-5 max-w-2xl text-lg text-muted-foreground">
-                KingDavez Studios is an active Second Life brand. Generate low-LI, prim-friendly mesh from text or photos, then visit our in-world store on <span className="text-foreground">Thranduil</span>, shop the SL Marketplace, or join our group for freebies and notices.
+                KingDavez Studios is an active Second Life brand. Generate low-LI, prim-friendly
+                mesh from text or photos, then visit our in-world store on{" "}
+                <span className="text-foreground">Thranduil</span>, shop the SL Marketplace, or join
+                our group for freebies and notices.
               </p>
 
               <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
@@ -173,7 +187,8 @@ function SecondLifePage() {
                   <h3 className="mt-4 font-display text-lg font-semibold">{c.title}</h3>
                   <p className="mt-2 text-sm text-muted-foreground">{c.desc}</p>
                   <div className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-300">
-                    {c.cta} <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+                    {c.cta}{" "}
+                    <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
                   </div>
                 </a>
               ))}
@@ -187,14 +202,32 @@ function SecondLifePage() {
               Optimized for SL upload
             </h2>
             <p className="mx-auto mt-3 max-w-2xl text-center text-muted-foreground">
-              Every generation can be SL-tuned: low triangle count, sealed manifold, single-mesh silhouette, baked AO, prim-friendly footprint, and clean UV unwraps so your land impact stays low.
+              Every generation can be SL-tuned: low triangle count, sealed manifold, single-mesh
+              silhouette, baked AO, prim-friendly footprint, and clean UV unwraps so your land
+              impact stays low.
             </p>
             <div className="mt-10 grid gap-4 sm:grid-cols-2 md:grid-cols-4">
               {[
-                { icon: Box, title: "Low LI mesh", desc: "Triangle budgets and topology tuned for SL upload." },
-                { icon: ImageIcon, title: "Baked PBR textures", desc: "Diffuse, normal, roughness — Materials-ready." },
-                { icon: Zap, title: "Single manifold", desc: "Sealed bottoms, no internal geometry, no overlaps." },
-                { icon: Sparkles, title: "Full-perm options", desc: "Builder kits and base meshes you can ship." },
+                {
+                  icon: Box,
+                  title: "Low LI mesh",
+                  desc: "Triangle budgets and topology tuned for SL upload.",
+                },
+                {
+                  icon: ImageIcon,
+                  title: "Baked PBR textures",
+                  desc: "Diffuse, normal, roughness — Materials-ready.",
+                },
+                {
+                  icon: Zap,
+                  title: "Single manifold",
+                  desc: "Sealed bottoms, no internal geometry, no overlaps.",
+                },
+                {
+                  icon: Sparkles,
+                  title: "Full-perm options",
+                  desc: "Builder kits and base meshes you can ship.",
+                },
               ].map((f) => (
                 <div key={f.title} className="rounded-2xl border border-white/10 bg-white/5 p-5">
                   <div className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary/15 text-primary-glow">
@@ -229,13 +262,24 @@ function SecondLifePage() {
                   Generate 3D from inside Second Life
                 </h2>
                 <p className="mt-3 max-w-2xl text-muted-foreground">
-                  Drop our free LSL script into any prim. Touch it, type a
-                  prompt in chat, and a new model is queued against your
-                  KingDavez credits — no browser required.
+                  Drop our free LSL script into any prim. Touch it, type a prompt in chat, and a new
+                  model is queued against your KingDavez credits — no browser required.
                 </p>
                 <ol className="mt-6 space-y-2 text-sm text-muted-foreground list-decimal pl-5 marker:text-primary-glow">
-                  <li>Grab your API key from the <a href="/dashboard" className="text-primary-glow hover:underline">dashboard</a>.</li>
-                  <li>Paste it into the script's <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs text-foreground">API_KEY</code> field.</li>
+                  <li>
+                    Grab your API key from the{" "}
+                    <a href="/dashboard" className="text-primary-glow hover:underline">
+                      dashboard
+                    </a>
+                    .
+                  </li>
+                  <li>
+                    Paste it into the script's{" "}
+                    <code className="rounded bg-white/10 px-1.5 py-0.5 text-xs text-foreground">
+                      API_KEY
+                    </code>{" "}
+                    field.
+                  </li>
                   <li>Drop the script into any in-world object and touch it.</li>
                   <li>Results land in your dashboard ready to download as GLB / FBX / DAE.</li>
                 </ol>
@@ -265,7 +309,8 @@ function SecondLifePage() {
               Get in touch
             </h2>
             <p className="mx-auto mt-3 max-w-2xl text-center text-muted-foreground">
-              Questions about mesh, textures, or custom builds? Reach out directly — I'm active in-world and happy to help.
+              Questions about mesh, textures, or custom builds? Reach out directly — I'm active
+              in-world and happy to help.
             </p>
             <div className="mt-10 grid gap-4 sm:grid-cols-2 max-w-xl mx-auto">
               <a
@@ -278,7 +323,8 @@ function SecondLifePage() {
                 <h3 className="mt-4 font-display text-lg font-semibold">Email</h3>
                 <p className="mt-2 text-sm text-muted-foreground">kinlochdavid8@gmail.com</p>
                 <div className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary-glow">
-                  Send an email <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+                  Send an email{" "}
+                  <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
                 </div>
               </a>
               <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
@@ -287,7 +333,9 @@ function SecondLifePage() {
                 </div>
                 <h3 className="mt-4 font-display text-lg font-semibold">Second Life</h3>
                 <p className="mt-2 text-sm text-muted-foreground">In-world: Kingdavez</p>
-                <p className="mt-1 text-xs text-muted-foreground">IM me anytime — I'm online daily.</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  IM me anytime — I'm online daily.
+                </p>
               </div>
             </div>
           </div>

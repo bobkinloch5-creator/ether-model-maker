@@ -1,9 +1,21 @@
 import { useScrollAnimate } from "@/hooks/useScrollAnimate";
 
 const steps = [
-  { n: "01", title: "Prompt or upload", desc: "Describe the asset in plain English, or drop a reference image." },
-  { n: "02", title: "Generate & refine", desc: "AI returns a clean mesh with PBR materials. Iterate with edits and re-textures." },
-  { n: "03", title: "Export & ship", desc: "Download GLB / FBX / DAE optimized for Second Life, Unity or Unreal." },
+  {
+    n: "01",
+    title: "Prompt or upload",
+    desc: "Describe the asset in plain English, or drop a reference image.",
+  },
+  {
+    n: "02",
+    title: "Generate & refine",
+    desc: "AI returns a clean mesh with PBR materials. Iterate with edits and re-textures.",
+  },
+  {
+    n: "03",
+    title: "Export & ship",
+    desc: "Download GLB / FBX / DAE optimized for Second Life, Unity or Unreal.",
+  },
 ];
 
 export function Workflow() {
@@ -14,7 +26,6 @@ export function Workflow() {
     <section className="relative py-16 sm:py-32">
       <div className="mx-auto max-w-6xl px-4">
         <div className="grid gap-8 lg:gap-12 lg:grid-cols-[1fr_1.2fr] lg:items-center">
-
           <div
             ref={leftRef}
             className={`transition-all duration-700 ${
@@ -26,8 +37,8 @@ export function Workflow() {
               From idea to <span className="gradient-text">in-world</span> in three steps.
             </h2>
             <p className="mt-4 text-muted-foreground">
-              No DCC software required. No retopology drudgery. Just describe,
-              generate, and export — that simple.
+              No DCC software required. No retopology drudgery. Just describe, generate, and export
+              — that simple.
             </p>
           </div>
           <ol ref={rightRef} className="space-y-3">

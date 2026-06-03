@@ -1,21 +1,46 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
-import { listCommunityPosts, toggleCommunityLike, type CommunityPost } from "@/lib/community.functions";
-import { Heart, MessageCircle, Box, ImageIcon, ArrowLeft, Loader2, Sparkles, TrendingUp, Clock } from "lucide-react";
+import {
+  listCommunityPosts,
+  toggleCommunityLike,
+  type CommunityPost,
+} from "@/lib/community.functions";
+import {
+  Heart,
+  MessageCircle,
+  Box,
+  ImageIcon,
+  ArrowLeft,
+  Loader2,
+  Sparkles,
+  TrendingUp,
+  Clock,
+} from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/community")({
   head: () => ({
     meta: [
       { title: "Community Showcase — KingDavez Studios (Beta)" },
-      { name: "description", content: "Browse 3D models, textures, and concept art shared by the KingDavez community. Like, comment, and remix." },
+      {
+        name: "description",
+        content:
+          "Browse 3D models, textures, and concept art shared by the KingDavez community. Like, comment, and remix.",
+      },
       { property: "og:title", content: "Community Showcase — KingDavez Studios" },
-      { property: "og:description", content: "Browse 3D models and concept art shared by the community." },
+      {
+        property: "og:description",
+        content: "Browse 3D models and concept art shared by the community.",
+      },
       { property: "og:url", content: "https://kingdavez.click/community" },
-    { name: "twitter:card", content: "summary_large_image" },
-    { name: "twitter:title", content: "Community Gallery — KingDavez Studios" },
-    { name: "twitter:description", content: "Browse AI-generated 3D models and textures shared by the KingDavez Studios community." },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Community Gallery — KingDavez Studios" },
+      {
+        name: "twitter:description",
+        content:
+          "Browse AI-generated 3D models and textures shared by the KingDavez Studios community.",
+      },
     ],
     links: [{ rel: "canonical", href: "https://kingdavez.click/community" }],
   }),
@@ -49,9 +74,13 @@ function CommunityPage() {
     setPosts((prev) =>
       prev.map((p) =>
         p.id === post.id
-          ? { ...p, liked_by_me: !p.liked_by_me, likes_count: p.likes_count + (p.liked_by_me ? -1 : 1) }
-          : p
-      )
+          ? {
+              ...p,
+              liked_by_me: !p.liked_by_me,
+              likes_count: p.likes_count + (p.liked_by_me ? -1 : 1),
+            }
+          : p,
+      ),
     );
     const res = await toggleCommunityLike({ data: { postId: post.id } });
     if (!res.ok) {
@@ -60,8 +89,8 @@ function CommunityPage() {
         prev.map((p) =>
           p.id === post.id
             ? { ...p, liked_by_me: post.liked_by_me, likes_count: post.likes_count }
-            : p
-        )
+            : p,
+        ),
       );
       toast.error("Like failed", { description: res.error });
     }
@@ -78,7 +107,10 @@ function CommunityPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="mx-auto max-w-7xl px-4 py-10">
-        <Link to="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6">
+        <Link
+          to="/dashboard"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6"
+        >
           <ArrowLeft className="h-4 w-4" /> Dashboard
         </Link>
 
@@ -88,7 +120,9 @@ function CommunityPage() {
               <Sparkles className="h-7 w-7 text-primary-glow" />
               Community
             </h1>
-            <p className="text-muted-foreground mt-1 text-sm">Share your generations and explore what others are creating.</p>
+            <p className="text-muted-foreground mt-1 text-sm">
+              Share your generations and explore what others are creating.
+            </p>
           </div>
           <div className="flex items-center gap-2">
             <div className="inline-flex rounded-full border border-white/10 bg-white/5 p-1">
@@ -122,7 +156,9 @@ function CommunityPage() {
           <div className="rounded-2xl border border-white/10 bg-white/5 p-12 text-center">
             <Sparkles className="h-10 w-10 text-primary-glow mx-auto mb-3" />
             <h2 className="text-lg font-medium">Nothing here yet</h2>
-            <p className="text-sm text-muted-foreground mt-1 mb-4">Be the first to share something with the community.</p>
+            <p className="text-sm text-muted-foreground mt-1 mb-4">
+              Be the first to share something with the community.
+            </p>
             <Link
               to="/generate"
               className="inline-flex h-10 items-center gap-1.5 rounded-full bg-[var(--gradient-primary)] px-4 text-sm font-medium text-white glow"
@@ -137,7 +173,11 @@ function CommunityPage() {
                 key={post.id}
                 className="group rounded-2xl border border-white/10 bg-white/5 overflow-hidden hover:bg-white/10 transition flex flex-col"
               >
-                <Link to="/community/$postId" params={{ postId: post.id }} className="block aspect-square bg-black/40 relative overflow-hidden">
+                <Link
+                  to="/community/$postId"
+                  params={{ postId: post.id }}
+                  className="block aspect-square bg-black/40 relative overflow-hidden"
+                >
                   {post.image_url ? (
                     <img
                       src={post.image_url}
@@ -162,7 +202,11 @@ function CommunityPage() {
                   )}
                 </Link>
                 <div className="p-3 flex flex-col gap-2 flex-1">
-                  <Link to="/community/$postId" params={{ postId: post.id }} className="font-medium text-sm line-clamp-2 hover:text-primary-glow transition">
+                  <Link
+                    to="/community/$postId"
+                    params={{ postId: post.id }}
+                    className="font-medium text-sm line-clamp-2 hover:text-primary-glow transition"
+                  >
                     {post.title}
                   </Link>
                   <div className="flex items-center justify-between mt-auto pt-1">
@@ -172,7 +216,9 @@ function CommunityPage() {
                       ) : (
                         <div className="h-5 w-5 rounded-full bg-white/10" />
                       )}
-                      <span className="text-xs text-muted-foreground truncate">{post.author_name ?? "anon"}</span>
+                      <span className="text-xs text-muted-foreground truncate">
+                        {post.author_name ?? "anon"}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <button
@@ -180,10 +226,16 @@ function CommunityPage() {
                         className={`inline-flex items-center gap-1 transition ${post.liked_by_me ? "text-pink-400" : "hover:text-foreground"}`}
                         aria-label={post.liked_by_me ? "Unlike" : "Like"}
                       >
-                        <Heart className={`h-3.5 w-3.5 ${post.liked_by_me ? "fill-current" : ""}`} />
+                        <Heart
+                          className={`h-3.5 w-3.5 ${post.liked_by_me ? "fill-current" : ""}`}
+                        />
                         {post.likes_count}
                       </button>
-                      <Link to="/community/$postId" params={{ postId: post.id }} className="inline-flex items-center gap-1 hover:text-foreground">
+                      <Link
+                        to="/community/$postId"
+                        params={{ postId: post.id }}
+                        className="inline-flex items-center gap-1 hover:text-foreground"
+                      >
                         <MessageCircle className="h-3.5 w-3.5" />
                         {post.comments_count}
                       </Link>

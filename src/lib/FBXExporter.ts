@@ -38,7 +38,7 @@ export class FBXExporter {
       }
     });
 
-    const vStr = vertices.map(v => v.toFixed(4)).join(",");
+    const vStr = vertices.map((v) => v.toFixed(4)).join(",");
     const iStr = indices.join(",");
 
     return `; FBX 7.4.0 project file

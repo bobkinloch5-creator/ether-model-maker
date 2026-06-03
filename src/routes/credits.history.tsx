@@ -5,21 +5,39 @@ import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import {
-  ArrowLeft, Coins, Gift, ShoppingCart, Wand2, ShieldCheck, Sparkles, Download, Loader2,
+  ArrowLeft,
+  Coins,
+  Gift,
+  ShoppingCart,
+  Wand2,
+  ShieldCheck,
+  Sparkles,
+  Download,
+  Loader2,
 } from "lucide-react";
 
 export const Route = createFileRoute("/credits/history")({
   head: () => ({
     meta: [
       { title: "Credit History — KingDavez Studios (Beta)" },
-      { name: "description", content: "Full audit log of every credit grant, PayPal purchase, generation deduction, and referral bonus on your KingDavez Studios account." },
+      {
+        name: "description",
+        content:
+          "Full audit log of every credit grant, PayPal purchase, generation deduction, and referral bonus on your KingDavez Studios account.",
+      },
       { property: "og:title", content: "Credit History — KingDavez Studios" },
-      { property: "og:description", content: "Audit log of every credit grant, purchase, and deduction on your account." },
+      {
+        property: "og:description",
+        content: "Audit log of every credit grant, purchase, and deduction on your account.",
+      },
       { property: "og:url", content: "https://kingdavez.click/credits/history" },
       { name: "robots", content: "noindex,nofollow" },
-    { name: "twitter:card", content: "summary_large_image" },
-    { name: "twitter:title", content: "Credit History — KingDavez Studios" },
-    { name: "twitter:description", content: "View your KingDavez Studios credit purchase and usage history." },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Credit History — KingDavez Studios" },
+      {
+        name: "twitter:description",
+        content: "View your KingDavez Studios credit purchase and usage history.",
+      },
     ],
     links: [{ rel: "canonical", href: "https://kingdavez.click/credits/history" }],
   }),
@@ -42,11 +60,23 @@ type Filter = "all" | "grants" | "purchases" | "deductions";
 
 const KIND_META: Record<string, { label: string; icon: typeof Coins; cls: string }> = {
   signup_bonus: { label: "Signup bonus", icon: Gift, cls: "text-emerald-400 bg-emerald-500/10" },
-  admin_signup_bonus: { label: "Owner grant", icon: ShieldCheck, cls: "text-amber-400 bg-amber-500/10" },
+  admin_signup_bonus: {
+    label: "Owner grant",
+    icon: ShieldCheck,
+    cls: "text-amber-400 bg-amber-500/10",
+  },
   purchase: { label: "Purchase", icon: ShoppingCart, cls: "text-blue-400 bg-blue-500/10" },
   generation: { label: "Generation", icon: Wand2, cls: "text-pink-400 bg-pink-500/10" },
-  admin_adjustment: { label: "Admin adjustment", icon: ShieldCheck, cls: "text-amber-400 bg-amber-500/10" },
-  owner_free_use: { label: "Owner (free)", icon: Sparkles, cls: "text-muted-foreground bg-white/5" },
+  admin_adjustment: {
+    label: "Admin adjustment",
+    icon: ShieldCheck,
+    cls: "text-amber-400 bg-amber-500/10",
+  },
+  owner_free_use: {
+    label: "Owner (free)",
+    icon: Sparkles,
+    cls: "text-muted-foreground bg-white/5",
+  },
 };
 
 function HistoryPage() {
@@ -77,11 +107,15 @@ function HistoryPage() {
         setBusy(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [user]);
 
   const totals = useMemo(() => {
-    let granted = 0, spent = 0, purchased = 0;
+    let granted = 0,
+      spent = 0,
+      purchased = 0;
     for (const r of rows) {
       if (r.amount > 0) granted += r.amount;
       if (r.amount < 0) spent += -r.amount;
@@ -101,14 +135,16 @@ function HistoryPage() {
     const header = ["created_at", "kind", "amount", "balance_after", "reason", "reference_id"];
     const csv = [
       header.join(","),
-      ...rows.map((r) => [
-        r.created_at,
-        r.kind,
-        r.amount,
-        r.balance_after ?? "",
-        JSON.stringify(r.reason ?? ""),
-        r.reference_id ?? "",
-      ].join(",")),
+      ...rows.map((r) =>
+        [
+          r.created_at,
+          r.kind,
+          r.amount,
+          r.balance_after ?? "",
+          JSON.stringify(r.reason ?? ""),
+          r.reference_id ?? "",
+        ].join(","),
+      ),
     ].join("\n");
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
     const a = document.createElement("a");
@@ -124,11 +160,17 @@ function HistoryPage() {
       <main className="pt-28 pb-24">
         <div className="mx-auto max-w-5xl px-4">
           <div className="flex items-center justify-between gap-4">
-            <Link to="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition">
+            <Link
+              to="/dashboard"
+              className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition"
+            >
               <ArrowLeft className="h-4 w-4" /> Back to dashboard
             </Link>
             <div className="flex items-center gap-2">
-              <Link to="/credits" className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-sm hover:bg-white/10">
+              <Link
+                to="/credits"
+                className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-sm hover:bg-white/10"
+              >
                 Buy credits
               </Link>
               <button
@@ -152,10 +194,25 @@ function HistoryPage() {
           </header>
 
           <div className="mt-8 grid gap-3 sm:grid-cols-4">
-            <Stat label="Current balance" value={profile?.is_owner ? "∞" : (profile?.credits ?? 0).toLocaleString()} />
-            <Stat label="Total granted" value={`+${totals.granted.toLocaleString()}`} accent="text-emerald-400" />
-            <Stat label="Total purchased" value={`+${totals.purchased.toLocaleString()}`} accent="text-blue-400" />
-            <Stat label="Total spent" value={`-${totals.spent.toLocaleString()}`} accent="text-pink-400" />
+            <Stat
+              label="Current balance"
+              value={profile?.is_owner ? "∞" : (profile?.credits ?? 0).toLocaleString()}
+            />
+            <Stat
+              label="Total granted"
+              value={`+${totals.granted.toLocaleString()}`}
+              accent="text-emerald-400"
+            />
+            <Stat
+              label="Total purchased"
+              value={`+${totals.purchased.toLocaleString()}`}
+              accent="text-blue-400"
+            />
+            <Stat
+              label="Total spent"
+              value={`-${totals.spent.toLocaleString()}`}
+              accent="text-pink-400"
+            />
           </div>
 
           <div className="mt-6 flex flex-wrap items-center gap-2">
@@ -189,13 +246,19 @@ function HistoryPage() {
             ) : (
               <ul className="divide-y divide-white/5">
                 {filtered.map((r) => {
-                  const meta = KIND_META[r.kind] ?? { label: r.kind, icon: Coins, cls: "text-muted-foreground bg-white/5" };
+                  const meta = KIND_META[r.kind] ?? {
+                    label: r.kind,
+                    icon: Coins,
+                    cls: "text-muted-foreground bg-white/5",
+                  };
                   const Icon = meta.icon;
                   const isPositive = r.amount > 0;
                   const isZero = r.amount === 0;
                   return (
                     <li key={r.id} className="flex items-start gap-4 px-4 py-4 sm:px-6">
-                      <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${meta.cls}`}>
+                      <div
+                        className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${meta.cls}`}
+                      >
                         <Icon className="h-4 w-4" />
                       </div>
                       <div className="min-w-0 flex-1">
@@ -206,7 +269,9 @@ function HistoryPage() {
                           </span>
                         </div>
                         {r.reason && (
-                          <p className="mt-0.5 text-sm text-muted-foreground line-clamp-2">{r.reason}</p>
+                          <p className="mt-0.5 text-sm text-muted-foreground line-clamp-2">
+                            {r.reason}
+                          </p>
                         )}
                         {r.reference_id && (
                           <p className="mt-1 truncate font-mono text-[11px] text-muted-foreground/70">
@@ -215,9 +280,15 @@ function HistoryPage() {
                         )}
                       </div>
                       <div className="text-right">
-                        <div className={`font-display text-lg font-semibold ${
-                          isZero ? "text-muted-foreground" : isPositive ? "text-emerald-400" : "text-pink-400"
-                        }`}>
+                        <div
+                          className={`font-display text-lg font-semibold ${
+                            isZero
+                              ? "text-muted-foreground"
+                              : isPositive
+                                ? "text-emerald-400"
+                                : "text-pink-400"
+                          }`}
+                        >
                           {isZero ? "0" : `${isPositive ? "+" : ""}${r.amount}`}
                         </div>
                         {r.balance_after != null && (

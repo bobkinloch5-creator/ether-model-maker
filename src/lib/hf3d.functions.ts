@@ -18,16 +18,26 @@ if (typeof globalThis.fetch === "function") {
       urlStr = (input as any).url;
     }
 
-    if (urlStr && (urlStr.includes("ngrok-free.dev") || urlStr.includes("ngrok.io") || urlStr.includes("ngrok.app"))) {
+    if (
+      urlStr &&
+      (urlStr.includes("ngrok-free.dev") ||
+        urlStr.includes("ngrok.io") ||
+        urlStr.includes("ngrok.app"))
+    ) {
       // 1. If the input is a Request object, set headers directly on it
-      if (input && typeof input === "object" && "headers" in input && typeof input.headers?.set === "function") {
+      if (
+        input &&
+        typeof input === "object" &&
+        "headers" in input &&
+        typeof input.headers?.set === "function"
+      ) {
         try {
           input.headers.set("ngrok-skip-browser-warning", "true");
         } catch (e) {
           // Headers might be immutable, so we can fall back to init
         }
       }
-      
+
       // 2. Set headers on the init object as well
       init = init || {};
       if (init.headers instanceof Headers) {
@@ -50,7 +60,6 @@ if (typeof globalThis.fetch === "function") {
     return originalFetch.call(this, input, init);
   };
 }
-
 
 /**
  * Calls a Hugging Face Gradio Space to generate a 3D model.
@@ -125,9 +134,13 @@ async function runLocalPCTripoSR(
     });
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {
-      throw new Error("Local TripoSR took too long to respond. Make sure the server is running on port 7860 and try a smaller/fast generation.");
+      throw new Error(
+        "Local TripoSR took too long to respond. Make sure the server is running on port 7860 and try a smaller/fast generation.",
+      );
     }
-    throw new Error(`Could not reach local TripoSR at ${endpoint}. Make sure ngrok is forwarding to a running server on localhost:7860.`);
+    throw new Error(
+      `Could not reach local TripoSR at ${endpoint}. Make sure ngrok is forwarding to a running server on localhost:7860.`,
+    );
   } finally {
     clearTimeout(timer);
   }
@@ -149,7 +162,11 @@ async function runLocalPCTripoSR(
   const contentType = (res.headers.get("content-type") || "").toLowerCase();
   const disposition = (res.headers.get("content-disposition") || "").toLowerCase();
   let ext = "glb";
-  if (disposition.includes(".obj") || contentType.includes("text/plain") || contentType.includes("model/obj")) {
+  if (
+    disposition.includes(".obj") ||
+    contentType.includes("text/plain") ||
+    contentType.includes("model/obj")
+  ) {
     ext = "obj";
   } else if (disposition.includes(".zip") || contentType.includes("application/zip")) {
     ext = "zip";
@@ -205,7 +222,9 @@ async function generateImageFromPrompt(prompt: string): Promise<string> {
   });
   if (!res.ok) {
     if (res.status === 402) {
-      throw new Error("BACKEND_AI_OUT_OF_FUNDS: The site's AI image service is temporarily out of funds. This is on us, not you — your credits have not been used. Please try again later or contact support.");
+      throw new Error(
+        "BACKEND_AI_OUT_OF_FUNDS: The site's AI image service is temporarily out of funds. This is on us, not you — your credits have not been used. Please try again later or contact support.",
+      );
     }
     if (res.status === 429) {
       throw new Error("Too many requests right now. Please wait a minute and try again.");
@@ -232,21 +251,21 @@ function buildPayload(apiName: string, firstInput: unknown, extraArgs: unknown[]
     // Pixal3D /generate_3d — image + 16 positional args (last is session_id)
     // NOTE: resolution must be one of the supported cascades: 1024 or 1536.
     const defaultArgs: unknown[] = [
-      0,        // seed
-      1536,     // resolution — higher cascade for sharper, richer textures
-      7.5,      // ss_guidance_strength
-      0.7,      // ss_guidance_rescale
-      18,       // ss_sampling_steps (more steps = cleaner shape)
-      5.0,      // ss_rescale_t
-      7.5,      // shape_slat_guidance_strength
-      0.5,      // shape_slat_guidance_rescale
-      18,       // shape_slat_sampling_steps
-      3.0,      // shape_slat_rescale_t
-      6.0,      // tex_slat_guidance_strength — MAJOR boost for color fidelity (was 1.0)
-      0.3,      // tex_slat_guidance_rescale — reduces washed-out look (was 0.0)
-      24,       // tex_slat_sampling_steps — doubled for vivid texture detail (was 12)
-      3.0,      // tex_slat_rescale_t
-      -1.0,     // manual_fov
+      0, // seed
+      1536, // resolution — higher cascade for sharper, richer textures
+      7.5, // ss_guidance_strength
+      0.7, // ss_guidance_rescale
+      18, // ss_sampling_steps (more steps = cleaner shape)
+      5.0, // ss_rescale_t
+      7.5, // shape_slat_guidance_strength
+      0.5, // shape_slat_guidance_rescale
+      18, // shape_slat_sampling_steps
+      3.0, // shape_slat_rescale_t
+      6.0, // tex_slat_guidance_strength — MAJOR boost for color fidelity (was 1.0)
+      0.3, // tex_slat_guidance_rescale — reduces washed-out look (was 0.0)
+      24, // tex_slat_sampling_steps — doubled for vivid texture detail (was 12)
+      3.0, // tex_slat_rescale_t
+      -1.0, // manual_fov
       makeSessionHash(), // session_id
     ];
     const merged = [...extraArgs];
@@ -259,11 +278,23 @@ function buildPayload(apiName: string, firstInput: unknown, extraArgs: unknown[]
     normApi.includes("handle_text_to_3d")
   ) {
     const defaultArgs = [
-      0, true, "512",
-      7.5, 0.7, 12, 5.0,
-      7.5, 0.5, 12, 3.0,
-      1.0, 0.0, 12, 3.0,
-      300000, 2048,
+      0,
+      true,
+      "512",
+      7.5,
+      0.7,
+      12,
+      5.0,
+      7.5,
+      0.5,
+      12,
+      3.0,
+      1.0,
+      0.0,
+      12,
+      3.0,
+      300000,
+      2048,
     ];
     const merged = [...extraArgs];
     for (let i = merged.length; i < defaultArgs.length; i++) merged.push(defaultArgs[i]);
@@ -293,10 +324,12 @@ async function resolvePixal3DTunnel(hubUrl: string): Promise<string> {
       const res = await fetch(u, { method: "GET" });
       if (!res.ok) continue;
       body += "\n" + (await res.text());
-    } catch { /* try next */ }
+    } catch {
+      /* try next */
+    }
   }
   const tunnels = Array.from(
-    new Set(Array.from(body.matchAll(/https:\/\/[a-z0-9]+\.gradio\.live/gi)).map((m) => m[0]))
+    new Set(Array.from(body.matchAll(/https:\/\/[a-z0-9]+\.gradio\.live/gi)).map((m) => m[0])),
   );
   if (tunnels.length === 0) throw new Error("Pixal3D hub listed no worker tunnels");
   for (const t of tunnels) {
@@ -308,7 +341,9 @@ async function resolvePixal3DTunnel(hubUrl: string): Promise<string> {
       if (!r.ok) continue;
       const info = (await r.json()) as { named_endpoints?: Record<string, unknown> };
       if (info?.named_endpoints && Object.keys(info.named_endpoints).length > 0) return t;
-    } catch { /* try next */ }
+    } catch {
+      /* try next */
+    }
   }
   throw new Error("All Pixal3D worker tunnels are offline. Try again in a minute.");
 }
@@ -317,7 +352,9 @@ function isPixal3DHub(spaceUrl: string): boolean {
   try {
     const host = new URL(spaceUrl).hostname.toLowerCase();
     return host === "kingdavezz-pixal3d-server.hf.space" || host.endsWith(".gradio.live");
-  } catch { return false; }
+  } catch {
+    return false;
+  }
 }
 
 async function startGradioJob(
@@ -327,7 +364,10 @@ async function startGradioJob(
   token: string | undefined,
   sessionHash: string,
 ): Promise<string> {
-  const headers: Record<string, string> = { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" };
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    "ngrok-skip-browser-warning": "true",
+  };
   if (token) headers.Authorization = `Bearer ${token}`;
   const postRes = await fetch(`${spaceUrl}/gradio_api/call${apiName}`, {
     method: "POST",
@@ -335,7 +375,9 @@ async function startGradioJob(
     body: JSON.stringify({ data: payload, session_hash: sessionHash }),
   });
   if (!postRes.ok) {
-    throw new Error(`HF Space POST failed: ${postRes.status} ${(await postRes.text()).slice(0, 200)}`);
+    throw new Error(
+      `HF Space POST failed: ${postRes.status} ${(await postRes.text()).slice(0, 200)}`,
+    );
   }
   const { event_id } = (await postRes.json()) as { event_id?: string };
   if (!event_id) throw new Error("HF Space did not return an event id");
@@ -353,7 +395,10 @@ async function ensureStartSession(
   sessionHash: string,
 ): Promise<void> {
   try {
-    const headers: Record<string, string> = { "Content-Type": "application/json", "ngrok-skip-browser-warning": "true" };
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      "ngrok-skip-browser-warning": "true",
+    };
     if (token) headers.Authorization = `Bearer ${token}`;
     const res = await fetch(`${spaceUrl}/gradio_api/call/start_session`, {
       method: "POST",
@@ -364,7 +409,9 @@ async function ensureStartSession(
     const { event_id } = (await res.json()) as { event_id?: string };
     if (!event_id) return;
     // Drain the SSE stream briefly so the Space initializes session state.
-    const stream = await fetch(`${spaceUrl}/gradio_api/call/start_session/${event_id}`, { headers });
+    const stream = await fetch(`${spaceUrl}/gradio_api/call/start_session/${event_id}`, {
+      headers,
+    });
     const reader = stream.body?.getReader();
     if (!reader) return;
     const start = Date.now();
@@ -374,12 +421,15 @@ async function ensureStartSession(
       const text = new TextDecoder().decode(value);
       if (text.includes("event: complete") || text.includes("event: error")) break;
     }
-    try { await reader.cancel(); } catch { /* ignore */ }
+    try {
+      await reader.cancel();
+    } catch {
+      /* ignore */
+    }
   } catch {
     // best-effort
   }
 }
-
 
 async function runGradioJob(
   app: any,
@@ -388,12 +438,17 @@ async function runGradioJob(
   opts?: { timeoutMs?: number },
 ): Promise<unknown[]> {
   const timeoutMs = opts?.timeoutMs ?? 600_000;
-  console.log(`[HF 3D] Submitting job to ${apiName} with payload size ${payload.length} (timeout ${timeoutMs}ms)`);
-  
+  console.log(
+    `[HF 3D] Submitting job to ${apiName} with payload size ${payload.length} (timeout ${timeoutMs}ms)`,
+  );
+
   const rootUrl = app.config?.root || "";
-  const isLocal = isLocalUrl(rootUrl) || rootUrl.includes("localhost") || rootUrl.includes("127.0.0.1");
+  const isLocal =
+    isLocalUrl(rootUrl) || rootUrl.includes("localhost") || rootUrl.includes("127.0.0.1");
   if (isLocal) {
-    console.log(`[HF 3D] Local or ngrok backend detected (${rootUrl}), bypassing queue/SSE and using app.predict`);
+    console.log(
+      `[HF 3D] Local or ngrok backend detected (${rootUrl}), bypassing queue/SSE and using app.predict`,
+    );
     const promise = app.predict(apiName, payload).then((r: any) => {
       if (r && typeof r === "object" && "data" in r && Array.isArray(r.data)) {
         return r.data;
@@ -401,7 +456,11 @@ async function runGradioJob(
       return Array.isArray(r) ? r : [r];
     });
     const timeout = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error(`Local generation timed out after ${Math.round(timeoutMs / 1000)}s.`)), timeoutMs)
+      setTimeout(
+        () =>
+          reject(new Error(`Local generation timed out after ${Math.round(timeoutMs / 1000)}s.`)),
+        timeoutMs,
+      ),
     );
     return Promise.race([promise, timeout]);
   }
@@ -415,28 +474,48 @@ async function runGradioJob(
     while (true) {
       const remaining = timeoutMs - (Date.now() - startedAt);
       if (remaining <= 0) {
-        try { (job as any).cancel?.(); } catch { /* ignore */ }
-        throw new Error(`Generation timed out after ${Math.round(timeoutMs / 1000)}s. The Space may be sleeping or overloaded — please try again in a minute.`);
+        try {
+          (job as any).cancel?.();
+        } catch {
+          /* ignore */
+        }
+        throw new Error(
+          `Generation timed out after ${Math.round(timeoutMs / 1000)}s. The Space may be sleeping or overloaded — please try again in a minute.`,
+        );
       }
       const next = iterator.next();
       const timeout = new Promise<{ value: any; done: true }>((_, reject) =>
-        setTimeout(() => reject(new Error(
-          `Generation timed out after ${Math.round(timeoutMs / 1000)}s waiting for the Space to respond. The Hugging Face Space may be sleeping or overloaded — please try again in a minute.`
-        )), remaining),
+        setTimeout(
+          () =>
+            reject(
+              new Error(
+                `Generation timed out after ${Math.round(timeoutMs / 1000)}s waiting for the Space to respond. The Hugging Face Space may be sleeping or overloaded — please try again in a minute.`,
+              ),
+            ),
+          remaining,
+        ),
       );
-      const message: any = await Promise.race([next, timeout]).then((r: any) => r.done ? null : r.value);
+      const message: any = await Promise.race([next, timeout]).then((r: any) =>
+        r.done ? null : r.value,
+      );
       if (!message) break;
       if (message.type === "data") {
         lastData = message.data as unknown[];
       } else if (message.type === "status") {
-        console.log(`[HF 3D] Job status for ${apiName}: status=${message.status}, stage=${message.stage || ""}, position=${message.position || ""}`);
+        console.log(
+          `[HF 3D] Job status for ${apiName}: status=${message.status}, stage=${message.stage || ""}, position=${message.position || ""}`,
+        );
         if (message.stage === "error") {
           throw new Error(message.message || "Job execution failed");
         }
       }
     }
   } catch (err: any) {
-    try { (job as any).cancel?.(); } catch { /* ignore */ }
+    try {
+      (job as any).cancel?.();
+    } catch {
+      /* ignore */
+    }
     console.error(`[HF 3D] Error in submit job stream for ${apiName}:`, err);
     throw err;
   }
@@ -451,17 +530,20 @@ async function gradioCall(
   spaceUrl: string,
   apiName: string,
   payload: unknown[],
-  token?: string
+  token?: string,
 ): Promise<unknown[]> {
   try {
     console.log(`[HF 3D] Connecting to Space: ${spaceUrl} (API: ${apiName})`);
-    const app = await Client.connect(spaceUrl, { token: token as `hf_${string}`, headers: { "ngrok-skip-browser-warning": "true" } } as any);
+    const app = await Client.connect(spaceUrl, {
+      token: token as `hf_${string}`,
+      headers: { "ngrok-skip-browser-warning": "true" },
+    } as any);
     console.log(`[HF 3D] Connected successfully. Invoking prediction...`);
-    
+
     const firstInput = payload[0];
     const extraArgs = payload.slice(1);
     const finalPayload = buildPayload(apiName, firstInput, extraArgs);
-    
+
     console.log(`[HF 3D] Payload size: ${finalPayload.length}`);
     const result = await runGradioJob(app, apiName, finalPayload);
     console.log(`[HF 3D] Prediction succeeded. Output data:`, JSON.stringify(result).slice(0, 300));
@@ -492,8 +574,16 @@ function extractFileUrl(spaceUrl: string, output: unknown): string | null {
 async function uploadDataUrlToGradio(
   spaceUrl: string,
   dataUrl: string,
-  token?: string
-): Promise<{ path: string; url: string; orig_name: string; size: number; mime_type: string; is_stream: boolean; meta: { _type: "gradio.FileData" } }> {
+  token?: string,
+): Promise<{
+  path: string;
+  url: string;
+  orig_name: string;
+  size: number;
+  mime_type: string;
+  is_stream: boolean;
+  meta: { _type: "gradio.FileData" };
+}> {
   // data:image/png;base64,XXXX
   const m = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
   if (!m) throw new Error("Invalid image data URL");
@@ -530,7 +620,6 @@ async function uploadDataUrlToGradio(
   };
 }
 
-
 export const generateHF3D = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => INPUT.parse(d))
@@ -540,10 +629,12 @@ export const generateHF3D = createServerFn({ method: "POST" })
     const envApiName = process.env.HF_3D_API_NAME?.trim() || process.env.HF_API_NAME?.trim();
     const token = process.env.HF_TOKEN?.trim();
 
-
     const rawUrl = data.spaceUrl?.trim() || envSpaceId || "";
     if (!rawUrl) {
-      return { ok: false as const, error: "No 3D provider configured. Set HF_SPACE_URL and HF_API_NAME secrets." };
+      return {
+        ok: false as const,
+        error: "No 3D provider configured. Set HF_SPACE_URL and HF_API_NAME secrets.",
+      };
     }
     // Normalize: if user pasted huggingface.co/spaces/<user>/<name>, convert to the gradio host
     let spaceUrl = rawUrl.replace(/\/$/, "");
@@ -565,13 +656,21 @@ export const generateHF3D = createServerFn({ method: "POST" })
     {
       let healthy = false;
       let lastStatus = 0;
-      const isLocal = spaceUrl.includes("localhost") || spaceUrl.includes("127.0.0.1") || spaceUrl.includes("ngrok");
-      const paths = isLocal ? ["/gradio_api/info", "/info", "/config", ""] : ["/gradio_api/info", "/info"];
+      const isLocal =
+        spaceUrl.includes("localhost") ||
+        spaceUrl.includes("127.0.0.1") ||
+        spaceUrl.includes("ngrok");
+      const paths = isLocal
+        ? ["/gradio_api/info", "/info", "/config", ""]
+        : ["/gradio_api/info", "/info"];
       for (const path of paths) {
         try {
           const ctl = new AbortController();
           const t = setTimeout(() => ctl.abort(), 4000);
-          const r = await fetch(`${spaceUrl}${path}`, { signal: ctl.signal, headers: { "ngrok-skip-browser-warning": "true" } });
+          const r = await fetch(`${spaceUrl}${path}`, {
+            signal: ctl.signal,
+            headers: { "ngrok-skip-browser-warning": "true" },
+          });
           clearTimeout(t);
           lastStatus = r.status;
           // For local/ngrok, we allow any response (even 404/config etc.) as long as it's not a server/connection error
@@ -579,22 +678,33 @@ export const generateHF3D = createServerFn({ method: "POST" })
             healthy = true;
             break;
           }
-        } catch { /* try next */ }
+        } catch {
+          /* try next */
+        }
       }
       if (!healthy) {
-        return { ok: false as const, error: `Space health check failed (HTTP ${lastStatus || "timeout"})` };
+        return {
+          ok: false as const,
+          error: `Space health check failed (HTTP ${lastStatus || "timeout"})`,
+        };
       }
     }
 
     try {
       // Extra positional args appended to payload (e.g. [256] for TripoSR mc_resolution)
-      const extraArgs: unknown[] = data.extraArgs && data.extraArgs.length > 0
-        ? data.extraArgs
-        : (() => {
-            const raw = process.env.HF_EXTRA_ARGS?.trim();
-            if (!raw) return [];
-            try { const v = JSON.parse(raw); return Array.isArray(v) ? v : [v]; } catch { return []; }
-          })();
+      const extraArgs: unknown[] =
+        data.extraArgs && data.extraArgs.length > 0
+          ? data.extraArgs
+          : (() => {
+              const raw = process.env.HF_EXTRA_ARGS?.trim();
+              if (!raw) return [];
+              try {
+                const v = JSON.parse(raw);
+                return Array.isArray(v) ? v : [v];
+              } catch {
+                return [];
+              }
+            })();
 
       let payload: unknown[];
       if (data.kind === "text-to-3d") {
@@ -618,10 +728,16 @@ export const generateHF3D = createServerFn({ method: "POST" })
       let fileUrl: string | null = null;
       for (const item of output) {
         const u = extractFileUrl(spaceUrl, item);
-        if (u) { fileUrl = u; break; }
+        if (u) {
+          fileUrl = u;
+          break;
+        }
       }
       if (!fileUrl) {
-        return { ok: false as const, error: `No file in HF output: ${JSON.stringify(output).slice(0, 200)}` };
+        return {
+          ok: false as const,
+          error: `No file in HF output: ${JSON.stringify(output).slice(0, 200)}`,
+        };
       }
 
       const fileRes = await fetch(fileUrl, {
@@ -652,7 +768,6 @@ export const generateHF3D = createServerFn({ method: "POST" })
       return { ok: false as const, error: msg };
     }
   });
-
 
 // =============================================================================
 // Async job pattern: start + poll
@@ -695,7 +810,9 @@ function assertSafeSpaceUrl(raw: string): string {
   try {
     const localUrl = process.env.LOCAL_3D_API_URL?.trim();
     if (localUrl) allowedLocalHost = new URL(localUrl).hostname.toLowerCase();
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   const allowed =
     isLocalHost ||
     host === "huggingface.co" ||
@@ -718,7 +835,6 @@ function assertSafeSpaceUrl(raw: string): string {
   }
   return `${parsed.protocol}//${parsed.host}${parsed.pathname.replace(/\/$/, "")}`;
 }
-
 
 const START_INPUT = z.object({
   prompt: z.string().min(1).max(2000).optional(),
@@ -760,8 +876,15 @@ let local3DChain: Promise<unknown> = Promise.resolve();
 function isLocalUrl(u: string): boolean {
   try {
     const h = new URL(u).hostname.toLowerCase();
-    return h.endsWith(".ngrok-free.dev") || h.endsWith(".ngrok.app") || h.endsWith(".trycloudflare.com") || h.endsWith(".gradio.live");
-  } catch { return false; }
+    return (
+      h.endsWith(".ngrok-free.dev") ||
+      h.endsWith(".ngrok.app") ||
+      h.endsWith(".trycloudflare.com") ||
+      h.endsWith(".gradio.live")
+    );
+  } catch {
+    return false;
+  }
 }
 async function withLocal3DLock<T>(spaceUrl: string, fn: () => Promise<T>): Promise<T> {
   if (!isLocalUrl(spaceUrl)) return fn();
@@ -771,7 +894,9 @@ async function withLocal3DLock<T>(spaceUrl: string, fn: () => Promise<T>): Promi
   local3DQueueDepth++;
   const prev = local3DChain;
   let release!: () => void;
-  local3DChain = new Promise<void>((r) => { release = r; });
+  local3DChain = new Promise<void>((r) => {
+    release = r;
+  });
   try {
     await prev.catch(() => {}); // wait for previous job, ignore its errors
     return await fn();
@@ -794,7 +919,9 @@ async function runTrellisPipeline(
   token?: string,
   opts?: { mcResolution?: number; bakeTexture?: boolean; textureResolution?: number },
 ): Promise<{ fileUrl: string }> {
-  return withLocal3DLock(spaceUrl, () => runTrellisPipelineInner(spaceUrl, imageDataUrl, token, opts));
+  return withLocal3DLock(spaceUrl, () =>
+    runTrellisPipelineInner(spaceUrl, imageDataUrl, token, opts),
+  );
 }
 
 async function runTrellisPipelineInner(
@@ -867,7 +994,9 @@ async function runTrellisPipelineInner(
       if (!res.ok && res.status !== 404) {
         const body = await res.text().catch(() => "");
         if (isLocalUrl(spaceUrl)) {
-          throw new Error(`Local 3D server at ${spaceUrl} returned HTTP ${res.status}. Is the Gradio app running on http://127.0.0.1:7860 and the ngrok tunnel pointed at it? Body: ${body.slice(0, 160)}`);
+          throw new Error(
+            `Local 3D server at ${spaceUrl} returned HTTP ${res.status}. Is the Gradio app running on http://127.0.0.1:7860 and the ngrok tunnel pointed at it? Body: ${body.slice(0, 160)}`,
+          );
         }
         throw new Error(`Pre-flight HTTP ${res.status} from ${probeUrl}: ${body.slice(0, 160)}`);
       }
@@ -875,7 +1004,9 @@ async function runTrellisPipelineInner(
       const msg = e instanceof Error ? e.message : String(e);
       if (e instanceof Error && e.name === "AbortError") {
         if (isLocalUrl(spaceUrl)) {
-          throw new Error(`Could not reach your local 3D server at ${spaceUrl} within 10s. Check that TripoSR is running on http://127.0.0.1:7860 and ngrok is forwarding to it.`);
+          throw new Error(
+            `Could not reach your local 3D server at ${spaceUrl} within 10s. Check that TripoSR is running on http://127.0.0.1:7860 and ngrok is forwarding to it.`,
+          );
         }
         throw new Error(`Pre-flight to ${probeUrl} timed out after 10s.`);
       }
@@ -938,10 +1069,14 @@ async function runTrellisPipelineInner(
 
   if (!app) {
     if (isLocalUrl(spaceUrl)) {
-      throw new Error(`Could not reach your local 3D server at ${spaceUrl} — is your PC on, the Gradio app running, and ngrok forwarding? (${lastErrMsg})`);
+      throw new Error(
+        `Could not reach your local 3D server at ${spaceUrl} — is your PC on, the Gradio app running, and ngrok forwarding? (${lastErrMsg})`,
+      );
     }
     if (isHf) {
-      throw new Error(`Hugging Face Space is starting. Please wait 1–2 minutes and try again. (${lastErrMsg})`);
+      throw new Error(
+        `Hugging Face Space is starting. Please wait 1–2 minutes and try again. (${lastErrMsg})`,
+      );
     }
     throw new Error(`3D backend unavailable at ${spaceUrl}. (${lastErrMsg})`);
   }
@@ -957,7 +1092,6 @@ async function runTrellisPipelineInner(
     console.warn(`[HF 3D / TRELLIS] view_api failed:`, e instanceof Error ? e.message : e);
   }
 
-
   // Skip /check_input_image and view_api — they're optional and add 1-2 extra
   // round trips. /preprocess already validates the image.
 
@@ -971,12 +1105,18 @@ async function runTrellisPipelineInner(
   });
   let processed: unknown = inputFile;
   try {
-    const preRes = await runGradioJob(app, "/preprocess", [inputFile, true, 0.85], { timeoutMs: 600_000 });
+    const preRes = await runGradioJob(app, "/preprocess", [inputFile, true, 0.85], {
+      timeoutMs: 600_000,
+    });
     if (preRes && preRes[0]) processed = preRes[0];
     console.log(`[HF 3D / TRELLIS] /preprocess returned`, { hasResult: !!preRes?.[0] });
-
   } catch (e) {
-    const msg = e instanceof Error ? e.message : (typeof e === "object" ? JSON.stringify(e).slice(0, 300) : String(e));
+    const msg =
+      e instanceof Error
+        ? e.message
+        : typeof e === "object"
+          ? JSON.stringify(e).slice(0, 300)
+          : String(e);
     if (/no.*endpoint|not found|404|unknown api|does not exist/i.test(msg)) {
       console.warn(`[HF 3D / TRELLIS] /preprocess not available on ${spaceUrl}, using raw image.`);
     } else {
@@ -1005,7 +1145,9 @@ async function runTrellisPipelineInner(
     const m1 = e1 instanceof Error ? e1.message : String(e1);
     console.warn(`[HF 3D / TRELLIS] /generate(image, mc) failed, trying full sig:`, m1);
     try {
-      const r = await runGradioJob(app, "/generate", [processed, mc, bake, texRes], { timeoutMs: 600_000 });
+      const r = await runGradioJob(app, "/generate", [processed, mc, bake, texRes], {
+        timeoutMs: 600_000,
+      });
       genOut = r;
     } catch (e2) {
       const m2 = e2 instanceof Error ? e2.message : String(e2);
@@ -1016,12 +1158,17 @@ async function runTrellisPipelineInner(
   let fileUrl: string | null = null;
   for (const item of genOut) {
     const u = extractFileUrl(spaceUrl, item);
-    if (u) { fileUrl = u; break; }
+    if (u) {
+      fileUrl = u;
+      break;
+    }
   }
-  if (!fileUrl) throw new Error(`3D model was not returned by the backend. Raw output: ${JSON.stringify(genOut).slice(0, 300)}`);
+  if (!fileUrl)
+    throw new Error(
+      `3D model was not returned by the backend. Raw output: ${JSON.stringify(genOut).slice(0, 300)}`,
+    );
   return { fileUrl };
 }
-
 
 /**
  * Resolve which Gradio endpoint to call by inspecting view_api().
@@ -1035,9 +1182,15 @@ async function resolveGradioEndpoint(
   candidates: string[],
 ): Promise<{ name: string; available: string[] }> {
   let info: any = null;
-  try { info = await app.view_api?.(); } catch { /* ignore */ }
-  const named = info?.named_endpoints && typeof info.named_endpoints === "object"
-    ? Object.keys(info.named_endpoints) : [];
+  try {
+    info = await app.view_api?.();
+  } catch {
+    /* ignore */
+  }
+  const named =
+    info?.named_endpoints && typeof info.named_endpoints === "object"
+      ? Object.keys(info.named_endpoints)
+      : [];
   const norm = (s: string) => (s.startsWith("/") ? s : `/${s}`).toLowerCase();
   const set = new Set(named.map(norm));
   if (preferred) {
@@ -1051,8 +1204,8 @@ async function resolveGradioEndpoint(
   if (named.length > 0) return { name: norm(named[0]), available: named };
   throw new Error(
     `No usable Gradio endpoint found on this Space.` +
-    (preferred ? ` "${preferred}" does not exist.` : "") +
-    ` view_api returned no named endpoints — the Space may still be starting up.`
+      (preferred ? ` "${preferred}" does not exist.` : "") +
+      ` view_api returned no named endpoints — the Space may still be starting up.`,
   );
 }
 
@@ -1102,14 +1255,20 @@ async function runStableFast3D(
   }
   if (!app) throw new Error(humanizeHFError(lastErr));
 
-  const { name: endpointName, available } = await resolveGradioEndpoint(
-    app,
-    opts?.apiName,
-    ["/run_button", "/generate", "/predict", "/infer", "/process", "/run"],
+  const { name: endpointName, available } = await resolveGradioEndpoint(app, opts?.apiName, [
+    "/run_button",
+    "/generate",
+    "/predict",
+    "/infer",
+    "/process",
+    "/run",
+  ]);
+  console.log(
+    `[SF3D] Using endpoint ${endpointName} (available: ${available.join(", ") || "(none)"})`,
   );
-  console.log(`[SF3D] Using endpoint ${endpointName} (available: ${available.join(", ") || "(none)"})`);
 
-  const texSize = opts?.textureResolution && opts.textureResolution > 0 ? opts.textureResolution : 1024;
+  const texSize =
+    opts?.textureResolution && opts.textureResolution > 0 ? opts.textureResolution : 1024;
   // Canonical stabilityai/stable-fast-3d /run_button signature (5 named args):
   //   input_image, foreground_ratio=0.85, remesh_option="None",
   //   vertex_count=-1, texture_size=1024
@@ -1137,14 +1296,17 @@ async function runStableFast3D(
   if (!out) {
     throw new Error(
       `Stable Fast 3D ${endpointName} failed: ${lastSigErr}. ` +
-      `Available endpoints on this Space: ${available.join(", ") || "(none)"}.`
+        `Available endpoints on this Space: ${available.join(", ") || "(none)"}.`,
     );
   }
 
   let fileUrl: string | null = null;
   for (const item of out) {
     const u = extractFileUrl(spaceUrl, item);
-    if (u && /\.(glb|obj|ply)(\?|$)/i.test(u)) { fileUrl = u; break; }
+    if (u && /\.(glb|obj|ply)(\?|$)/i.test(u)) {
+      fileUrl = u;
+      break;
+    }
   }
   if (!fileUrl) {
     const u = extractFileUrl(spaceUrl, out[1] ?? out[0]);
@@ -1163,10 +1325,22 @@ function humanizeHFError(raw: string): string {
   if (s.includes("401") || s.includes("unauthorized")) {
     return "Hugging Face token is missing or invalid. Set HF_TOKEN in secrets.";
   }
-  if (s.includes("403") || s.includes("gated") || s.includes("terms") || s.includes("agreement") || s.includes("access to model")) {
+  if (
+    s.includes("403") ||
+    s.includes("gated") ||
+    s.includes("terms") ||
+    s.includes("agreement") ||
+    s.includes("access to model")
+  ) {
     return "Hugging Face model terms not accepted. Visit the Space on Hugging Face, accept the model license, then retry.";
   }
-  if (s.includes("503") || s.includes("starting") || s.includes("sleeping") || s.includes("loading") || s.includes("cold")) {
+  if (
+    s.includes("503") ||
+    s.includes("starting") ||
+    s.includes("sleeping") ||
+    s.includes("loading") ||
+    s.includes("cold")
+  ) {
     return "The Hugging Face Space is starting up. Please wait 30–60 seconds and try again.";
   }
   if (s.includes("timeout") || s.includes("timed out") || s.includes("aborted")) {
@@ -1192,9 +1366,7 @@ export const startHF3DJob = createServerFn({ method: "POST" })
     const localTriposrEnabled = /^(1|true|yes)$/i.test(
       (process.env.LOCAL_TRIPOSR_ENABLED ?? "").trim(),
     );
-    const localComfyEnabled = /^(1|true|yes)$/i.test(
-      (process.env.LOCAL_3D_ENABLED ?? "").trim(),
-    );
+    const localComfyEnabled = /^(1|true|yes)$/i.test((process.env.LOCAL_3D_ENABLED ?? "").trim());
 
     const presetHint = data.spaceUrl?.trim() ?? "";
 
@@ -1228,7 +1400,13 @@ export const startHF3DJob = createServerFn({ method: "POST" })
         spaceUrl === process.env.COMFYUI_URL?.trim() ||
         spaceUrl === process.env.LOCAL_3D_API_URL?.trim();
       const isTriposrLocal = spaceUrl === process.env.LOCAL_TRIPOSR_URL?.trim();
-      if (!localTriposrEnabled && !localComfyEnabled && !directLocalApiEnabled && !(isComfyish && localComfyEnabled) && !(isTriposrLocal && localTriposrEnabled)) {
+      if (
+        !localTriposrEnabled &&
+        !localComfyEnabled &&
+        !directLocalApiEnabled &&
+        !(isComfyish && localComfyEnabled) &&
+        !(isTriposrLocal && localTriposrEnabled)
+      ) {
         return {
           ok: false as const,
           error:
@@ -1251,7 +1429,11 @@ export const startHF3DJob = createServerFn({ method: "POST" })
         };
       }
       try {
-        const result = await runLocalPCTripoSR(spaceUrl, data.apiName?.trim() || "/generate-3d", data.imageDataUrl);
+        const result = await runLocalPCTripoSR(
+          spaceUrl,
+          data.apiName?.trim() || "/generate-3d",
+          data.imageDataUrl,
+        );
         return { ok: true as const, modelUrl: result.fileUrl };
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
@@ -1289,7 +1471,10 @@ export const startHF3DJob = createServerFn({ method: "POST" })
           spaceUrl = await resolvePixal3DTunnel(spaceUrl);
           token = undefined;
         } catch (e) {
-          return { ok: false as const, error: e instanceof Error ? e.message : "Pixal3D unavailable" };
+          return {
+            ok: false as const,
+            error: e instanceof Error ? e.message : "Pixal3D unavailable",
+          };
         }
       }
     }
@@ -1302,7 +1487,10 @@ export const startHF3DJob = createServerFn({ method: "POST" })
         let imageDataUrl: string;
         if (isLocalUrl(spaceUrl)) {
           if (!data.imageDataUrl) {
-            return { ok: false as const, error: "Please upload an image first. Local 3D generation requires an image." };
+            return {
+              ok: false as const,
+              error: "Please upload an image first. Local 3D generation requires an image.",
+            };
           }
           imageDataUrl = data.imageDataUrl;
         } else if (data.kind === "image-to-3d") {
@@ -1310,7 +1498,8 @@ export const startHF3DJob = createServerFn({ method: "POST" })
           else if (data.prompt) imageDataUrl = await generateImageFromPrompt(data.prompt);
           else return { ok: false as const, error: "Please upload or generate an image first." };
         } else {
-          if (!data.prompt) return { ok: false as const, error: "No prompt provided for text-to-3D" };
+          if (!data.prompt)
+            return { ok: false as const, error: "No prompt provided for text-to-3D" };
           imageDataUrl = await generateImageFromPrompt(data.prompt);
         }
 
@@ -1325,19 +1514,24 @@ export const startHF3DJob = createServerFn({ method: "POST" })
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
         });
-        if (!fileRes.ok) return { ok: false as const, error: `Could not download generated model (HTTP ${fileRes.status}).` };
+        if (!fileRes.ok)
+          return {
+            ok: false as const,
+            error: `Could not download generated model (HTTP ${fileRes.status}).`,
+          };
         const buf = new Uint8Array(await fileRes.arrayBuffer());
         const ext = fileUrl.toLowerCase().endsWith(".obj")
           ? "obj"
           : fileUrl.toLowerCase().endsWith(".ply")
-          ? "ply"
-          : "glb";
+            ? "ply"
+            : "glb";
         const path = `hf/${userId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
         const up = await supabaseAdmin.storage.from("models").upload(path, buf, {
           contentType: ext === "glb" ? "model/gltf-binary" : "application/octet-stream",
           upsert: false,
         });
-        if (up.error) return { ok: false as const, error: `Storage upload failed: ${up.error.message}` };
+        if (up.error)
+          return { ok: false as const, error: `Storage upload failed: ${up.error.message}` };
         const { data: pub } = supabaseAdmin.storage.from("models").getPublicUrl(path);
 
         // Best-effort: persist a generation record server-side.
@@ -1373,7 +1567,6 @@ export const startHF3DJob = createServerFn({ method: "POST" })
     return { ok: false as const, error: "Unreachable: 3D pipeline did not return" };
   });
 
-
 function extractErrorMessage(err: unknown): string {
   if (err instanceof Error) return err.message;
   if (err && typeof err === "object") {
@@ -1381,7 +1574,11 @@ function extractErrorMessage(err: unknown): string {
     if (typeof o.message === "string" && o.message) return o.message;
     if (typeof o.original_msg === "string" && o.original_msg) return o.original_msg;
     if (typeof o.title === "string" && o.title) return o.title;
-    try { return JSON.stringify(err).slice(0, 400); } catch { /* ignore */ }
+    try {
+      return JSON.stringify(err).slice(0, 400);
+    } catch {
+      /* ignore */
+    }
   }
   return String(err);
 }
@@ -1412,11 +1609,11 @@ export const pollHF3DJob = createServerFn({ method: "POST" })
       if (new URL(data.spaceUrl).hostname.toLowerCase().endsWith(".gradio.live")) {
         token = undefined;
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     const headers: Record<string, string> = {};
     if (token) headers.Authorization = `Bearer ${token}`;
-
-
 
     let safeSpaceUrl: string;
     try {
@@ -1480,13 +1677,23 @@ export const pollHF3DJob = createServerFn({ method: "POST" })
           if (event === "estimation") {
             // e.g. {"rank":2,"queue_size":5,"rank_eta":12.3}
             try {
-              const o = JSON.parse(dataLine) as { rank?: number; queue_size?: number; rank_eta?: number };
-              if (typeof o.rank === "number" && typeof o.queue_size === "number" && o.queue_size > 0) {
+              const o = JSON.parse(dataLine) as {
+                rank?: number;
+                queue_size?: number;
+                rank_eta?: number;
+              };
+              if (
+                typeof o.rank === "number" &&
+                typeof o.queue_size === "number" &&
+                o.queue_size > 0
+              ) {
                 const pct = Math.max(0, Math.min(20, 20 - (o.rank / o.queue_size) * 20));
                 progress = Math.max(progress, Math.round(pct));
                 lastMessage = `Queued (rank ${o.rank}/${o.queue_size}${o.rank_eta ? `, ~${Math.round(o.rank_eta)}s` : ""})`;
               }
-            } catch { /* ignore */ }
+            } catch {
+              /* ignore */
+            }
           } else if (event === "process_starts") {
             progress = Math.max(progress, 25);
             lastMessage = "Generating mesh…";
@@ -1495,7 +1702,11 @@ export const pollHF3DJob = createServerFn({ method: "POST" })
             progress = Math.min(90, progress + 3);
             if (!lastMessage) lastMessage = "Generating mesh…";
           } else if (event === "complete") {
-            try { completeData = JSON.parse(dataLine) as unknown[]; } catch { /* ignore */ }
+            try {
+              completeData = JSON.parse(dataLine) as unknown[];
+            } catch {
+              /* ignore */
+            }
             progress = 95;
           } else if (event === "error") {
             errorData = dataLine.slice(0, 300);
@@ -1503,7 +1714,11 @@ export const pollHF3DJob = createServerFn({ method: "POST" })
         }
         if (lastEvent === "complete" || lastEvent === "error") break;
       }
-      try { await reader.cancel(); } catch { /* ignore */ }
+      try {
+        await reader.cancel();
+      } catch {
+        /* ignore */
+      }
 
       if (lastEvent === "error") {
         return {
@@ -1519,7 +1734,10 @@ export const pollHF3DJob = createServerFn({ method: "POST" })
         let fileUrl: string | null = null;
         for (const item of completeData) {
           const u = extractFileUrl(safeSpaceUrl, item);
-          if (u) { fileUrl = u; break; }
+          if (u) {
+            fileUrl = u;
+            break;
+          }
         }
         if (!fileUrl && needsGlbExtraction(data.apiName)) {
           try {
@@ -1534,7 +1752,10 @@ export const pollHF3DJob = createServerFn({ method: "POST" })
               for (const item of completeData) {
                 if (item && typeof item === "object") {
                   const o = item as Record<string, unknown>;
-                  if (typeof o.state_path === "string") { statePath = o.state_path; break; }
+                  if (typeof o.state_path === "string") {
+                    statePath = o.state_path;
+                    break;
+                  }
                 }
               }
               if (!statePath) {
@@ -1548,7 +1769,13 @@ export const pollHF3DJob = createServerFn({ method: "POST" })
               }
               extractArgs = [statePath, 300000, 2048, sessionHash];
             }
-            const eventId = await startGradioJob(safeSpaceUrl, extractApi, extractArgs, token, sessionHash);
+            const eventId = await startGradioJob(
+              safeSpaceUrl,
+              extractApi,
+              extractArgs,
+              token,
+              sessionHash,
+            );
             return {
               ok: true as const,
               status: "running" as HF3DJobStatus,
@@ -1619,7 +1846,11 @@ export const pollHF3DJob = createServerFn({ method: "POST" })
       if (!lastMessage) lastMessage = elapsed != null ? `Working… ${elapsed}s elapsed` : "Working…";
       return {
         ok: true as const,
-        status: (lastEvent === "process_starts" || lastEvent === "process_generating" || lastEvent === "heartbeat" ? "running" : "queued") as HF3DJobStatus,
+        status: (lastEvent === "process_starts" ||
+        lastEvent === "process_generating" ||
+        lastEvent === "heartbeat"
+          ? "running"
+          : "queued") as HF3DJobStatus,
         progress,
         message: lastMessage,
       };
@@ -1634,7 +1865,6 @@ export const pollHF3DJob = createServerFn({ method: "POST" })
     }
   });
 
-
 // =============================================================================
 // LOCAL-ONLY 3D PATH — single backend (user's local TripoSR via LOCAL_3D_API_URL).
 // No Hugging Face, no SF3D, no fallback of any kind.
@@ -1644,24 +1874,23 @@ const LOCAL3D_INPUT = z.object({
   imageDataUrl: z.string().min(1).max(15_000_000),
 });
 
-export const getProviderStatus = createServerFn({ method: "GET" })
-  .handler(async () => {
-    // CometAPI Hunyuan3D-2 runs entirely in the cloud — no local PC required.
-    // Status is "Connected" when the API key is present, otherwise "Not Configured".
-    const cometConfigured = !!process.env.COMET_API_KEY?.trim();
-    if (cometConfigured) {
-      return {
-        provider: "CometAPI Cloud",
-        status: "Connected" as const,
-        url: "",
-      };
-    }
+export const getProviderStatus = createServerFn({ method: "GET" }).handler(async () => {
+  // CometAPI Hunyuan3D-2 runs entirely in the cloud — no local PC required.
+  // Status is "Connected" when the API key is present, otherwise "Not Configured".
+  const cometConfigured = !!process.env.COMET_API_KEY?.trim();
+  if (cometConfigured) {
     return {
       provider: "CometAPI Cloud",
-      status: "Not Configured" as const,
+      status: "Connected" as const,
       url: "",
     };
-  });
+  }
+  return {
+    provider: "CometAPI Cloud",
+    status: "Not Configured" as const,
+    url: "",
+  };
+});
 
 export const generateLocal3D = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -1708,7 +1937,13 @@ export const generateLocal3D = createServerFn({ method: "POST" })
         body: JSON.stringify({
           fn_index: 2,
           data: [
-            { path: uploadedPath, url: null, size: null, orig_name: "image.png", mime_type: mimeType },
+            {
+              path: uploadedPath,
+              url: null,
+              size: null,
+              orig_name: "image.png",
+              mime_type: mimeType,
+            },
             true,
             0.85,
           ],
@@ -1738,7 +1973,10 @@ export const generateLocal3D = createServerFn({ method: "POST" })
         throw new Error(`Generate failed: ${generateRes.status} ${errBody.slice(0, 300)}`);
       }
       const generateJson = await generateRes.json();
-      console.log("[3D GEN / server] generate response:", JSON.stringify(generateJson).slice(0, 500));
+      console.log(
+        "[3D GEN / server] generate response:",
+        JSON.stringify(generateJson).slice(0, 500),
+      );
       const glbFile = generateJson.data[1];
       const sourceModelUrl = `${spaceUrl}/file=${glbFile.path}`;
 
@@ -1746,19 +1984,27 @@ export const generateLocal3D = createServerFn({ method: "POST" })
       // restarts and loads faster from a CDN.
       let modelUrl = sourceModelUrl;
       try {
-        const glbRes = await fetch(sourceModelUrl, { headers, signal: AbortSignal.timeout(120_000) });
+        const glbRes = await fetch(sourceModelUrl, {
+          headers,
+          signal: AbortSignal.timeout(120_000),
+        });
         if (glbRes.ok) {
           const glbBuf = Buffer.from(await glbRes.arrayBuffer());
           const storagePath = `local-triposr-outputs/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.glb`;
-          const { error: upErr } = await supabaseAdmin.storage.from("models").upload(storagePath, glbBuf, {
-            contentType: "model/gltf-binary",
-            upsert: false,
-          });
+          const { error: upErr } = await supabaseAdmin.storage
+            .from("models")
+            .upload(storagePath, glbBuf, {
+              contentType: "model/gltf-binary",
+              upsert: false,
+            });
           if (!upErr) {
             const { data: pub } = supabaseAdmin.storage.from("models").getPublicUrl(storagePath);
             if (pub.publicUrl) modelUrl = pub.publicUrl;
           } else {
-            console.warn("[3D GEN / server] storage upload failed, falling back to source URL:", upErr.message);
+            console.warn(
+              "[3D GEN / server] storage upload failed, falling back to source URL:",
+              upErr.message,
+            );
           }
         } else {
           console.warn("[3D GEN / server] glb fetch failed, keeping source URL:", glbRes.status);

@@ -14,7 +14,7 @@ interface LLMResponse {
 
 export async function chatWithLLM(
   messages: ChatMessage[],
-  options?: { temperature?: number; maxTokens?: number }
+  options?: { temperature?: number; maxTokens?: number },
 ): Promise<LLMResponse> {
   try {
     const res = await chatViaGateway({
@@ -41,11 +41,14 @@ export async function enhancePrompt(shortPrompt: string): Promise<LLMResponse> {
       },
       { role: "user", content: shortPrompt },
     ],
-    { temperature: 0.8, maxTokens: 220 }
+    { temperature: 0.8, maxTokens: 220 },
   );
 }
 
-export async function assistantChat(userMessage: string, history: ChatMessage[] = []): Promise<LLMResponse> {
+export async function assistantChat(
+  userMessage: string,
+  history: ChatMessage[] = [],
+): Promise<LLMResponse> {
   return chatWithLLM(
     [
       {
@@ -56,7 +59,7 @@ export async function assistantChat(userMessage: string, history: ChatMessage[] 
       ...history,
       { role: "user", content: userMessage },
     ],
-    { temperature: 0.7, maxTokens: 320 }
+    { temperature: 0.7, maxTokens: 320 },
   );
 }
 

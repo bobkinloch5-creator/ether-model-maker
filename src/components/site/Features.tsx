@@ -2,12 +2,36 @@ import { Box, ImageIcon, Palette, Layers, Globe, Sparkles } from "lucide-react";
 import { useScrollAnimate } from "@/hooks/useScrollAnimate";
 
 const features = [
-  { icon: Box, title: "Text to 3D", desc: "Type a prompt, get a clean, retopologized mesh ready for rigging." },
-  { icon: ImageIcon, title: "Image to 3D", desc: "Drop a reference image, reconstruct a faithful 3D model in seconds." },
-  { icon: Palette, title: "AI Texturing", desc: "Re-texture any model with prompt-driven PBR materials." },
-  { icon: Layers, title: "PBR Maps", desc: "Albedo, normal, roughness, AO — production-ready out of the box." },
-  { icon: Globe, title: "Second Life Ready", desc: "Optimized exports compatible with SL mesh and collada workflows." },
-  { icon: Sparkles, title: "In-world HUD", desc: "Generate assets directly from Second Life with our HUD integration." },
+  {
+    icon: Box,
+    title: "Text to 3D",
+    desc: "Type a prompt, get a clean, retopologized mesh ready for rigging.",
+  },
+  {
+    icon: ImageIcon,
+    title: "Image to 3D",
+    desc: "Drop a reference image, reconstruct a faithful 3D model in seconds.",
+  },
+  {
+    icon: Palette,
+    title: "AI Texturing",
+    desc: "Re-texture any model with prompt-driven PBR materials.",
+  },
+  {
+    icon: Layers,
+    title: "PBR Maps",
+    desc: "Albedo, normal, roughness, AO — production-ready out of the box.",
+  },
+  {
+    icon: Globe,
+    title: "Second Life Ready",
+    desc: "Optimized exports compatible with SL mesh and collada workflows.",
+  },
+  {
+    icon: Sparkles,
+    title: "In-world HUD",
+    desc: "Generate assets directly from Second Life with our HUD integration.",
+  },
 ];
 
 export function Features() {
@@ -33,8 +57,8 @@ export function Features() {
             One platform. <span className="gradient-text">Every asset.</span>
           </h2>
           <p className="mt-4 text-muted-foreground">
-            From the first idea to the final upload — KingDavez Studios handles modeling,
-            texturing and exports so you can ship faster.
+            From the first idea to the final upload — KingDavez Studios handles modeling, texturing
+            and exports so you can ship faster.
           </p>
         </div>
 
@@ -46,13 +70,10 @@ export function Features() {
             <div
               key={title}
               className={`group relative bg-card p-6 sm:p-8 transition-all duration-500 hover:bg-card/60 hover-lift ${
-                gridVisible
-                  ? "opacity-100 translate-y-0"
-                  : "opacity-0 translate-y-10"
+                gridVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
               }`}
               style={{ transitionDelay: gridVisible ? `${i * 100}ms` : "0ms" }}
             >
-
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--gradient-primary)] shadow-[0_8px_30px_-8px_oklch(0.7_0.22_305_/_0.6)] transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
                 <Icon className="h-5 w-5 text-white" />
               </div>

@@ -46,14 +46,22 @@ export const generateAIImage = createServerFn({ method: "POST" })
 
       if (!res.ok) {
         const txt = await res.text();
-        if (res.status === 429) return { ok: false as const, error: "Rate limit reached. Please try again shortly." };
-        if (res.status === 402) return { ok: false as const, error: "The site's AI image service is temporarily out of funds. Your credits weren't used — please try again later." };
-        return { ok: false as const, error: `AI gateway error ${res.status}: ${txt.slice(0, 200)}` };
+        if (res.status === 429)
+          return { ok: false as const, error: "Rate limit reached. Please try again shortly." };
+        if (res.status === 402)
+          return {
+            ok: false as const,
+            error:
+              "The site's AI image service is temporarily out of funds. Your credits weren't used — please try again later.",
+          };
+        return {
+          ok: false as const,
+          error: `AI gateway error ${res.status}: ${txt.slice(0, 200)}`,
+        };
       }
 
       const json = await res.json();
-      const imageUrl: string | undefined =
-        json?.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+      const imageUrl: string | undefined = json?.choices?.[0]?.message?.images?.[0]?.image_url?.url;
       if (!imageUrl) {
         return { ok: false as const, error: "AI gateway returned no image" };
       }
@@ -107,14 +115,22 @@ export const editAIImage = createServerFn({ method: "POST" })
 
       if (!res.ok) {
         const txt = await res.text();
-        if (res.status === 429) return { ok: false as const, error: "Rate limit reached. Please try again shortly." };
-        if (res.status === 402) return { ok: false as const, error: "The site's AI image service is temporarily out of funds. Your credits weren't used — please try again later." };
-        return { ok: false as const, error: `AI gateway error ${res.status}: ${txt.slice(0, 200)}` };
+        if (res.status === 429)
+          return { ok: false as const, error: "Rate limit reached. Please try again shortly." };
+        if (res.status === 402)
+          return {
+            ok: false as const,
+            error:
+              "The site's AI image service is temporarily out of funds. Your credits weren't used — please try again later.",
+          };
+        return {
+          ok: false as const,
+          error: `AI gateway error ${res.status}: ${txt.slice(0, 200)}`,
+        };
       }
 
       const json = await res.json();
-      const imageUrl: string | undefined =
-        json?.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+      const imageUrl: string | undefined = json?.choices?.[0]?.message?.images?.[0]?.image_url?.url;
       if (!imageUrl) {
         return { ok: false as const, error: "AI gateway returned no image" };
       }
@@ -124,4 +140,3 @@ export const editAIImage = createServerFn({ method: "POST" })
       return { ok: false as const, error: msg };
     }
   });
-

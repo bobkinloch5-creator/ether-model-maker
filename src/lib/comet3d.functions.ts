@@ -67,7 +67,15 @@ function findModelUrl(value: unknown): string | null {
   if (value && typeof value === "object") {
     const o = value as Record<string, unknown>;
     // Prefer obvious model fields first.
-    for (const key of ["model_url", "glb", "glb_url", "file_url", "result_url", "download_url", "url"]) {
+    for (const key of [
+      "model_url",
+      "glb",
+      "glb_url",
+      "file_url",
+      "result_url",
+      "download_url",
+      "url",
+    ]) {
       const v = o[key];
       if (typeof v === "string" && isModelUrl(v)) return v;
     }
@@ -176,7 +184,10 @@ export const generateComet3D = createServerFn({ method: "POST" })
           // have budget — a slow timeout means the job itself is slow.
           const elapsed = Date.now() - attemptStarted;
           if (attempt < MAX_ATTEMPTS && elapsed < FAST_FAIL_MS && Date.now() < OVERALL_DEADLINE) {
-            console.warn(`[COMET 3D] fetch threw fast (attempt ${attempt}, ${elapsed}ms), retrying`, fetchErr);
+            console.warn(
+              `[COMET 3D] fetch threw fast (attempt ${attempt}, ${elapsed}ms), retrying`,
+              fetchErr,
+            );
             await new Promise((r) => setTimeout(r, 1500 * attempt));
             continue;
           }
@@ -188,11 +199,16 @@ export const generateComet3D = createServerFn({ method: "POST" })
 
         const elapsed = Date.now() - attemptStarted;
         const fastFail = elapsed < FAST_FAIL_MS;
-        if (TRANSIENT.has(res.status) && attempt < MAX_ATTEMPTS && fastFail && Date.now() < OVERALL_DEADLINE) {
+        if (
+          TRANSIENT.has(res.status) &&
+          attempt < MAX_ATTEMPTS &&
+          fastFail &&
+          Date.now() < OVERALL_DEADLINE
+        ) {
           lastTransientStatus = res.status;
           console.warn(
             `[COMET 3D] transient ${res.status} after ${elapsed}ms (attempt ${attempt}/${MAX_ATTEMPTS}), retrying`,
-            text.slice(0, 200)
+            text.slice(0, 200),
           );
           await new Promise((r) => setTimeout(r, 2000 * attempt));
           continue;
@@ -208,7 +224,10 @@ export const generateComet3D = createServerFn({ method: "POST" })
         console.error("[COMET 3D] error", res.status, text.slice(0, 500));
         const lower = text.toLowerCase();
         if (res.status === 401 || res.status === 403) {
-          return { ok: false as const, error: "CometAPI rejected the API key. Check COMET_API_KEY." };
+          return {
+            ok: false as const,
+            error: "CometAPI rejected the API key. Check COMET_API_KEY.",
+          };
         }
         // Quota / billing — CometAPI returns these as 402 OR as a 200/4xx body
         // containing "quota"/"insufficient". Detect the message too.
@@ -226,16 +245,21 @@ export const generateComet3D = createServerFn({ method: "POST" })
           };
         }
         if (res.status === 429) {
-          return { ok: false as const, error: "CometAPI is rate-limiting requests. Please wait a moment and try again." };
+          return {
+            ok: false as const,
+            error: "CometAPI is rate-limiting requests. Please wait a moment and try again.",
+          };
         }
         if (TRANSIENT.has(res.status)) {
           return {
             ok: false as const,
-            error:
-              `CometAPI's gateway timed out (${res.status}) before Hunyuan3D finished. This is a connection limit on their side — the 3D job can take longer than their gateway allows, especially with textures on. Try again, or turn texture OFF for a faster, more reliable result.`,
+            error: `CometAPI's gateway timed out (${res.status}) before Hunyuan3D finished. This is a connection limit on their side — the 3D job can take longer than their gateway allows, especially with textures on. Try again, or turn texture OFF for a faster, more reliable result.`,
           };
         }
-        return { ok: false as const, error: `CometAPI failed (${res.status}): ${text.slice(0, 300)}` };
+        return {
+          ok: false as const,
+          error: `CometAPI failed (${res.status}): ${text.slice(0, 300)}`,
+        };
       }
 
       void lastTransientStatus;
@@ -244,13 +268,19 @@ export const generateComet3D = createServerFn({ method: "POST" })
       try {
         json = JSON.parse(text);
       } catch {
-        return { ok: false as const, error: `CometAPI returned a non-JSON response: ${text.slice(0, 200)}` };
+        return {
+          ok: false as const,
+          error: `CometAPI returned a non-JSON response: ${text.slice(0, 200)}`,
+        };
       }
       console.log("[COMET 3D] response", JSON.stringify(json).slice(0, 600));
 
       const sourceUrl = findModelUrl(json) || findAnyUrl(json);
       if (!sourceUrl) {
-        return { ok: false as const, error: `CometAPI did not return a model URL: ${text.slice(0, 300)}` };
+        return {
+          ok: false as const,
+          error: `CometAPI did not return a model URL: ${text.slice(0, 300)}`,
+        };
       }
 
       // Rehost the model to Supabase storage so it survives and serves over
@@ -265,17 +295,19 @@ export const generateComet3D = createServerFn({ method: "POST" })
           const ext = lower.includes(".obj")
             ? "obj"
             : lower.includes(".ply")
-            ? "ply"
-            : lower.includes(".fbx")
-            ? "fbx"
-            : lower.includes(".zip")
-            ? "zip"
-            : "glb";
+              ? "ply"
+              : lower.includes(".fbx")
+                ? "fbx"
+                : lower.includes(".zip")
+                  ? "zip"
+                  : "glb";
           const storagePath = `comet-outputs/${userId}/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
-          const { error: upErr } = await supabaseAdmin.storage.from("models").upload(storagePath, buf, {
-            contentType: ext === "glb" ? "model/gltf-binary" : "application/octet-stream",
-            upsert: false,
-          });
+          const { error: upErr } = await supabaseAdmin.storage
+            .from("models")
+            .upload(storagePath, buf, {
+              contentType: ext === "glb" ? "model/gltf-binary" : "application/octet-stream",
+              upsert: false,
+            });
           if (!upErr) {
             const { data: pub } = supabaseAdmin.storage.from("models").getPublicUrl(storagePath);
             if (pub.publicUrl) modelUrl = pub.publicUrl;
@@ -293,7 +325,10 @@ export const generateComet3D = createServerFn({ method: "POST" })
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       if (err instanceof Error && err.name === "TimeoutError") {
-        return { ok: false as const, error: "CometAPI took too long to generate the model. Please try again." };
+        return {
+          ok: false as const,
+          error: "CometAPI took too long to generate the model. Please try again.",
+        };
       }
       console.error("[COMET 3D] threw:", message);
       return { ok: false as const, error: message };

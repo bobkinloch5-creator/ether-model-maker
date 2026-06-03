@@ -20,7 +20,7 @@ const STEPS: Step[] = [
   {
     icon: <Wand2 className="h-6 w-6 text-primary" />,
     title: "Generate from text or image",
-    body: "Head to the Generate page, type what you want (e.g. \"low-poly medieval sword\") or upload a reference image. Press ⌘/Ctrl + Enter to fire it off. Export as GLB, OBJ, STL, or FBX — perfect for Second Life, Unity, Unreal, or Blender.",
+    body: 'Head to the Generate page, type what you want (e.g. "low-poly medieval sword") or upload a reference image. Press ⌘/Ctrl + Enter to fire it off. Export as GLB, OBJ, STL, or FBX — perfect for Second Life, Unity, Unreal, or Blender.',
   },
   {
     icon: <Palette className="h-6 w-6 text-primary" />,
@@ -30,7 +30,7 @@ const STEPS: Step[] = [
   {
     icon: <MessageCircle className="h-6 w-6 text-primary" />,
     title: "Stuck? Ask the assistant",
-    body: "The chat bubble (bottom-right) is an AI assistant that knows the whole app. Ask things like \"how do I export FBX?\" or \"what prompts work best for Second Life?\".",
+    body: 'The chat bubble (bottom-right) is an AI assistant that knows the whole app. Ask things like "how do I export FBX?" or "what prompts work best for Second Life?".',
   },
 ];
 

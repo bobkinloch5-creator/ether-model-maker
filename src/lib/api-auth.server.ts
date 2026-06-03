@@ -18,7 +18,11 @@ const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Max-Age": "86400",
 };
 
-export function jsonResponse(body: unknown, status = 200, extraHeaders: Record<string, string> = {}) {
+export function jsonResponse(
+  body: unknown,
+  status = 200,
+  extraHeaders: Record<string, string> = {},
+) {
   return new Response(JSON.stringify(body), {
     status,
     headers: {
@@ -34,7 +38,11 @@ export function corsPreflight() {
   return new Response(null, { status: 204, headers: CORS_HEADERS });
 }
 
-function extractKey(request: Request, urlKey: string | null, bodyKey?: string | null): string | null {
+function extractKey(
+  request: Request,
+  urlKey: string | null,
+  bodyKey?: string | null,
+): string | null {
   const auth = request.headers.get("authorization");
   if (auth) {
     const m = auth.match(/^Bearer\s+(.+)$/i);
@@ -65,7 +73,12 @@ export async function authenticateApiKey(
   const key = extractKey(request, url.searchParams.get("api_key"), options.bodyKey ?? null);
 
   if (!key || key.length < 8) {
-    return { ok: false, status: 401, error: "Missing API key. Send via Authorization: Bearer <key>, X-API-Key header, or ?api_key=." };
+    return {
+      ok: false,
+      status: 401,
+      error:
+        "Missing API key. Send via Authorization: Bearer <key>, X-API-Key header, or ?api_key=.",
+    };
   }
 
   // 1) Legacy: profile.api_key

@@ -18,42 +18,78 @@ export function Footer() {
                     Beta
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground">AI 3D generation for Second Life and beyond.</p>
+                <p className="text-xs text-muted-foreground">
+                  AI 3D generation for Second Life and beyond.
+                </p>
               </div>
             </div>
           </div>
 
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Site</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Site
+            </p>
             <div className="mt-3 flex flex-col gap-2 text-sm text-muted-foreground">
-              <a href="/second-life" className="hover:text-foreground transition">Second Life</a>
-              <a href="/docs" className="hover:text-foreground transition">Docs</a>
-              <a href="/faq" className="hover:text-foreground transition">FAQ</a>
-              <a href="/roadmap" className="hover:text-foreground transition">Roadmap</a>
-              <a href="/changelog" className="hover:text-foreground transition">What's New</a>
-              <a href="/tos" className="hover:text-foreground transition">Terms of Service</a>
+              <a href="/second-life" className="hover:text-foreground transition">
+                Second Life
+              </a>
+              <a href="/docs" className="hover:text-foreground transition">
+                Docs
+              </a>
+              <a href="/faq" className="hover:text-foreground transition">
+                FAQ
+              </a>
+              <a href="/roadmap" className="hover:text-foreground transition">
+                Roadmap
+              </a>
+              <a href="/changelog" className="hover:text-foreground transition">
+                What's New
+              </a>
+              <a href="/tos" className="hover:text-foreground transition">
+                Terms of Service
+              </a>
             </div>
           </div>
 
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Find us in Second Life</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Find us in Second Life
+            </p>
             <div className="mt-3 flex flex-col gap-2 text-sm text-muted-foreground">
-              <a href={SL_LINKS.marketplace} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 hover:text-foreground transition">
+              <a
+                href={SL_LINKS.marketplace}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 hover:text-foreground transition"
+              >
                 <ShoppingBag className="h-3.5 w-3.5" /> SL Marketplace store
               </a>
-              <a href={SL_LINKS.inworld} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 hover:text-foreground transition">
+              <a
+                href={SL_LINKS.inworld}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 hover:text-foreground transition"
+              >
                 <MapPin className="h-3.5 w-3.5" /> Thranduil (169, 250, 21)
               </a>
-            <a href={SL_LINKS.group} className="inline-flex items-center gap-1.5 hover:text-foreground transition">
+              <a
+                href={SL_LINKS.group}
+                className="inline-flex items-center gap-1.5 hover:text-foreground transition"
+              >
                 <Users className="h-3.5 w-3.5" /> Join our SL group
               </a>
             </div>
           </div>
 
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Contact</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Contact
+            </p>
             <div className="mt-3 flex flex-col gap-2 text-sm text-muted-foreground">
-              <a href="mailto:kinlochdavid8@gmail.com" className="inline-flex items-center gap-1.5 hover:text-foreground transition">
+              <a
+                href="mailto:kinlochdavid8@gmail.com"
+                className="inline-flex items-center gap-1.5 hover:text-foreground transition"
+              >
                 <Mail className="h-3.5 w-3.5" />
                 <span>kinlochdavid8@gmail.com</span>
               </a>

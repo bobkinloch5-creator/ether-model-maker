@@ -93,11 +93,7 @@ export const testLocal3DServer = createServerFn({ method: "POST" })
 
       const o = (json && typeof json === "object" ? json : {}) as Record<string, unknown>;
       const looksGradio =
-        "version" in o ||
-        "components" in o ||
-        "dependencies" in o ||
-        "app_id" in o ||
-        "root" in o;
+        "version" in o || "components" in o || "dependencies" in o || "app_id" in o || "root" in o;
       if (!looksGradio) {
         const healthUrl = `${base}/health`;
         try {
@@ -147,7 +143,9 @@ export const testLocal3DServer = createServerFn({ method: "POST" })
  */
 export const testGradioSpace = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { spaceUrl: string; apiName?: string; provider?: "hf" | "comfyui" | "local" }) => input)
+  .inputValidator(
+    (input: { spaceUrl: string; apiName?: string; provider?: "hf" | "comfyui" | "local" }) => input,
+  )
   .handler(async ({ context, data }) => {
     const { userId } = context;
     const { data: roleRow } = await supabaseAdmin
@@ -161,22 +159,28 @@ export const testGradioSpace = createServerFn({ method: "POST" })
     const base = (data.spaceUrl || "").trim().replace(/\/+$/, "");
     if (!base) return { ok: false as const, error: "Space URL is required" };
     let parsed: URL;
-    try { parsed = new URL(base); } catch { return { ok: false as const, error: `Invalid URL: ${base}` }; }
+    try {
+      parsed = new URL(base);
+    } catch {
+      return { ok: false as const, error: `Invalid URL: ${base}` };
+    }
     const host = parsed.hostname.toLowerCase();
     const isLocalHost = host === "localhost" || host === "127.0.0.1";
-    if (parsed.protocol !== "https:" && !isLocalHost) return { ok: false as const, error: "URL must use https" };
+    if (parsed.protocol !== "https:" && !isLocalHost)
+      return { ok: false as const, error: "URL must use https" };
 
     // Auto-detect provider if not specified
     const provider: "hf" | "comfyui" | "local" =
-      data.provider ??
-      (host.endsWith(".hf.space") ? "hf" : "local");
+      data.provider ?? (host.endsWith(".hf.space") ? "hf" : "local");
 
     const headers = { "ngrok-skip-browser-warning": "true", Accept: "application/json" };
 
     const fetchWithTimeout = (url: string) =>
       Promise.race([
         fetch(url, { headers }).catch((e) => ({ __err: e })),
-        new Promise((resolve) => setTimeout(() => resolve({ __err: new Error("timeout after 6s") }), 6_000)),
+        new Promise((resolve) =>
+          setTimeout(() => resolve({ __err: new Error("timeout after 6s") }), 6_000),
+        ),
       ]) as Promise<Response | { __err: unknown }>;
 
     try {
@@ -190,15 +194,18 @@ export const testGradioSpace = createServerFn({ method: "POST" })
         provider === "hf"
           ? ["/gradio_api/info", "/info", "/config"]
           : provider === "comfyui"
-          ? ["/system_stats", "/queue", "/"]
-        : ["/gradio_api/info", "/info", "/config", "/health"];
+            ? ["/system_stats", "/queue", "/"]
+            : ["/gradio_api/info", "/info", "/config", "/health"];
 
       let res: Response | { __err: unknown } | null = null;
       let usedPath = "";
       for (const p of probePaths) {
         usedPath = p;
         const r = await fetchWithTimeout(`${base}${p}`);
-        if (r instanceof Response && r.ok) { res = r; break; }
+        if (r instanceof Response && r.ok) {
+          res = r;
+          break;
+        }
         res = r;
       }
 
@@ -216,7 +223,10 @@ export const testGradioSpace = createServerFn({ method: "POST" })
 
       const text = await res.text();
       if (!res.ok) {
-        return { ok: false as const, error: `HTTP ${res.status} from ${base}${usedPath}: ${text.slice(0, 220)}` };
+        return {
+          ok: false as const,
+          error: `HTTP ${res.status} from ${base}${usedPath}: ${text.slice(0, 220)}`,
+        };
       }
 
       // ComfyUI probes return JSON for /system_stats and /queue, HTML for /.
@@ -230,16 +240,26 @@ export const testGradioSpace = createServerFn({ method: "POST" })
       }
 
       let json: any;
-      try { json = JSON.parse(text); } catch {
+      try {
+        json = JSON.parse(text);
+      } catch {
         return { ok: false as const, error: `Non-JSON response from ${base}${usedPath}` };
       }
 
       const apiName = data.apiName?.trim();
-      const namedEndpoints = json?.named_endpoints && typeof json.named_endpoints === "object"
-        ? Object.keys(json.named_endpoints) : [];
+      const namedEndpoints =
+        json?.named_endpoints && typeof json.named_endpoints === "object"
+          ? Object.keys(json.named_endpoints)
+          : [];
       const deps = Array.isArray(json?.dependencies) ? json.dependencies : [];
       const depNames = deps
-        .map((d: any) => (typeof d?.api_name === "string" ? (d.api_name.startsWith("/") ? d.api_name : `/${d.api_name}`) : null))
+        .map((d: any) =>
+          typeof d?.api_name === "string"
+            ? d.api_name.startsWith("/")
+              ? d.api_name
+              : `/${d.api_name}`
+            : null,
+        )
         .filter(Boolean) as string[];
       const endpoints = Array.from(new Set([...namedEndpoints, ...depNames]));
 
@@ -253,7 +273,11 @@ export const testGradioSpace = createServerFn({ method: "POST" })
           endpoints,
         } as const;
       }
-      return { ok: true as const, message: `Connected. Found ${endpoints.length} endpoints.`, endpoints };
+      return {
+        ok: true as const,
+        message: `Connected. Found ${endpoints.length} endpoints.`,
+        endpoints,
+      };
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       return { ok: false as const, error: `Failed to reach ${base}: ${msg}` };

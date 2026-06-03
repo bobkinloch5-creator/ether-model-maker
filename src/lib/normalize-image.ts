@@ -7,7 +7,7 @@
  */
 export async function normalizeImageToJpeg(
   file: File,
-  opts: { maxSide?: number; quality?: number } = {}
+  opts: { maxSide?: number; quality?: number } = {},
 ): Promise<string> {
   const maxSide = opts.maxSide ?? 2048;
   const quality = opts.quality ?? 0.92;

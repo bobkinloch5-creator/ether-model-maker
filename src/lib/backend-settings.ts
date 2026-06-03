@@ -55,7 +55,13 @@ export function getBackendConfig(): BackendConfig {
           extraArgs: known.extraArgs,
         };
       }
-      if (known && (known.id === "auto" || known.id === "stable-fast-3d" || known.id === "triposr-official" || known.id === "triposr")) {
+      if (
+        known &&
+        (known.id === "auto" ||
+          known.id === "stable-fast-3d" ||
+          known.id === "triposr-official" ||
+          known.id === "triposr")
+      ) {
         return {
           presetId: known.id,
           spaceUrl: known.spaceUrl,
@@ -70,7 +76,9 @@ export function getBackendConfig(): BackendConfig {
         extraArgs: parsed.extraArgs ?? known?.extraArgs ?? DEFAULT_PRESET.extraArgs,
       };
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   return defaults();
 }
 

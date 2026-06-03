@@ -28,14 +28,14 @@ export const Route = createFileRoute("/admin/ledger")({
     meta: [
       { title: "Credit Ledger — Admin" },
       { name: "robots", content: "noindex,nofollow" },
-    { name: "twitter:description", content: "Owner-only credit ledger and transaction history." },
-    { name: "twitter:title", content: "Credit Ledger — KingDavez Studios" },
-    { name: "twitter:card", content: "summary" },
-    { property: "og:url", content: "https://kingdavez.click/admin/ledger" },
-    { property: "og:description", content: "Owner-only credit ledger and transaction history." },
-    { property: "og:title", content: "Credit Ledger — KingDavez Studios" },
+      { name: "twitter:description", content: "Owner-only credit ledger and transaction history." },
+      { name: "twitter:title", content: "Credit Ledger — KingDavez Studios" },
+      { name: "twitter:card", content: "summary" },
+      { property: "og:url", content: "https://kingdavez.click/admin/ledger" },
+      { property: "og:description", content: "Owner-only credit ledger and transaction history." },
+      { property: "og:title", content: "Credit Ledger — KingDavez Studios" },
     ],
-  links: [{ rel: "canonical", href: "https://kingdavez.click/admin/ledger" }],
+    links: [{ rel: "canonical", href: "https://kingdavez.click/admin/ledger" }],
   }),
   component: AdminLedgerPage,
 });
@@ -146,7 +146,8 @@ function AdminLedgerPage() {
   }, [rows, search, kindFilter, userFilter, profilesById]);
 
   const totals = useMemo(() => {
-    let granted = 0, spent = 0;
+    let granted = 0,
+      spent = 0;
     filtered.forEach((r) => {
       if (r.amount >= 0) granted += r.amount;
       else spent += r.amount;
@@ -192,7 +193,15 @@ function AdminLedgerPage() {
   };
 
   const exportCsv = () => {
-    const header = ["created_at", "user_email", "kind", "amount", "balance_after", "reason", "reference_id"];
+    const header = [
+      "created_at",
+      "user_email",
+      "kind",
+      "amount",
+      "balance_after",
+      "reason",
+      "reference_id",
+    ];
     const lines = [header.join(",")];
     filtered.forEach((r) => {
       const p = profilesById.get(r.user_id);
@@ -204,7 +213,9 @@ function AdminLedgerPage() {
         r.balance_after ?? "",
         (r.reason ?? "").replace(/"/g, '""'),
         r.reference_id ?? "",
-      ].map((v) => `"${String(v)}"`).join(",");
+      ]
+        .map((v) => `"${String(v)}"`)
+        .join(",");
       lines.push(row);
     });
     const blob = new Blob([lines.join("\n")], { type: "text/csv" });
@@ -228,8 +239,13 @@ function AdminLedgerPage() {
         <div>
           <Crown className="mx-auto h-10 w-10 text-muted-foreground" />
           <h1 className="mt-3 font-display text-2xl font-semibold">Owners only</h1>
-          <p className="mt-2 text-sm text-muted-foreground">This page is restricted to site owners.</p>
-          <Link to="/dashboard" className="mt-4 inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 text-sm hover:bg-white/10">
+          <p className="mt-2 text-sm text-muted-foreground">
+            This page is restricted to site owners.
+          </p>
+          <Link
+            to="/dashboard"
+            className="mt-4 inline-flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 text-sm hover:bg-white/10"
+          >
             <ArrowLeft className="h-4 w-4" /> Dashboard
           </Link>
         </div>
@@ -242,7 +258,10 @@ function AdminLedgerPage() {
       <header className="sticky top-0 z-40 border-b border-white/10 glass">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
           <div className="flex items-center gap-3">
-            <Link to="/admin" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+            <Link
+              to="/admin"
+              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+            >
               <ArrowLeft className="h-4 w-4" /> Admin
             </Link>
             <span className="text-muted-foreground/40">/</span>
@@ -272,9 +291,17 @@ function AdminLedgerPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Stat label="Entries shown" value={filtered.length.toLocaleString()} />
-          <Stat label="Granted" value={`+${totals.granted.toLocaleString()}`} accent="text-emerald-300" />
+          <Stat
+            label="Granted"
+            value={`+${totals.granted.toLocaleString()}`}
+            accent="text-emerald-300"
+          />
           <Stat label="Spent" value={totals.spent.toLocaleString()} accent="text-rose-300" />
-          <Stat label="Net flow" value={`${totals.net >= 0 ? "+" : ""}${totals.net.toLocaleString()}`} accent={totals.net >= 0 ? "text-emerald-300" : "text-rose-300"} />
+          <Stat
+            label="Net flow"
+            value={`${totals.net >= 0 ? "+" : ""}${totals.net.toLocaleString()}`}
+            accent={totals.net >= 0 ? "text-emerald-300" : "text-rose-300"}
+          />
         </div>
 
         {/* Filters */}
@@ -297,7 +324,9 @@ function AdminLedgerPage() {
                 className="h-10 rounded-xl border border-white/10 bg-black/30 px-3 text-sm"
               >
                 {kindOptions.map((k) => (
-                  <option key={k} value={k}>{k === "all" ? "All kinds" : kindMeta(k).label}</option>
+                  <option key={k} value={k}>
+                    {k === "all" ? "All kinds" : kindMeta(k).label}
+                  </option>
                 ))}
               </select>
               <select
@@ -307,7 +336,9 @@ function AdminLedgerPage() {
               >
                 <option value="all">All users</option>
                 {profiles.map((p) => (
-                  <option key={p.id} value={p.id}>{p.email}</option>
+                  <option key={p.id} value={p.id}>
+                    {p.email}
+                  </option>
                 ))}
               </select>
             </div>
@@ -317,7 +348,9 @@ function AdminLedgerPage() {
         {/* Table */}
         <div className="mt-6 glass rounded-2xl p-4">
           {loading ? (
-            <div className="grid place-items-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary/60" /></div>
+            <div className="grid place-items-center py-12">
+              <Loader2 className="h-6 w-6 animate-spin text-primary/60" />
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -339,30 +372,47 @@ function AdminLedgerPage() {
                     const Icon = meta.icon;
                     return (
                       <tr key={r.id} className="border-b border-white/5 hover:bg-white/[0.02]">
-                        <td className="py-2 pr-4 text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</td>
+                        <td className="py-2 pr-4 text-xs text-muted-foreground">
+                          {new Date(r.created_at).toLocaleString()}
+                        </td>
                         <td className="py-2 pr-4">
-                          <button onClick={() => openDrill(r.user_id)} className="text-left hover:text-primary-glow transition">
+                          <button
+                            onClick={() => openDrill(r.user_id)}
+                            className="text-left hover:text-primary-glow transition"
+                          >
                             <div className="font-medium">{p?.display_name || "—"}</div>
-                            <div className="text-xs text-muted-foreground">{p?.email ?? r.user_id.slice(0, 8)}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {p?.email ?? r.user_id.slice(0, 8)}
+                            </div>
                           </button>
                         </td>
                         <td className="py-2 pr-4">
-                          <span className={`inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-xs ${meta.color}`}>
+                          <span
+                            className={`inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-xs ${meta.color}`}
+                          >
                             <Icon className="h-3 w-3" /> {meta.label}
                           </span>
                         </td>
-                        <td className={`py-2 pr-4 text-right font-mono font-semibold ${r.amount > 0 ? "text-emerald-300" : r.amount < 0 ? "text-rose-300" : "text-muted-foreground"}`}>
+                        <td
+                          className={`py-2 pr-4 text-right font-mono font-semibold ${r.amount > 0 ? "text-emerald-300" : r.amount < 0 ? "text-rose-300" : "text-muted-foreground"}`}
+                        >
                           {r.amount > 0 && <ArrowUpRight className="inline h-3 w-3" />}
                           {r.amount < 0 && <ArrowDownRight className="inline h-3 w-3" />}
-                          {r.amount > 0 ? "+" : ""}{r.amount.toLocaleString()}
+                          {r.amount > 0 ? "+" : ""}
+                          {r.amount.toLocaleString()}
                         </td>
                         <td className="py-2 pr-4 text-right font-mono text-xs text-muted-foreground">
                           {r.balance_after?.toLocaleString() ?? "—"}
                         </td>
-                        <td className="py-2 pr-4 text-xs text-muted-foreground truncate max-w-[260px]">{r.reason || "—"}</td>
+                        <td className="py-2 pr-4 text-xs text-muted-foreground truncate max-w-[260px]">
+                          {r.reason || "—"}
+                        </td>
                         <td className="py-2 pr-4 text-right">
                           <button
-                            onClick={() => { setGrantUserId(r.user_id); setGrantOpen(true); }}
+                            onClick={() => {
+                              setGrantUserId(r.user_id);
+                              setGrantOpen(true);
+                            }}
                             className="rounded-md border border-white/10 bg-white/5 p-1 hover:bg-white/10"
                             title="Grant credits to this user"
                           >
@@ -373,12 +423,18 @@ function AdminLedgerPage() {
                     );
                   })}
                   {filtered.length === 0 && (
-                    <tr><td colSpan={7} className="py-12 text-center text-sm text-muted-foreground">No ledger entries match.</td></tr>
+                    <tr>
+                      <td colSpan={7} className="py-12 text-center text-sm text-muted-foreground">
+                        No ledger entries match.
+                      </td>
+                    </tr>
                   )}
                 </tbody>
               </table>
               {filtered.length > 500 && (
-                <p className="mt-2 text-xs text-muted-foreground text-center">Showing first 500 of {filtered.length}. Refine filters or export CSV.</p>
+                <p className="mt-2 text-xs text-muted-foreground text-center">
+                  Showing first 500 of {filtered.length}. Refine filters or export CSV.
+                </p>
               )}
             </div>
           )}
@@ -396,48 +452,82 @@ function AdminLedgerPage() {
             <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-background/95 px-5 py-4 backdrop-blur">
               <div>
                 <div className="text-xs text-muted-foreground">User drill-down</div>
-                <div className="font-display font-semibold">{profilesById.get(drillUserId)?.email}</div>
+                <div className="font-display font-semibold">
+                  {profilesById.get(drillUserId)?.email}
+                </div>
                 <div className="mt-1 text-xs text-muted-foreground">
-                  Balance: <span className="font-mono text-foreground">{profilesById.get(drillUserId)?.credits.toLocaleString()}</span>
-                  {profilesById.get(drillUserId)?.is_owner && <Crown className="ml-1.5 inline h-3 w-3 text-primary-glow" />}
+                  Balance:{" "}
+                  <span className="font-mono text-foreground">
+                    {profilesById.get(drillUserId)?.credits.toLocaleString()}
+                  </span>
+                  {profilesById.get(drillUserId)?.is_owner && (
+                    <Crown className="ml-1.5 inline h-3 w-3 text-primary-glow" />
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-1.5">
                 <button
-                  onClick={() => { setGrantUserId(drillUserId); setGrantOpen(true); }}
+                  onClick={() => {
+                    setGrantUserId(drillUserId);
+                    setGrantOpen(true);
+                  }}
                   className="inline-flex h-8 items-center gap-1 rounded-lg bg-[var(--gradient-primary)] px-2.5 text-xs font-medium text-white"
                 >
                   <Plus className="h-3 w-3" /> Grant
                 </button>
-                <button onClick={() => setDrillUserId(null)} className="rounded-lg p-1.5 hover:bg-white/10"><X className="h-4 w-4" /></button>
+                <button
+                  onClick={() => setDrillUserId(null)}
+                  className="rounded-lg p-1.5 hover:bg-white/10"
+                >
+                  <X className="h-4 w-4" />
+                </button>
               </div>
             </div>
             <div className="p-5">
               {drillLoading ? (
-                <div className="grid place-items-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary/60" /></div>
+                <div className="grid place-items-center py-12">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary/60" />
+                </div>
               ) : drillRows.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">No ledger entries yet.</p>
+                <p className="text-sm text-muted-foreground text-center py-8">
+                  No ledger entries yet.
+                </p>
               ) : (
                 <ol className="space-y-2">
                   {drillRows.map((r) => {
                     const meta = kindMeta(r.kind);
                     const Icon = meta.icon;
                     return (
-                      <li key={r.id} className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-3">
-                        <div className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-white/5 ${meta.color}`}>
+                      <li
+                        key={r.id}
+                        className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-3"
+                      >
+                        <div
+                          className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-white/5 ${meta.color}`}
+                        >
                           <Icon className="h-4 w-4" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-2">
                             <span className="text-sm font-medium">{meta.label}</span>
-                            <span className={`font-mono text-sm font-semibold ${r.amount > 0 ? "text-emerald-300" : r.amount < 0 ? "text-rose-300" : "text-muted-foreground"}`}>
-                              {r.amount > 0 ? "+" : ""}{r.amount.toLocaleString()}
+                            <span
+                              className={`font-mono text-sm font-semibold ${r.amount > 0 ? "text-emerald-300" : r.amount < 0 ? "text-rose-300" : "text-muted-foreground"}`}
+                            >
+                              {r.amount > 0 ? "+" : ""}
+                              {r.amount.toLocaleString()}
                             </span>
                           </div>
-                          <div className="mt-0.5 text-xs text-muted-foreground truncate">{r.reason || "—"}</div>
+                          <div className="mt-0.5 text-xs text-muted-foreground truncate">
+                            {r.reason || "—"}
+                          </div>
                           <div className="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
                             <span>{new Date(r.created_at).toLocaleString()}</span>
-                            <span>Balance: <span className="font-mono">{r.balance_after?.toLocaleString() ?? "—"}</span></span>
+                            <span>
+                              Balance:{" "}
+                              <span className="font-mono">
+                                {r.balance_after?.toLocaleString() ?? "—"}
+                              </span>
+                            </span>
                           </div>
                         </div>
                       </li>
@@ -452,16 +542,28 @@ function AdminLedgerPage() {
 
       {/* Grant credits modal */}
       {grantOpen && (
-        <div className="fixed inset-0 z-[60] grid place-items-center bg-black/70 backdrop-blur-sm p-4" onClick={() => setGrantOpen(false)}>
-          <div className="w-full max-w-md glass rounded-2xl p-6 animate-scale-in" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 z-[60] grid place-items-center bg-black/70 backdrop-blur-sm p-4"
+          onClick={() => setGrantOpen(false)}
+        >
+          <div
+            className="w-full max-w-md glass rounded-2xl p-6 animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between">
               <h3 className="font-display text-lg font-semibold flex items-center gap-2">
                 <Coins className="h-5 w-5 text-amber-300" /> Grant credits
               </h3>
-              <button onClick={() => setGrantOpen(false)} className="rounded-lg p-1 hover:bg-white/10"><X className="h-4 w-4" /></button>
+              <button
+                onClick={() => setGrantOpen(false)}
+                className="rounded-lg p-1 hover:bg-white/10"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Logged in the ledger as <span className="font-mono">admin_adjustment</span>. Use a negative number to remove credits.
+              Logged in the ledger as <span className="font-mono">admin_adjustment</span>. Use a
+              negative number to remove credits.
             </p>
             <div className="mt-4 space-y-3">
               <div>
@@ -473,7 +575,9 @@ function AdminLedgerPage() {
                 >
                   <option value="">— pick a user —</option>
                   {profiles.map((p) => (
-                    <option key={p.id} value={p.id}>{p.email} ({p.credits.toLocaleString()})</option>
+                    <option key={p.id} value={p.id}>
+                      {p.email} ({p.credits.toLocaleString()})
+                    </option>
                   ))}
                 </select>
               </div>
@@ -493,14 +597,20 @@ function AdminLedgerPage() {
                         type="button"
                         onClick={() => setGrantAmount(String(n))}
                         className="rounded-lg border border-white/10 bg-white/5 px-2 text-xs hover:bg-white/10"
-                      >+{n.toLocaleString()}</button>
+                      >
+                        +{n.toLocaleString()}
+                      </button>
                     ))}
                     <button
                       type="button"
-                      onClick={() => setGrantAmount("-" + Math.abs(parseInt(grantAmount || "0", 10) || 0))}
+                      onClick={() =>
+                        setGrantAmount("-" + Math.abs(parseInt(grantAmount || "0", 10) || 0))
+                      }
                       className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-2 text-xs text-rose-200 hover:bg-rose-500/20"
                       title="Flip sign"
-                    ><Minus className="h-3 w-3" /></button>
+                    >
+                      <Minus className="h-3 w-3" />
+                    </button>
                   </div>
                 </div>
               </div>
@@ -520,7 +630,11 @@ function AdminLedgerPage() {
                 disabled={granting || !grantUserId}
                 className="h-11 w-full rounded-xl bg-[var(--gradient-primary)] text-sm font-medium text-white disabled:opacity-50"
               >
-                {granting ? <Loader2 className="inline h-4 w-4 animate-spin" /> : "Apply adjustment"}
+                {granting ? (
+                  <Loader2 className="inline h-4 w-4 animate-spin" />
+                ) : (
+                  "Apply adjustment"
+                )}
               </button>
             </div>
           </div>

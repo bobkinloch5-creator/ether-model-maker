@@ -71,7 +71,11 @@ export function getAccountPlanLabel(planKey?: string | null, planName?: string |
   return getCreditPlan(planKey)?.name ?? FREE_PLAN_NAME;
 }
 
-export function createPaypalMeUrl(plan: CreditPlan, purchaseIntentId: string, email?: string | null): string {
+export function createPaypalMeUrl(
+  plan: CreditPlan,
+  purchaseIntentId: string,
+  email?: string | null,
+): string {
   const note = encodeURIComponent(
     [
       "KingDavez Studios",

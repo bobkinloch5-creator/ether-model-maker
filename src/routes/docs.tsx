@@ -26,7 +26,11 @@ export const Route = createFileRoute("/docs")({
         content:
           "Complete documentation for KingDavez Studios: text-to-3D, image-to-3D, PBR textures, REST API, Second Life integration, credits, teams and more.",
       },
-      { name: "keywords", content: "AI 3D documentation, text to 3D guide, image to 3D tutorial, PBR texture guide, Second Life API, 3D model API reference, GLB export guide" },
+      {
+        name: "keywords",
+        content:
+          "AI 3D documentation, text to 3D guide, image to 3D tutorial, PBR texture guide, Second Life API, 3D model API reference, GLB export guide",
+      },
       { property: "og:title", content: "Docs — AI 3D Generation Guides & API Reference" },
       {
         property: "og:description",
@@ -34,9 +38,13 @@ export const Route = createFileRoute("/docs")({
           "Guides, API reference and integrations for the KingDavez AI 3D generation platform.",
       },
       { property: "og:url", content: "https://kingdavez.click/docs" },
-    { name: "twitter:card", content: "summary_large_image" },
-    { name: "twitter:title", content: "Docs — KingDavez Studios AI 3D API & Guides" },
-    { name: "twitter:description", content: "Documentation for KingDavez Studios AI 3D generation API, integrations, and developer guides." },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Docs — KingDavez Studios AI 3D API & Guides" },
+      {
+        name: "twitter:description",
+        content:
+          "Documentation for KingDavez Studios AI 3D generation API, integrations, and developer guides.",
+      },
     ],
     links: [{ rel: "canonical", href: "https://kingdavez.click/docs" }],
   }),
@@ -74,8 +82,8 @@ const sections: Section[] = [
           page, pick <b>Text → 3D</b> or <b>Image → 3D</b>, and describe what you want.
         </li>
         <li>
-          When the job finishes, download <b>.GLB</b>, <b>.FBX</b> and the PBR
-          texture pack from your{" "}
+          When the job finishes, download <b>.GLB</b>, <b>.FBX</b> and the PBR texture pack from
+          your{" "}
           <Link to="/dashboard" className="text-primary-glow hover:underline">
             dashboard
           </Link>
@@ -134,8 +142,8 @@ const sections: Section[] = [
     body: (
       <div className="space-y-4 text-sm text-muted-foreground">
         <p>
-          Every model is optimized for the SL upload pipeline: low Land Impact,
-          collapsed LODs, square 1024 textures and clean UVs.
+          Every model is optimized for the SL upload pipeline: low Land Impact, collapsed LODs,
+          square 1024 textures and clean UVs.
         </p>
 
         <div className="rounded-xl border border-primary/30 bg-primary/5 p-4">
@@ -143,8 +151,8 @@ const sections: Section[] = [
             In-world generator HUD
           </p>
           <p className="mt-1 text-xs">
-            Drop our LSL script into any prim. Touch it, type a prompt in chat,
-            and the model is queued against <b>your</b> KingDavez credits.
+            Drop our LSL script into any prim. Touch it, type a prompt in chat, and the model is
+            queued against <b>your</b> KingDavez credits.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             <a
@@ -163,7 +171,10 @@ const sections: Section[] = [
           </div>
           <ol className="mt-3 space-y-1.5 list-decimal pl-5 marker:text-primary-glow text-xs">
             <li>Create a new script inside any in-world object.</li>
-            <li>Paste the contents of <code className="text-foreground">kingdavez-generator.lsl</code>.</li>
+            <li>
+              Paste the contents of <code className="text-foreground">kingdavez-generator.lsl</code>
+              .
+            </li>
             <li>
               Replace <code className="text-foreground">API_KEY</code> with your key from the{" "}
               <Link to="/dashboard" className="text-primary-glow hover:underline">
@@ -171,12 +182,17 @@ const sections: Section[] = [
               </Link>
               .
             </li>
-            <li>Touch the object and type your prompt — the job appears in your dashboard within seconds.</li>
+            <li>
+              Touch the object and type your prompt — the job appears in your dashboard within
+              seconds.
+            </li>
           </ol>
         </div>
 
         <ul className="space-y-2 list-disc pl-5 marker:text-primary-glow">
-          <li>In-world store: <b>Thranduil 169, 250, 21</b></li>
+          <li>
+            In-world store: <b>Thranduil 169, 250, 21</b>
+          </li>
           <li>
             Marketplace:{" "}
             <a
@@ -218,7 +234,7 @@ const sections: Section[] = [
           .
         </p>
         <div className="rounded-xl border border-white/10 bg-black/40 p-4 font-mono text-xs text-foreground/80 overflow-x-auto">
-{`curl https://kingdavez.click/api/public/v1/me \\
+          {`curl https://kingdavez.click/api/public/v1/me \\
   -H "Authorization: Bearer kd_live_xxxxxxxx"`}
         </div>
         <div className="grid sm:grid-cols-2 gap-3">
@@ -248,7 +264,9 @@ const sections: Section[] = [
     blurb: "Create, rotate and revoke keys from the dashboard.",
     body: (
       <ul className="space-y-2 text-sm text-muted-foreground list-disc pl-5 marker:text-primary-glow">
-        <li>Keys are prefixed with <code className="text-foreground">kd_live_</code>.</li>
+        <li>
+          Keys are prefixed with <code className="text-foreground">kd_live_</code>.
+        </li>
         <li>Treat them as secrets — never commit to git or expose in client code.</li>
         <li>Each call consumes credits from the key owner's balance.</li>
         <li>Rate-limited per key; bursts return HTTP 429 with a Retry-After header.</li>
@@ -263,8 +281,8 @@ const sections: Section[] = [
     body: (
       <div className="space-y-2 text-sm text-muted-foreground">
         <p>
-          Each generation consumes credits based on complexity and resolution.
-          Top up any time on the{" "}
+          Each generation consumes credits based on complexity and resolution. Top up any time on
+          the{" "}
           <Link to="/credits" className="text-primary-glow hover:underline">
             credits page
           </Link>{" "}
@@ -287,8 +305,7 @@ const sections: Section[] = [
     blurb: "Share a credit pool with collaborators.",
     body: (
       <p className="text-sm text-muted-foreground">
-        Invite members to a team to share credits, assets and API keys. Manage
-        roles on the{" "}
+        Invite members to a team to share credits, assets and API keys. Manage roles on the{" "}
         <Link to="/teams" className="text-primary-glow hover:underline">
           teams page
         </Link>
@@ -306,7 +323,13 @@ const sections: Section[] = [
         <li>All traffic uses TLS 1.3.</li>
         <li>API keys are hashed at rest; raw values are only shown once on creation.</li>
         <li>Generated assets are private to your account by default.</li>
-        <li>Full terms on the <Link to="/tos" className="text-primary-glow hover:underline">Terms of Service</Link> page.</li>
+        <li>
+          Full terms on the{" "}
+          <Link to="/tos" className="text-primary-glow hover:underline">
+            Terms of Service
+          </Link>{" "}
+          page.
+        </li>
       </ul>
     ),
   },
@@ -329,8 +352,8 @@ function DocsPage() {
               Build with KingDavez
             </h1>
             <p className="mt-4 text-muted-foreground">
-              Everything you need to generate, integrate and ship 3D assets —
-              from your first prompt to a production-grade API integration.
+              Everything you need to generate, integrate and ship 3D assets — from your first prompt
+              to a production-grade API integration.
             </p>
           </div>
 

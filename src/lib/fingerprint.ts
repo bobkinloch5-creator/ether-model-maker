@@ -9,7 +9,9 @@ async function sha256(input: string): Promise<string> {
     return `fb_${h.toString(16)}`;
   }
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(input));
-  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+  return Array.from(new Uint8Array(buf))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 function canvasSignature(): string {
@@ -51,6 +53,8 @@ export async function getDeviceFingerprint(): Promise<string> {
     canvasSignature(),
   ];
   const hash = await sha256(parts.join("|"));
-  try { localStorage.setItem("kd_fp_v1", hash); } catch {}
+  try {
+    localStorage.setItem("kd_fp_v1", hash);
+  } catch {}
   return hash;
 }

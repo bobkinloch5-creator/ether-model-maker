@@ -26,8 +26,14 @@ export class DAEExporter {
       if (!pos) return;
       for (let i = 0; i < pos.count; i++) {
         positions.push(pos.getX(i), pos.getY(i), pos.getZ(i));
-        if (nrm) { normals.push(nrm.getX(i), nrm.getY(i), nrm.getZ(i)); hasNormals = true; }
-        if (uv) { uvs.push(uv.getX(i), uv.getY(i)); hasUVs = true; }
+        if (nrm) {
+          normals.push(nrm.getX(i), nrm.getY(i), nrm.getZ(i));
+          hasNormals = true;
+        }
+        if (uv) {
+          uvs.push(uv.getX(i), uv.getY(i));
+          hasUVs = true;
+        }
       }
       const idx = geom.index;
       if (idx) {
@@ -39,16 +45,22 @@ export class DAEExporter {
     });
 
     const date = new Date().toISOString();
-    const posStr = positions.map(v => v.toFixed(6)).join(" ");
-    const nrmStr = normals.map(v => v.toFixed(6)).join(" ");
-    const uvStr = uvs.map(v => v.toFixed(6)).join(" ");
+    const posStr = positions.map((v) => v.toFixed(6)).join(" ");
+    const nrmStr = normals.map((v) => v.toFixed(6)).join(" ");
+    const uvStr = uvs.map((v) => v.toFixed(6)).join(" ");
     const triCount = indices.length / 3;
 
     // Build interleaved <p> indices per input stream
     let stride = 1;
     let inputs = `<input semantic="VERTEX" source="#${name}-vertices" offset="0"/>`;
-    if (hasNormals) { inputs += `<input semantic="NORMAL" source="#${name}-normals" offset="${stride}"/>`; stride++; }
-    if (hasUVs) { inputs += `<input semantic="TEXCOORD" source="#${name}-uvs" offset="${stride}" set="0"/>`; stride++; }
+    if (hasNormals) {
+      inputs += `<input semantic="NORMAL" source="#${name}-normals" offset="${stride}"/>`;
+      stride++;
+    }
+    if (hasUVs) {
+      inputs += `<input semantic="TEXCOORD" source="#${name}-uvs" offset="${stride}" set="0"/>`;
+      stride++;
+    }
     const pData: number[] = [];
     for (let i = 0; i < indices.length; i++) {
       const v = indices[i];
@@ -91,22 +103,30 @@ export class DAEExporter {
             </accessor>
           </technique_common>
         </source>
-        ${hasNormals ? `<source id="${name}-normals">
+        ${
+          hasNormals
+            ? `<source id="${name}-normals">
           <float_array id="${name}-normals-array" count="${normals.length}">${nrmStr}</float_array>
           <technique_common>
             <accessor source="#${name}-normals-array" count="${normals.length / 3}" stride="3">
               <param name="X" type="float"/><param name="Y" type="float"/><param name="Z" type="float"/>
             </accessor>
           </technique_common>
-        </source>` : ""}
-        ${hasUVs ? `<source id="${name}-uvs">
+        </source>`
+            : ""
+        }
+        ${
+          hasUVs
+            ? `<source id="${name}-uvs">
           <float_array id="${name}-uvs-array" count="${uvs.length}">${uvStr}</float_array>
           <technique_common>
             <accessor source="#${name}-uvs-array" count="${uvs.length / 2}" stride="2">
               <param name="S" type="float"/><param name="T" type="float"/>
             </accessor>
           </technique_common>
-        </source>` : ""}
+        </source>`
+            : ""
+        }
         <vertices id="${name}-vertices">
           <input semantic="POSITION" source="#${name}-positions"/>
         </vertices>

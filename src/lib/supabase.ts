@@ -42,21 +42,26 @@ export interface ReferralRow {
 export async function getMyReferrals(userId: string): Promise<ReferralRow[]> {
   const { data, error } = await supabase
     .from("referrals")
-    .select("id, referrer_id, referred_user_id, code_used, referrer_bonus, referred_bonus, created_at")
+    .select(
+      "id, referrer_id, referred_user_id, code_used, referrer_bonus, referred_bonus, created_at",
+    )
     .eq("referrer_id", userId)
     .order("created_at", { ascending: false });
-  if (error) { console.error("getMyReferrals error:", error); return []; }
+  if (error) {
+    console.error("getMyReferrals error:", error);
+    return [];
+  }
   return (data ?? []) as unknown as ReferralRow[];
 }
 
-export async function applyReferralCode(code: string): Promise<{ success: boolean; bonus?: number; error?: string }> {
+export async function applyReferralCode(
+  code: string,
+): Promise<{ success: boolean; bonus?: number; error?: string }> {
   const { data, error } = await supabase.rpc("apply_referral", { _code: code });
   if (error) return { success: false, error: error.message };
   const result = data as { success?: boolean; bonus?: number } | null;
   return { success: !!result?.success, bonus: result?.bonus };
 }
-
-
 
 export interface Purchase {
   id: string;
@@ -108,23 +113,54 @@ export const CREDIT_COSTS: Record<string, number> = {
 
 // ----- Profile -----
 export async function getProfile(userId: string): Promise<Profile | null> {
-  const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
-  if (error) { console.error("getProfile error:", error); return null; }
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", userId)
+    .maybeSingle();
+  if (error) {
+    console.error("getProfile error:", error);
+    return null;
+  }
   return data as unknown as Profile | null;
 }
 
 export async function updateProfile(
   userId: string,
-  updates: Partial<Pick<Profile, "display_name" | "avatar_url" | "sl_username" | "roblox_username" | "bio" | "accent_color" | "banner_gradient" | "avatar_style" | "avatar_seed">>
+  updates: Partial<
+    Pick<
+      Profile,
+      | "display_name"
+      | "avatar_url"
+      | "sl_username"
+      | "roblox_username"
+      | "bio"
+      | "accent_color"
+      | "banner_gradient"
+      | "avatar_style"
+      | "avatar_seed"
+    >
+  >,
 ): Promise<Profile | null> {
-  const { data, error } = await supabase.from("profiles").update(updates).eq("id", userId).select().single();
-  if (error) { console.error("updateProfile error:", error); return null; }
+  const { data, error } = await supabase
+    .from("profiles")
+    .update(updates)
+    .eq("id", userId)
+    .select()
+    .single();
+  if (error) {
+    console.error("updateProfile error:", error);
+    return null;
+  }
   return data as unknown as Profile;
 }
 
 export async function getUserStats(userId: string) {
   const { data, error } = await supabase.rpc("get_user_stats", { user_uuid: userId });
-  if (error) { console.error("getUserStats error:", error); return null; }
+  if (error) {
+    console.error("getUserStats error:", error);
+    return null;
+  }
   return data as {
     current_credits: number;
     total_purchased: number;
@@ -136,8 +172,15 @@ export async function getUserStats(userId: string) {
 
 // ----- Purchases -----
 export async function getPurchases(userId: string): Promise<Purchase[]> {
-  const { data, error } = await supabase.from("purchases").select("*").eq("user_id", userId).order("created_at", { ascending: false });
-  if (error) { console.error("getPurchases error:", error); return []; }
+  const { data, error } = await supabase
+    .from("purchases")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+  if (error) {
+    console.error("getPurchases error:", error);
+    return [];
+  }
   return (data ?? []) as unknown as Purchase[];
 }
 
@@ -149,10 +192,13 @@ export async function createGeneration(
   type: Generation["generation_type"],
   source: Generation["source"] = "web",
   isOwner = false,
-  projectId: string | null = null
+  projectId: string | null = null,
 ): Promise<Generation | null> {
   const creditCost = isOwner ? 0 : (CREDIT_COSTS[type] ?? 2);
-  const { error: deductError } = await supabase.rpc("deduct_credits", { user_uuid: userId, amount: creditCost });
+  const { error: deductError } = await supabase.rpc("deduct_credits", {
+    user_uuid: userId,
+    amount: creditCost,
+  });
   if (deductError) {
     console.error("deduct_credits error:", deductError);
     throw new Error(deductError.message || "Insufficient credits");
@@ -178,23 +224,43 @@ export async function createGeneration(
 export async function updateGenerationStatus(
   generationId: string,
   status: Generation["status"],
-  resultData?: Record<string, unknown>
+  resultData?: Record<string, unknown>,
 ): Promise<void> {
   const updates: { status: string; result_data?: Record<string, unknown> } = { status };
   if (resultData) updates.result_data = resultData;
-  const { error } = await supabase.from("generations").update(updates as never).eq("id", generationId);
+  const { error } = await supabase
+    .from("generations")
+    .update(updates as never)
+    .eq("id", generationId);
   if (error) console.error("updateGenerationStatus error:", error);
 }
 
 export async function getGenerations(userId: string, limit = 50): Promise<Generation[]> {
-  const { data, error } = await supabase.from("generations").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(limit);
-  if (error) { console.error("getGenerations error:", error); return []; }
+  const { data, error } = await supabase
+    .from("generations")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) {
+    console.error("getGenerations error:", error);
+    return [];
+  }
   return (data ?? []) as unknown as Generation[];
 }
 
-export async function markGenerationUploaded(generationId: string, isUploaded = true): Promise<boolean> {
-  const { error } = await supabase.from("generations").update({ is_uploaded: isUploaded }).eq("id", generationId);
-  if (error) { console.error("markGenerationUploaded error:", error); return false; }
+export async function markGenerationUploaded(
+  generationId: string,
+  isUploaded = true,
+): Promise<boolean> {
+  const { error } = await supabase
+    .from("generations")
+    .update({ is_uploaded: isUploaded })
+    .eq("id", generationId);
+  if (error) {
+    console.error("markGenerationUploaded error:", error);
+    return false;
+  }
   return true;
 }
 
@@ -208,61 +274,107 @@ export async function purchaseCredits(
   amount: number,
   paymentMethod = "paypal",
   transactionId?: string,
-  amountPaid = 0
+  amountPaid = 0,
 ): Promise<string | null> {
   const txid = (transactionId ?? "").trim();
-  if (!txid) { console.error("purchaseCredits: transaction id required"); return null; }
+  if (!txid) {
+    console.error("purchaseCredits: transaction id required");
+    return null;
+  }
   const { data, error } = await supabase.rpc("submit_purchase_request", {
     _credits: amount,
     _amount: amountPaid,
     _transaction_id: txid,
     _payment_method: paymentMethod,
   });
-  if (error) { console.error("purchaseCredits error:", error); return null; }
+  if (error) {
+    console.error("purchaseCredits error:", error);
+    return null;
+  }
   return data as string;
 }
 
 // ----- Projects -----
 export async function getProjects(userId: string): Promise<Project[]> {
-  const { data, error } = await supabase.from("projects").select("*").eq("user_id", userId).order("created_at", { ascending: false });
-  if (error) { console.error("getProjects error:", error); return []; }
+  const { data, error } = await supabase
+    .from("projects")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+  if (error) {
+    console.error("getProjects error:", error);
+    return [];
+  }
   return (data ?? []) as unknown as Project[];
 }
 
-export async function createProject(userId: string, name: string, description: string | null = null): Promise<Project | null> {
-  const { data, error } = await supabase.from("projects").insert({ user_id: userId, name, description }).select().single();
-  if (error) { console.error("createProject error:", error); return null; }
+export async function createProject(
+  userId: string,
+  name: string,
+  description: string | null = null,
+): Promise<Project | null> {
+  const { data, error } = await supabase
+    .from("projects")
+    .insert({ user_id: userId, name, description })
+    .select()
+    .single();
+  if (error) {
+    console.error("createProject error:", error);
+    return null;
+  }
   return data as unknown as Project;
 }
 
 export async function deleteProject(projectId: string): Promise<boolean> {
   const { error } = await supabase.from("projects").delete().eq("id", projectId);
-  if (error) { console.error("deleteProject error:", error); return false; }
+  if (error) {
+    console.error("deleteProject error:", error);
+    return false;
+  }
   return true;
 }
 
 export async function deleteGeneration(generationId: string): Promise<boolean> {
   const { error } = await supabase.from("generations").delete().eq("id", generationId);
-  if (error) { console.error("deleteGeneration error:", error); return false; }
+  if (error) {
+    console.error("deleteGeneration error:", error);
+    return false;
+  }
   return true;
 }
 
 // ----- API keys -----
 export async function getApiKeys(userId: string): Promise<ApiKey[]> {
-  const { data, error } = await supabase.from("api_keys").select("*").eq("user_id", userId).order("created_at", { ascending: true });
-  if (error) { console.error("getApiKeys error:", error); return []; }
+  const { data, error } = await supabase
+    .from("api_keys")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: true });
+  if (error) {
+    console.error("getApiKeys error:", error);
+    return [];
+  }
   return (data ?? []) as unknown as ApiKey[];
 }
 
 export async function createApiKey(userId: string, label = "My API Key") {
-  const { data, error } = await supabase.rpc("create_api_key", { user_uuid: userId, key_label: label });
-  if (error) { console.error("createApiKey error:", error); return { key: null as ApiKey | null, error: error.message }; }
+  const { data, error } = await supabase.rpc("create_api_key", {
+    user_uuid: userId,
+    key_label: label,
+  });
+  if (error) {
+    console.error("createApiKey error:", error);
+    return { key: null as ApiKey | null, error: error.message };
+  }
   return { key: (data as ApiKey[])?.[0] ?? null, error: null };
 }
 
 export async function deleteApiKey(keyId: string): Promise<boolean> {
   const { error } = await supabase.from("api_keys").delete().eq("id", keyId);
-  if (error) { console.error("deleteApiKey error:", error); return false; }
+  if (error) {
+    console.error("deleteApiKey error:", error);
+    return false;
+  }
   return true;
 }
 
@@ -270,7 +382,15 @@ export async function regenerateApiKey(userId: string): Promise<string | null> {
   const newKey = Array.from(crypto.getRandomValues(new Uint8Array(24)))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
-  const { data, error } = await supabase.from("profiles").update({ api_key: newKey }).eq("id", userId).select("api_key").single();
-  if (error) { console.error("regenerateApiKey error:", error); return null; }
+  const { data, error } = await supabase
+    .from("profiles")
+    .update({ api_key: newKey })
+    .eq("id", userId)
+    .select("api_key")
+    .single();
+  if (error) {
+    console.error("regenerateApiKey error:", error);
+    return null;
+  }
   return (data as { api_key: string })?.api_key ?? null;
 }

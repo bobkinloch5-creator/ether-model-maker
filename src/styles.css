@@ -56,68 +56,152 @@
   --animate-gradient-pan: gradient-pan 8s ease infinite;
 
   @keyframes aurora {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    33% { transform: translate(40px, -30px) scale(1.1); }
-    66% { transform: translate(-30px, 40px) scale(0.95); }
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    33% {
+      transform: translate(40px, -30px) scale(1.1);
+    }
+    66% {
+      transform: translate(-30px, 40px) scale(0.95);
+    }
   }
   @keyframes blob {
-    0%, 100% { border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%; transform: translate(0,0) rotate(0deg); }
-    33% { border-radius: 70% 30% 50% 50% / 30% 60% 40% 70%; transform: translate(20px,-30px) rotate(40deg); }
-    66% { border-radius: 30% 70% 40% 60% / 60% 30% 70% 40%; transform: translate(-25px,20px) rotate(-30deg); }
+    0%,
+    100% {
+      border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
+      transform: translate(0, 0) rotate(0deg);
+    }
+    33% {
+      border-radius: 70% 30% 50% 50% / 30% 60% 40% 70%;
+      transform: translate(20px, -30px) rotate(40deg);
+    }
+    66% {
+      border-radius: 30% 70% 40% 60% / 60% 30% 70% 40%;
+      transform: translate(-25px, 20px) rotate(-30deg);
+    }
   }
   @keyframes text-shine {
-    to { background-position: 200% center; }
+    to {
+      background-position: 200% center;
+    }
   }
   @keyframes tilt {
-    0%, 50%, 100% { transform: rotate(0deg); }
-    25% { transform: rotate(0.6deg); }
-    75% { transform: rotate(-0.6deg); }
+    0%,
+    50%,
+    100% {
+      transform: rotate(0deg);
+    }
+    25% {
+      transform: rotate(0.6deg);
+    }
+    75% {
+      transform: rotate(-0.6deg);
+    }
   }
   @keyframes gradient-pan {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
   }
-
 
   @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-14px); }
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-14px);
+    }
   }
   @keyframes marquee {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
   }
   @keyframes shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
   }
   @keyframes pulse-glow {
-    0%, 100% { opacity: 0.5; transform: scale(1); }
-    50% { opacity: 0.8; transform: scale(1.05); }
+    0%,
+    100% {
+      opacity: 0.5;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.8;
+      transform: scale(1.05);
+    }
   }
   @keyframes fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
   }
   @keyframes slide-up {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
   @keyframes slide-in-left {
-    from { opacity: 0; transform: translateX(-30px); }
-    to { opacity: 1; transform: translateX(0); }
+    from {
+      opacity: 0;
+      transform: translateX(-30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
   }
   @keyframes slide-in-right {
-    from { opacity: 0; transform: translateX(30px); }
-    to { opacity: 1; transform: translateX(0); }
+    from {
+      opacity: 0;
+      transform: translateX(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
   }
   @keyframes scale-in {
-    from { opacity: 0; transform: scale(0.9); }
-    to { opacity: 1; transform: scale(1); }
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
   }
   @keyframes bounce-subtle {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-8px); }
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
   }
 }
 
@@ -153,20 +237,37 @@
   --input: oklch(1 0 0 / 12%);
   --ring: oklch(0.7 0.22 305);
 
-  --gradient-primary: linear-gradient(135deg, oklch(0.7 0.22 305) 0%, oklch(0.78 0.2 330) 50%, oklch(0.75 0.2 20) 100%);
-  --gradient-hero: radial-gradient(ellipse 80% 60% at 50% 0%, oklch(0.7 0.22 305 / 0.25), transparent 70%);
+  --gradient-primary: linear-gradient(
+    135deg,
+    oklch(0.7 0.22 305) 0%,
+    oklch(0.78 0.2 330) 50%,
+    oklch(0.75 0.2 20) 100%
+  );
+  --gradient-hero: radial-gradient(
+    ellipse 80% 60% at 50% 0%,
+    oklch(0.7 0.22 305 / 0.25),
+    transparent 70%
+  );
   --gradient-card: linear-gradient(180deg, oklch(1 0 0 / 0.04), oklch(1 0 0 / 0.01));
 
   --shadow-glow: 0 0 80px -10px oklch(0.7 0.22 305 / 0.45);
   --shadow-elegant: 0 30px 60px -20px oklch(0.05 0 0 / 0.6);
 }
 
-.dark { color-scheme: dark; }
+.dark {
+  color-scheme: dark;
+}
 
-html, body { background: var(--background); color: var(--foreground); }
+html,
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
 
 @layer base {
-  * { border-color: var(--color-border); }
+  * {
+    border-color: var(--color-border);
+  }
   body {
     font-family: var(--font-sans);
     background:
@@ -175,8 +276,17 @@ html, body { background: var(--background); color: var(--foreground); }
       var(--background);
     background-attachment: fixed;
   }
-  h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.02em; }
-  ::selection { background: oklch(0.7 0.22 305 / 0.4); color: white; }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+  ::selection {
+    background: oklch(0.7 0.22 305 / 0.4);
+    color: white;
+  }
 }
 
 @utility gradient-text {
@@ -209,8 +319,7 @@ html, body { background: var(--background); color: var(--foreground); }
 @utility studio-card {
   position: relative;
   background:
-    linear-gradient(180deg, oklch(1 0 0 / 0.045), oklch(1 0 0 / 0.015)),
-    oklch(0.13 0.02 280 / 0.6);
+    linear-gradient(180deg, oklch(1 0 0 / 0.045), oklch(1 0 0 / 0.015)), oklch(0.13 0.02 280 / 0.6);
   backdrop-filter: blur(24px) saturate(140%);
   -webkit-backdrop-filter: blur(24px) saturate(140%);
   border: 1px solid oklch(1 0 0 / 0.08);
@@ -226,7 +335,7 @@ html, body { background: var(--background); color: var(--foreground); }
   background:
     radial-gradient(ellipse 80% 60% at 50% 40%, oklch(0.7 0.22 305 / 0.18), transparent 70%),
     radial-gradient(ellipse 60% 50% at 50% 100%, oklch(0.78 0.2 200 / 0.12), transparent 70%),
-    linear-gradient(180deg, oklch(0.10 0.02 280) 0%, oklch(0.06 0.02 280) 100%);
+    linear-gradient(180deg, oklch(0.1 0.02 280) 0%, oklch(0.06 0.02 280) 100%);
   overflow: hidden;
   isolation: isolate;
 }
@@ -244,7 +353,8 @@ html, body { background: var(--background); color: var(--foreground); }
 
 /* Animated glow ring for processing state — pulsing border + soft glow */
 @keyframes processing-glow {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow:
       0 0 0 1px oklch(0.7 0.22 305 / 0.45),
       0 0 24px -2px oklch(0.7 0.22 305 / 0.35),
@@ -260,8 +370,6 @@ html, body { background: var(--background); color: var(--foreground); }
 @utility conic-ring {
   animation: processing-glow 2.4s ease-in-out infinite;
 }
-
-
 
 /* Animation utility classes */
 @utility animate-fade-in {
@@ -300,7 +408,14 @@ html, body { background: var(--background); color: var(--foreground); }
   animation: spin 20s linear infinite;
 }
 @utility text-shine {
-  background: linear-gradient(90deg, oklch(0.7 0.22 305) 0%, oklch(0.78 0.2 330) 25%, oklch(0.95 0.05 200) 50%, oklch(0.78 0.2 330) 75%, oklch(0.7 0.22 305) 100%);
+  background: linear-gradient(
+    90deg,
+    oklch(0.7 0.22 305) 0%,
+    oklch(0.78 0.2 330) 25%,
+    oklch(0.95 0.05 200) 50%,
+    oklch(0.78 0.2 330) 75%,
+    oklch(0.7 0.22 305) 100%
+  );
   background-size: 200% auto;
   -webkit-background-clip: text;
   background-clip: text;
@@ -324,12 +439,13 @@ html, body { background: var(--background); color: var(--foreground); }
   -webkit-mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
 }
 
-
 /* Scroll reveal base state */
 @utility scroll-reveal {
   opacity: 0;
   transform: translateY(30px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  transition:
+    opacity 0.6s ease-out,
+    transform 0.6s ease-out;
 }
 @utility scroll-reveal-visible {
   opacity: 1;
@@ -339,7 +455,9 @@ html, body { background: var(--background); color: var(--foreground); }
 @utility scroll-reveal-left {
   opacity: 0;
   transform: translateX(-30px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  transition:
+    opacity 0.6s ease-out,
+    transform 0.6s ease-out;
 }
 @utility scroll-reveal-left-visible {
   opacity: 1;
@@ -349,7 +467,9 @@ html, body { background: var(--background); color: var(--foreground); }
 @utility scroll-reveal-right {
   opacity: 0;
   transform: translateX(30px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  transition:
+    opacity 0.6s ease-out,
+    transform 0.6s ease-out;
 }
 @utility scroll-reveal-right-visible {
   opacity: 1;
@@ -359,7 +479,9 @@ html, body { background: var(--background); color: var(--foreground); }
 @utility scroll-reveal-scale {
   opacity: 0;
   transform: scale(0.92);
-  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+  transition:
+    opacity 0.5s ease-out,
+    transform 0.5s ease-out;
 }
 @utility scroll-reveal-scale-visible {
   opacity: 1;
@@ -368,7 +490,9 @@ html, body { background: var(--background); color: var(--foreground); }
 
 /* Hover lift effect */
 @utility hover-lift {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
   @variant hover {
     transform: translateY(-4px);
     box-shadow: 0 20px 40px -12px oklch(0.05 0 0 / 0.4);
@@ -397,35 +521,77 @@ html, body { background: var(--background); color: var(--foreground); }
   background: linear-gradient(90deg, transparent, oklch(0.7 0.22 305 / 0.5), transparent);
   background-size: 200% 100%;
   animation: shimmer-border-move 3s linear infinite;
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
 }
 
 @keyframes shimmer-border-move {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* Stagger delays for children */
-@utility animate-delay-100 { animation-delay: 100ms; }
-@utility animate-delay-200 { animation-delay: 200ms; }
-@utility animate-delay-300 { animation-delay: 300ms; }
-@utility animate-delay-400 { animation-delay: 400ms; }
-@utility animate-delay-500 { animation-delay: 500ms; }
-@utility animate-delay-600 { animation-delay: 600ms; }
-@utility animate-delay-700 { animation-delay: 700ms; }
-@utility animate-delay-800 { animation-delay: 800ms; }
-@utility animate-delay-900 { animation-delay: 900ms; }
-@utility animate-delay-1000 { animation-delay: 1000ms; }
+@utility animate-delay-100 {
+  animation-delay: 100ms;
+}
+@utility animate-delay-200 {
+  animation-delay: 200ms;
+}
+@utility animate-delay-300 {
+  animation-delay: 300ms;
+}
+@utility animate-delay-400 {
+  animation-delay: 400ms;
+}
+@utility animate-delay-500 {
+  animation-delay: 500ms;
+}
+@utility animate-delay-600 {
+  animation-delay: 600ms;
+}
+@utility animate-delay-700 {
+  animation-delay: 700ms;
+}
+@utility animate-delay-800 {
+  animation-delay: 800ms;
+}
+@utility animate-delay-900 {
+  animation-delay: 900ms;
+}
+@utility animate-delay-1000 {
+  animation-delay: 1000ms;
+}
 
 /* Transition delay utilities */
-@utility delay-100 { transition-delay: 100ms; }
-@utility delay-200 { transition-delay: 200ms; }
-@utility delay-300 { transition-delay: 300ms; }
-@utility delay-400 { transition-delay: 400ms; }
-@utility delay-500 { transition-delay: 500ms; }
-@utility delay-600 { transition-delay: 600ms; }
-@utility delay-700 { transition-delay: 700ms; }
-@utility delay-800 { transition-delay: 800ms; }
+@utility delay-100 {
+  transition-delay: 100ms;
+}
+@utility delay-200 {
+  transition-delay: 200ms;
+}
+@utility delay-300 {
+  transition-delay: 300ms;
+}
+@utility delay-400 {
+  transition-delay: 400ms;
+}
+@utility delay-500 {
+  transition-delay: 500ms;
+}
+@utility delay-600 {
+  transition-delay: 600ms;
+}
+@utility delay-700 {
+  transition-delay: 700ms;
+}
+@utility delay-800 {
+  transition-delay: 800ms;
+}

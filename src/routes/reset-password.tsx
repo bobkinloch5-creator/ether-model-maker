@@ -8,14 +8,24 @@ export const Route = createFileRoute("/reset-password")({
   head: () => ({
     meta: [
       { title: "Reset Password — KingDavez Studios (Beta)" },
-      { name: "description", content: "Set a new secure password for your KingDavez Studios account and regain access to your AI 3D model generation workspace." },
+      {
+        name: "description",
+        content:
+          "Set a new secure password for your KingDavez Studios account and regain access to your AI 3D model generation workspace.",
+      },
       { property: "og:title", content: "Reset Password — KingDavez Studios" },
-      { property: "og:description", content: "Set a new password for your KingDavez Studios account." },
+      {
+        property: "og:description",
+        content: "Set a new password for your KingDavez Studios account.",
+      },
       { property: "og:url", content: "https://kingdavez.click/reset-password" },
       { name: "robots", content: "noindex,nofollow" },
-    { name: "twitter:card", content: "summary_large_image" },
-    { name: "twitter:title", content: "Reset Password — KingDavez Studios" },
-    { name: "twitter:description", content: "Set a new password for your KingDavez Studios account." },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Reset Password — KingDavez Studios" },
+      {
+        name: "twitter:description",
+        content: "Set a new password for your KingDavez Studios account.",
+      },
     ],
     links: [{ rel: "canonical", href: "https://kingdavez.click/reset-password" }],
   }),
@@ -34,7 +44,9 @@ function ResetPasswordPage() {
   // Supabase embeds the recovery token in the URL hash (#access_token=...).
   // onAuthStateChange fires with event "PASSWORD_RECOVERY" when it detects it.
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") {
         setSessionReady(true);
       }
@@ -125,9 +137,7 @@ function ResetPasswordPage() {
           ) : !sessionReady ? (
             <div className="text-center py-8">
               <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary/60" />
-              <p className="mt-4 text-sm text-muted-foreground">
-                Verifying reset link…
-              </p>
+              <p className="mt-4 text-sm text-muted-foreground">Verifying reset link…</p>
               <p className="mt-2 text-xs text-muted-foreground/60">
                 If nothing happens,{" "}
                 <Link to="/forgot-password" className="text-primary-glow hover:underline">

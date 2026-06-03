@@ -47,7 +47,9 @@ export function SecondLife() {
             Find us <span className="gradient-text">in Second Life</span>
           </h2>
           <p className="mt-4 text-muted-foreground">
-            KingDavez Studios is an active Second Life brand. Generate prim-friendly, low-LI mesh with our AI, then visit our in-world store, browse the SL Marketplace, or join our group for member perks.
+            KingDavez Studios is an active Second Life brand. Generate prim-friendly, low-LI mesh
+            with our AI, then visit our in-world store, browse the SL Marketplace, or join our group
+            for member perks.
           </p>
         </div>
 
@@ -73,7 +75,8 @@ export function SecondLife() {
         </div>
 
         <p className="mx-auto mt-8 max-w-2xl text-center text-xs text-muted-foreground">
-          Second Life is a trademark of Linden Research, Inc. KingDavez Studios is an independent creator brand operating on the SL platform.
+          Second Life is a trademark of Linden Research, Inc. KingDavez Studios is an independent
+          creator brand operating on the SL platform.
         </p>
       </div>
     </section>

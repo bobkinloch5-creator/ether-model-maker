@@ -7,14 +7,18 @@ export const Route = createFileRoute("/forgot-password")({
   head: () => ({
     meta: [
       { title: "Forgot Password — KingDavez Studios (Beta)" },
-      { name: "description", content: "Reset your KingDavez Studios account password securely. We'll send you an email with instructions to get back into your AI 3D generation dashboard." },
+      {
+        name: "description",
+        content:
+          "Reset your KingDavez Studios account password securely. We'll send you an email with instructions to get back into your AI 3D generation dashboard.",
+      },
       { property: "og:title", content: "Forgot Password — KingDavez Studios" },
       { property: "og:description", content: "Reset your KingDavez Studios account password." },
       { property: "og:url", content: "https://kingdavez.click/forgot-password" },
       { name: "robots", content: "noindex,nofollow" },
-    { name: "twitter:card", content: "summary_large_image" },
-    { name: "twitter:title", content: "Forgot Password — KingDavez Studios" },
-    { name: "twitter:description", content: "Reset your KingDavez Studios password." },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Forgot Password — KingDavez Studios" },
+      { name: "twitter:description", content: "Reset your KingDavez Studios password." },
     ],
     links: [{ rel: "canonical", href: "https://kingdavez.click/forgot-password" }],
   }),
@@ -84,8 +88,8 @@ function ForgotPasswordPage() {
               </h1>
               <p className="mt-3 text-sm text-muted-foreground">
                 We sent a password reset link to{" "}
-                <span className="font-medium text-foreground">{email}</span>.
-                Follow the link in the email to create a new password.
+                <span className="font-medium text-foreground">{email}</span>. Follow the link in the
+                email to create a new password.
               </p>
               <p className="mt-2 text-xs text-muted-foreground/60">
                 Didn't get it? Check your spam folder, or try again in a minute.
@@ -156,10 +160,7 @@ function ForgotPasswordPage() {
 
               <p className="mt-6 text-center text-sm text-muted-foreground">
                 Remember your password?{" "}
-                <Link
-                  to="/login"
-                  className="font-medium text-primary-glow hover:underline"
-                >
+                <Link to="/login" className="font-medium text-primary-glow hover:underline">
                   Back to sign in
                 </Link>
               </p>

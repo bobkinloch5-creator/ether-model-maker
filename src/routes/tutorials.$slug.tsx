@@ -21,33 +21,27 @@ const GUIDES: Record<string, Guide> = {
     sections: [
       {
         h: "1. Generate or import the base mesh",
-        body:
-          "Start with a clean GLB. KingDavez Studios' AI generator produces SL-friendly GLBs from a text prompt or a reference image — pick 'Second Life' as the export preset to cap polygon count and avoid n-gons. If you already have a Blender file, export as Collada (.dae) since SL only natively imports DAE for the uploader.",
+        body: "Start with a clean GLB. KingDavez Studios' AI generator produces SL-friendly GLBs from a text prompt or a reference image — pick 'Second Life' as the export preset to cap polygon count and avoid n-gons. If you already have a Blender file, export as Collada (.dae) since SL only natively imports DAE for the uploader.",
       },
       {
         h: "2. Prepare the mesh in Blender (optional but recommended)",
-        body:
-          "Open the GLB/DAE in Blender, apply scale (Ctrl+A → Scale), make sure normals face outward (Mesh → Normals → Recalculate Outside), and confirm a single material slot per piece. SL uploads each material as its own face — keep it under 8 faces per object to save LI.",
+        body: "Open the GLB/DAE in Blender, apply scale (Ctrl+A → Scale), make sure normals face outward (Mesh → Normals → Recalculate Outside), and confirm a single material slot per piece. SL uploads each material as its own face — keep it under 8 faces per object to save LI.",
       },
       {
         h: "3. Texture & PBR maps",
-        body:
-          "SL classic shaders use diffuse + specular + normal. SL's PBR materials (gltf 2.0) use base color, normal, metallic-roughness, and emissive. Bake your maps in Blender or generate them with KingDavez's AI texture tool. Keep textures at 1024×1024 — 2048 doubles upload cost without much visible gain in-world.",
+        body: "SL classic shaders use diffuse + specular + normal. SL's PBR materials (gltf 2.0) use base color, normal, metallic-roughness, and emissive. Bake your maps in Blender or generate them with KingDavez's AI texture tool. Keep textures at 1024×1024 — 2048 doubles upload cost without much visible gain in-world.",
       },
       {
         h: "4. Upload to Second Life",
-        body:
-          "Open the Build → Upload → Mesh Model dialog in your viewer. Drag your DAE in, set physics to 'Lowest' for static props, and check the LOD tabs. The uploader shows the LI cost in real time — aim for under 2 LI for furniture, under 5 LI for a full outfit. Pay the upload fee (10 L$ per mesh) and your asset lands in your inventory.",
+        body: "Open the Build → Upload → Mesh Model dialog in your viewer. Drag your DAE in, set physics to 'Lowest' for static props, and check the LOD tabs. The uploader shows the LI cost in real time — aim for under 2 LI for furniture, under 5 LI for a full outfit. Pay the upload fee (10 L$ per mesh) and your asset lands in your inventory.",
       },
       {
         h: "5. Rig mesh for Second Life avatars",
-        body:
-          "For clothing or attachments, parent the mesh to an SL-compatible armature (Bento, Maitreya, Legacy, etc.) in Blender, weight-paint it, and check 'Include Skin Weights' in the SL uploader. Test fit on the actual body brand — most creators ship one rigged version per popular body to avoid clipping.",
+        body: "For clothing or attachments, parent the mesh to an SL-compatible armature (Bento, Maitreya, Legacy, etc.) in Blender, weight-paint it, and check 'Include Skin Weights' in the SL uploader. Test fit on the actual body brand — most creators ship one rigged version per popular body to avoid clipping.",
       },
       {
         h: "6. Sell or share in-world",
-        body:
-          "Drop the finished mesh into a prim or wear it directly. Set permissions (Copy/Modify/Transfer) before listing on the SL Marketplace. KingDavez Studios runs a Marketplace store and an in-world shop on Thranduil — we offer full-perm mesh kits if you'd rather skip the modeling step entirely.",
+        body: "Drop the finished mesh into a prim or wear it directly. Set permissions (Copy/Modify/Transfer) before listing on the SL Marketplace. KingDavez Studios runs a Marketplace store and an in-world shop on Thranduil — we offer full-perm mesh kits if you'd rather skip the modeling step entirely.",
       },
     ],
     faqs: [
@@ -83,23 +77,19 @@ const GUIDES: Record<string, Guide> = {
     sections: [
       {
         h: "What AI can (and can't) generate today",
-        body:
-          "AI 3D works well for props, creatures, weapons, vehicles, environments, and stylized characters. It struggles with very precise hard-surface mechanical parts and tightly rigged humanoid characters — for those, use AI as a starting block and finish in Blender.",
+        body: "AI 3D works well for props, creatures, weapons, vehicles, environments, and stylized characters. It struggles with very precise hard-surface mechanical parts and tightly rigged humanoid characters — for those, use AI as a starting block and finish in Blender.",
       },
       {
         h: "Text-to-3D vs Image-to-3D",
-        body:
-          "Text-to-3D is fast and free-form: 'medieval lantern, copper, weathered'. Image-to-3D is more accurate when you already know exactly what you want — upload a reference photo or concept art, and the model reconstructs geometry to match. Image-to-3D usually wins on shape fidelity.",
+        body: "Text-to-3D is fast and free-form: 'medieval lantern, copper, weathered'. Image-to-3D is more accurate when you already know exactly what you want — upload a reference photo or concept art, and the model reconstructs geometry to match. Image-to-3D usually wins on shape fidelity.",
       },
       {
         h: "Step-by-step in KingDavez Studios",
-        body:
-          "Sign in, click Generate, choose Text-to-3D or Image-to-3D, enter your prompt or upload an image, pick the export format (GLB/OBJ/FBX/DAE) and quality preset. Generation takes 30–90 seconds. Preview the model in the in-browser viewer, then download or send straight to Second Life / Roblox.",
+        body: "Sign in, click Generate, choose Text-to-3D or Image-to-3D, enter your prompt or upload an image, pick the export format (GLB/OBJ/FBX/DAE) and quality preset. Generation takes 30–90 seconds. Preview the model in the in-browser viewer, then download or send straight to Second Life / Roblox.",
       },
       {
         h: "Cleaning up the result",
-        body:
-          "Even the best AI output benefits from a quick pass: import to Blender, decimate if the polycount is too high, recalculate normals, and re-bake textures if you need very specific UVs. For most game uses, the raw GLB is fine.",
+        body: "Even the best AI output benefits from a quick pass: import to Blender, decimate if the polycount is too high, recalculate normals, and re-bake textures if you need very specific UVs. For most game uses, the raw GLB is fine.",
       },
     ],
     faqs: [
@@ -131,23 +121,19 @@ const GUIDES: Record<string, Guide> = {
     sections: [
       {
         h: "The five maps you actually need",
-        body:
-          "Base Color (Albedo) — flat surface color, no lighting. Normal — fake surface bumps. Roughness — how matte vs. glossy the surface is. Metallic — how metal-like the surface is (almost always 0 or 1). Ambient Occlusion — soft shadows in crevices. Emissive is optional for glow.",
+        body: "Base Color (Albedo) — flat surface color, no lighting. Normal — fake surface bumps. Roughness — how matte vs. glossy the surface is. Metallic — how metal-like the surface is (almost always 0 or 1). Ambient Occlusion — soft shadows in crevices. Emissive is optional for glow.",
       },
       {
         h: "Generating a PBR set with AI",
-        body:
-          "In KingDavez Studios, open the Texture Generator, type a prompt like 'weathered oak planks, mossy', set tile size (1024 or 2048), and enable 'Tileable'. The AI produces all five maps at once, all seamless. Download the ZIP and you're done.",
+        body: "In KingDavez Studios, open the Texture Generator, type a prompt like 'weathered oak planks, mossy', set tile size (1024 or 2048), and enable 'Tileable'. The AI produces all five maps at once, all seamless. Download the ZIP and you're done.",
       },
       {
         h: "Plugging it into Blender",
-        body:
-          "Drag all maps into the Shader Editor. Connect: Base Color → Principled BSDF Base Color, Normal → Normal Map node → Normal slot, Roughness → Roughness, Metallic → Metallic, AO → multiply with Base Color. Make sure Roughness/Metallic/AO are set to Non-Color in the texture node.",
+        body: "Drag all maps into the Shader Editor. Connect: Base Color → Principled BSDF Base Color, Normal → Normal Map node → Normal slot, Roughness → Roughness, Metallic → Metallic, AO → multiply with Base Color. Make sure Roughness/Metallic/AO are set to Non-Color in the texture node.",
       },
       {
         h: "Plugging it into Unity / Unreal / Godot",
-        body:
-          "Unity (URP/HDRP) and Godot 4 read GLB materials natively — just import the GLB. Unreal pulls FBX with embedded textures and auto-creates materials. For SL's new PBR system, pack metallic + roughness + AO into one ORM texture before upload.",
+        body: "Unity (URP/HDRP) and Godot 4 read GLB materials natively — just import the GLB. Unreal pulls FBX with embedded textures and auto-creates materials. For SL's new PBR system, pack metallic + roughness + AO into one ORM texture before upload.",
       },
     ],
     faqs: [
@@ -175,18 +161,15 @@ const GUIDES: Record<string, Guide> = {
     sections: [
       {
         h: "When to retexture vs regenerate",
-        body:
-          "Retexture when you like the silhouette but want a different style (medieval → cyberpunk, wood → marble). Regenerate when the shape itself is wrong. Retexturing also keeps your UVs and rigging intact — much safer than starting over.",
+        body: "Retexture when you like the silhouette but want a different style (medieval → cyberpunk, wood → marble). Regenerate when the shape itself is wrong. Retexturing also keeps your UVs and rigging intact — much safer than starting over.",
       },
       {
         h: "How retexturing works in KingDavez",
-        body:
-          "Upload your GLB/FBX, type a style prompt ('rusted iron, glowing runes'), and the AI projects new PBR maps onto your existing UVs. Process takes ~30 seconds. Compare side-by-side in the viewer before downloading.",
+        body: "Upload your GLB/FBX, type a style prompt ('rusted iron, glowing runes'), and the AI projects new PBR maps onto your existing UVs. Process takes ~30 seconds. Compare side-by-side in the viewer before downloading.",
       },
       {
         h: "Tips for clean results",
-        body:
-          "Use a model with a single UV set if possible. Avoid overlapping UVs — the AI will paint both sides at once. Reference images help a lot: 'retexture in the style of this concept art' beats 'make it cool'.",
+        body: "Use a model with a single UV set if possible. Avoid overlapping UVs — the AI will paint both sides at once. Reference images help a lot: 'retexture in the style of this concept art' beats 'make it cool'.",
       },
     ],
     faqs: [
@@ -257,13 +240,17 @@ export const Route = createFileRoute("/tutorials/$slug")({
   notFoundComponent: () => (
     <main className="mx-auto max-w-3xl px-4 py-24 text-center">
       <h1 className="text-3xl font-semibold">Tutorial not found</h1>
-      <Link to="/tutorials" className="mt-6 inline-block text-primary underline">Back to all tutorials</Link>
+      <Link to="/tutorials" className="mt-6 inline-block text-primary underline">
+        Back to all tutorials
+      </Link>
     </main>
   ),
   errorComponent: () => (
     <main className="mx-auto max-w-3xl px-4 py-24 text-center">
       <h1 className="text-3xl font-semibold">Something went wrong</h1>
-      <Link to="/tutorials" className="mt-6 inline-block text-primary underline">Back to all tutorials</Link>
+      <Link to="/tutorials" className="mt-6 inline-block text-primary underline">
+        Back to all tutorials
+      </Link>
     </main>
   ),
 });
@@ -272,12 +259,17 @@ function TutorialPage() {
   const { guide } = Route.useLoaderData();
   return (
     <main className="mx-auto max-w-3xl px-4 py-16">
-      <Link to="/tutorials" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6">
+      <Link
+        to="/tutorials"
+        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6"
+      >
         <ArrowLeft className="h-4 w-4" /> All tutorials
       </Link>
 
       <article>
-        <h1 className="font-display text-4xl sm:text-5xl font-semibold tracking-tight">{guide.title}</h1>
+        <h1 className="font-display text-4xl sm:text-5xl font-semibold tracking-tight">
+          {guide.title}
+        </h1>
         <p className="mt-4 text-lg text-muted-foreground">{guide.intro}</p>
 
         <div className="mt-12 space-y-10">
@@ -293,7 +285,10 @@ function TutorialPage() {
           <h2 className="font-display text-2xl font-semibold tracking-tight">Frequently asked</h2>
           <div className="mt-4 space-y-4">
             {guide.faqs.map((f: Guide["faqs"][number]) => (
-              <details key={f.q} className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-sm">
+              <details
+                key={f.q}
+                className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-sm"
+              >
                 <summary className="cursor-pointer font-semibold text-foreground">{f.q}</summary>
                 <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{f.a}</p>
               </details>

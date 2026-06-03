@@ -18,7 +18,10 @@ export function CTA() {
           {/* Animated floating orbs */}
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
             <div className="absolute -top-10 -left-10 h-40 w-40 rounded-full bg-white/10 blur-3xl animate-pulse-glow" />
-            <div className="absolute -bottom-10 -right-10 h-40 w-40 rounded-full bg-white/10 blur-3xl animate-pulse-glow" style={{ animationDelay: "1.5s" }} />
+            <div
+              className="absolute -bottom-10 -right-10 h-40 w-40 rounded-full bg-white/10 blur-3xl animate-pulse-glow"
+              style={{ animationDelay: "1.5s" }}
+            />
           </div>
 
           <h2 className="relative font-display text-3xl font-semibold tracking-tight text-white sm:text-5xl md:text-6xl">

@@ -23,10 +23,10 @@ export function SparkleField() {
     let particles: Particle[] = [];
 
     const colors = [
-      "oklch(0.7 0.22 305)",   // primary purple
-      "oklch(0.78 0.2 330)",   // primary glow
-      "oklch(0.75 0.2 20)",    // warm accent
-      "oklch(0.78 0.18 200)",  // cyan accent
+      "oklch(0.7 0.22 305)", // primary purple
+      "oklch(0.78 0.2 330)", // primary glow
+      "oklch(0.75 0.2 20)", // warm accent
+      "oklch(0.78 0.18 200)", // cyan accent
       "#ffffff",
     ];
 

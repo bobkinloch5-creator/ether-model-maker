@@ -57,11 +57,19 @@ export const Route = createFileRoute("/api/public/v1/sl/upload")({
             if (deductErr) {
               const msg = deductErr.message || "";
               if (msg.toLowerCase().includes("insufficient")) {
-                return jsonResponse({ error: "Insufficient credits.", required: UPLOAD_COST_CREDITS, balance: auth.user.credits }, 402);
+                return jsonResponse(
+                  {
+                    error: "Insufficient credits.",
+                    required: UPLOAD_COST_CREDITS,
+                    balance: auth.user.credits,
+                  },
+                  402,
+                );
               }
               return jsonResponse({ error: msg }, 500);
             }
-            auth.user.credits = typeof newBalance === "number" ? newBalance : auth.user.credits - UPLOAD_COST_CREDITS;
+            auth.user.credits =
+              typeof newBalance === "number" ? newBalance : auth.user.credits - UPLOAD_COST_CREDITS;
           }
         }
         // For "lindens" the L$ payment is handled in-world via the SL HUD listener.
@@ -71,10 +79,14 @@ export const Route = createFileRoute("/api/public/v1/sl/upload")({
           success: true,
           generationId: gen.id,
           paymentMethod: parsed.data.paymentMethod,
-          creditsCharged: parsed.data.paymentMethod === "credits" && !auth.user.isOwner ? UPLOAD_COST_CREDITS : 0,
-          newBalance: parsed.data.paymentMethod === "credits" && !auth.user.isOwner
-            ? auth.user.credits
-            : (auth.user.isOwner ? null : auth.user.credits),
+          creditsCharged:
+            parsed.data.paymentMethod === "credits" && !auth.user.isOwner ? UPLOAD_COST_CREDITS : 0,
+          newBalance:
+            parsed.data.paymentMethod === "credits" && !auth.user.isOwner
+              ? auth.user.credits
+              : auth.user.isOwner
+                ? null
+                : auth.user.credits,
         });
       },
     },

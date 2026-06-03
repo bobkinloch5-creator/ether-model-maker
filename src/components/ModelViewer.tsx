@@ -16,7 +16,17 @@ import {
 } from "@react-three/drei";
 import * as THREE from "three";
 import { Suspense, useState, useEffect, useRef, useMemo } from "react";
-import { Loader2, RotateCw, Grid, Maximize2, Sun, Moon, Aperture, UploadCloud, AlertTriangle } from "lucide-react";
+import {
+  Loader2,
+  RotateCw,
+  Grid,
+  Maximize2,
+  Sun,
+  Moon,
+  Aperture,
+  UploadCloud,
+  AlertTriangle,
+} from "lucide-react";
 import { buildProceduralMesh } from "@/lib/procedural";
 
 interface ModelViewerProps {
@@ -41,7 +51,15 @@ function enhanceSceneQuality(scene: THREE.Object3D, anisotropy: number, wirefram
       if (!m) return;
       m.wireframe = wireframe;
       // sharpest possible textures at any angle
-      ["map", "normalMap", "roughnessMap", "metalnessMap", "aoMap", "emissiveMap", "bumpMap"].forEach((slot) => {
+      [
+        "map",
+        "normalMap",
+        "roughnessMap",
+        "metalnessMap",
+        "aoMap",
+        "emissiveMap",
+        "bumpMap",
+      ].forEach((slot) => {
         const tex = m[slot];
         if (tex && tex.isTexture) {
           tex.anisotropy = anisotropy;
@@ -58,7 +76,8 @@ function enhanceSceneQuality(scene: THREE.Object3D, anisotropy: number, wirefram
       // roughness so albedo textures (like fur) read sharper instead of muddy.
       if (m.envMapIntensity !== undefined) m.envMapIntensity = 1.45;
       if (m.normalScale && m.normalScale.set) m.normalScale.set(1.15, 1.15);
-      if (typeof m.roughness === "number") m.roughness = Math.max(0.35, Math.min(m.roughness, 0.92));
+      if (typeof m.roughness === "number")
+        m.roughness = Math.max(0.35, Math.min(m.roughness, 0.92));
       if (m.aoMapIntensity !== undefined) m.aoMapIntensity = 1.1;
       m.needsUpdate = true;
     });
@@ -137,8 +156,14 @@ function detectInitialTier(): { tier: PerfTier; webgl: boolean; reason: string }
     const mem = (navigator as any).deviceMemory ?? 4;
     const mobile = window.matchMedia("(max-width: 768px)").matches;
     const isLowGpu = /(swiftshader|llvmpipe|software|microsoft basic)/.test(r);
-    const isIntegrated = /(intel|iris|uhd|hd graphics|mali|adreno 3|adreno 4|adreno 5|powervr|videocore|apple gpu)/.test(r);
-    const isHighEnd = /(rtx|radeon rx|geforce gtx 1[06-9]|geforce gtx 2|geforce rtx|m1 max|m1 pro|m2|m3|m4|apple m)/.test(r);
+    const isIntegrated =
+      /(intel|iris|uhd|hd graphics|mali|adreno 3|adreno 4|adreno 5|powervr|videocore|apple gpu)/.test(
+        r,
+      );
+    const isHighEnd =
+      /(rtx|radeon rx|geforce gtx 1[06-9]|geforce gtx 2|geforce rtx|m1 max|m1 pro|m2|m3|m4|apple m)/.test(
+        r,
+      );
     if (isLowGpu || cores <= 2 || mem <= 2) return { tier: "low", webgl: true, reason: "weak-gpu" };
     if (mobile || isIntegrated) return { tier: "medium", webgl: true, reason: "integrated" };
     if (isHighEnd && cores >= 6) return { tier: "high", webgl: true, reason: "high-end" };
@@ -163,15 +188,26 @@ export function ModelViewer({ url, prompt }: ModelViewerProps) {
 
   // Per-tier budgets — low end disables shadows entirely and caps DPR at 1.0.
   const dpr: [number, number] =
-    perfTier === "low" ? [0.75, 1] : perfTier === "medium" ? [1, isMobile ? 1.25 : 1.5] : [1, isMobile ? 1.5 : 1.75];
+    perfTier === "low"
+      ? [0.75, 1]
+      : perfTier === "medium"
+        ? [1, isMobile ? 1.25 : 1.5]
+        : [1, isMobile ? 1.5 : 1.75];
   const shadowsEnabled = perfTier !== "low";
-  const shadowMapSize = perfTier === "high" ? (isMobile ? 1024 : 2048) : perfTier === "medium" ? 1024 : 512;
-  const contactShadowRes = perfTier === "high" ? (isMobile ? 384 : 768) : perfTier === "medium" ? 512 : 256;
+  const shadowMapSize =
+    perfTier === "high" ? (isMobile ? 1024 : 2048) : perfTier === "medium" ? 1024 : 512;
+  const contactShadowRes =
+    perfTier === "high" ? (isMobile ? 384 : 768) : perfTier === "medium" ? 512 : 256;
   const antialias = perfTier !== "low" && !isMobile;
 
-  const isProcedural = url === "__procedural__" || url === "/demo-model.glb" || url.includes("demo-model");
-  const isRealModel = !isProcedural && (url.startsWith("blob:") || url.startsWith("http") || url.startsWith("/"));
-  const isGltf = url.toLowerCase().includes(".glb") || url.toLowerCase().includes(".gltf") || url.startsWith("blob:");
+  const isProcedural =
+    url === "__procedural__" || url === "/demo-model.glb" || url.includes("demo-model");
+  const isRealModel =
+    !isProcedural && (url.startsWith("blob:") || url.startsWith("http") || url.startsWith("/"));
+  const isGltf =
+    url.toLowerCase().includes(".glb") ||
+    url.toLowerCase().includes(".gltf") ||
+    url.startsWith("blob:");
 
   const cycleEnv = () => {
     const i = ENV_PRESETS.indexOf(envPreset);
@@ -195,7 +231,9 @@ export function ModelViewer({ url, prompt }: ModelViewerProps) {
       {!initial.webgl || contextLost ? (
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/75 backdrop-blur-sm p-6 text-center">
           <AlertTriangle className="h-10 w-10 text-amber-300 mb-3" />
-          <h3 className="font-semibold text-foreground text-sm tracking-wide">3D preview unavailable</h3>
+          <h3 className="font-semibold text-foreground text-sm tracking-wide">
+            3D preview unavailable
+          </h3>
           <p className="mt-1.5 text-xs text-muted-foreground max-w-xs leading-relaxed">
             {contextLost
               ? "Your GPU dropped the 3D context. Refresh the page or download the model to view it locally."
@@ -327,8 +365,15 @@ export function ModelViewer({ url, prompt }: ModelViewerProps) {
         <ViewerBtn active={wireframe} onClick={() => setWireframe(!wireframe)} title="Wireframe">
           <Grid className="h-4 w-4" />
         </ViewerBtn>
-        <ViewerBtn active={autoRotate} onClick={() => setAutoRotate(!autoRotate)} title="Auto-rotate">
-          <RotateCw className={`h-4 w-4 ${autoRotate ? "animate-spin" : ""}`} style={{ animationDuration: "4s" }} />
+        <ViewerBtn
+          active={autoRotate}
+          onClick={() => setAutoRotate(!autoRotate)}
+          title="Auto-rotate"
+        >
+          <RotateCw
+            className={`h-4 w-4 ${autoRotate ? "animate-spin" : ""}`}
+            style={{ animationDuration: "4s" }}
+          />
         </ViewerBtn>
         <ViewerBtn onClick={cycleEnv} title={`Lighting: ${envPreset}`}>
           <Aperture className="h-4 w-4" />
@@ -343,10 +388,20 @@ export function ModelViewer({ url, prompt }: ModelViewerProps) {
 
       {/* Mobile bottom dock */}
       <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex sm:hidden gap-1.5 rounded-2xl border border-white/15 bg-black/55 backdrop-blur-xl px-2 py-1.5 shadow-2xl">
-        <ViewerBtn active={wireframe} onClick={() => setWireframe(!wireframe)} title="Wireframe" small>
+        <ViewerBtn
+          active={wireframe}
+          onClick={() => setWireframe(!wireframe)}
+          title="Wireframe"
+          small
+        >
           <Grid className="h-4 w-4" />
         </ViewerBtn>
-        <ViewerBtn active={autoRotate} onClick={() => setAutoRotate(!autoRotate)} title="Auto-rotate" small>
+        <ViewerBtn
+          active={autoRotate}
+          onClick={() => setAutoRotate(!autoRotate)}
+          title="Auto-rotate"
+          small
+        >
           <RotateCw className="h-4 w-4" />
         </ViewerBtn>
         <ViewerBtn onClick={cycleEnv} title="Lighting" small>
@@ -362,9 +417,12 @@ export function ModelViewer({ url, prompt }: ModelViewerProps) {
 
       {/* Perf-tier badge so users know quality is auto-tuned */}
       <div className="absolute top-3 left-3 z-10 rounded-full border border-white/10 bg-black/55 backdrop-blur-md px-2.5 py-1 text-[10px] font-medium text-white/70">
-        {perfTier === "high" ? "Quality: High" : perfTier === "medium" ? "Quality: Balanced" : "Quality: Lite"}
+        {perfTier === "high"
+          ? "Quality: High"
+          : perfTier === "medium"
+            ? "Quality: Balanced"
+            : "Quality: Lite"}
       </div>
-
 
       {/* Desktop interaction hint */}
       <div className="absolute bottom-3 left-0 right-0 hidden sm:flex justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -376,9 +434,12 @@ export function ModelViewer({ url, prompt }: ModelViewerProps) {
       {isRealModel && !isGltf && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/75 backdrop-blur-sm p-6 text-center z-20">
           <UploadCloud className="h-10 w-10 text-primary-glow mb-3 animate-pulse" />
-          <h3 className="font-semibold text-foreground text-sm tracking-wide">3D Preview Unavailable</h3>
+          <h3 className="font-semibold text-foreground text-sm tracking-wide">
+            3D Preview Unavailable
+          </h3>
           <p className="mt-1.5 text-xs text-muted-foreground max-w-xs leading-relaxed">
-            Direct 3D preview is only supported for GLB files. Download the OBJ or ZIP archive containing your model using the download buttons.
+            Direct 3D preview is only supported for GLB files. Download the OBJ or ZIP archive
+            containing your model using the download buttons.
           </p>
         </div>
       )}

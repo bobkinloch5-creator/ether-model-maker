@@ -62,9 +62,7 @@ function Stat({
           {suffix}
         </span>
       </div>
-      <div className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">
-        {label}
-      </div>
+      <div className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">{label}</div>
     </div>
   );
 }
