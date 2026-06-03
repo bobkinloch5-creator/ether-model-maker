@@ -35,6 +35,9 @@ local StudioService  = game:GetService("StudioService")
 
 local API_BASE   = "https://kingdavez.click/api/public/v1"
 local SETTING_KEY = "kingdavez_api_key"
+local STATUS_OFFLINE = Color3.fromRGB(255, 120, 120)
+local STATUS_ONLINE  = Color3.fromRGB(120, 255, 160)
+local STATUS_NEUTRAL = Color3.fromRGB(160, 160, 175)
 
 -- ---------- UI ----------
 local toolbar = plugin:CreateToolbar("KingDavez Studios")
@@ -106,7 +109,7 @@ local function input(placeholder, height, multiline)
 end
 
 label("API Key  (kingdavez.click → Profile)")
-local keyBox = input("kd_live_...", 28)
+local keyBox = input("Paste your API key (from kingdavez.click → Profile)", 28)
 keyBox.Text = plugin:GetSetting(SETTING_KEY) or ""
 
 label("Prompt")
@@ -128,13 +131,16 @@ btn.Parent = root
 local c = Instance.new("UICorner", btn); c.CornerRadius = UDim.new(0, 8)
 
 local status = label("Ready.", 18)
-status.TextColor3 = Color3.fromRGB(160, 160, 175)
+status.TextColor3 = STATUS_NEUTRAL
+
+local balanceLabel = label("Offline — paste API key, then click Check Connection.", 34)
+balanceLabel.TextColor3 = STATUS_OFFLINE
 
 local linkBtn = Instance.new("TextButton")
 linkBtn.Size = UDim2.new(1, 0, 0, 28)
 linkBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 52)
 linkBtn.BorderSizePixel = 0
-linkBtn.Text = "Open dashboard"
+linkBtn.Text = "Download GLB"
 linkBtn.Font = Enum.Font.Gotham
 linkBtn.TextSize = 12
 linkBtn.TextColor3 = Color3.fromRGB(220, 220, 235)
@@ -142,10 +148,73 @@ linkBtn.Visible = false
 linkBtn.Parent = root
 local c2 = Instance.new("UICorner", linkBtn); c2.CornerRadius = UDim.new(0, 6)
 
+local formatRow = Instance.new("Frame")
+formatRow.Size = UDim2.new(1, 0, 0, 30)
+formatRow.BackgroundTransparency = 1
+formatRow.Visible = false
+formatRow.Parent = root
+local formatLayout = Instance.new("UIListLayout", formatRow)
+formatLayout.FillDirection = Enum.FillDirection.Horizontal
+formatLayout.Padding = UDim.new(0, 6)
+formatLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+local function smallButton(text)
+	local b = Instance.new("TextButton")
+	b.Size = UDim2.new(1/3, -4, 1, 0)
+	b.BackgroundColor3 = Color3.fromRGB(34, 34, 44)
+	b.BorderSizePixel = 0
+	b.Text = text
+	b.Font = Enum.Font.GothamBold
+	b.TextSize = 11
+	b.TextColor3 = Color3.fromRGB(220, 220, 235)
+	b.Parent = formatRow
+	local corner = Instance.new("UICorner", b)
+	corner.CornerRadius = UDim.new(0, 6)
+	return b
+end
+
+local fbxBtn = smallButton("Download FBX")
+local objBtn = smallButton("Download OBJ")
+local copyBtn = smallButton("Copy URL")
+
+local checkBtn = Instance.new("TextButton")
+checkBtn.Size = UDim2.new(1, 0, 0, 30)
+checkBtn.BackgroundColor3 = Color3.fromRGB(40, 80, 52)
+checkBtn.BorderSizePixel = 0
+checkBtn.Text = "Check Connection / Credits"
+checkBtn.Font = Enum.Font.GothamBold
+checkBtn.TextSize = 12
+checkBtn.TextColor3 = Color3.fromRGB(220, 255, 230)
+checkBtn.Parent = root
+local c3 = Instance.new("UICorner", checkBtn); c3.CornerRadius = UDim.new(0, 6)
+
 -- ---------- API ----------
 local function setStatus(text)
 	status.Text = text
 	print("[KingDavez] " .. text)
+end
+
+local function setBalance(text, online)
+	balanceLabel.Text = text
+	balanceLabel.TextColor3 = online and STATUS_ONLINE or STATUS_OFFLINE
+end
+
+local function checkConnection(apiKey)
+	local ok, resp = pcall(function()
+		return HttpService:RequestAsync({
+			Url = API_BASE .. "/me",
+			Method = "GET",
+			Headers = { ["Authorization"] = "Bearer " .. apiKey },
+		})
+	end)
+	if not ok then return false, tostring(resp) end
+	if not resp.Success then return false, ("HTTP %d: %s"):format(resp.StatusCode, resp.Body or "") end
+	local data = HttpService:JSONDecode(resp.Body)
+	local user = data.user or {}
+	if user.unlimited then
+		return true, "Online — owner account, unlimited credits."
+	end
+	return true, "Online — credits: " .. tostring(user.credits or 0) .. "."
 end
 
 local function startJob(apiKey, prompt, gType)
@@ -171,36 +240,157 @@ local function startJob(apiKey, prompt, gType)
 	return data.generation, nil
 end
 
-local function pollJob(apiKey)
+local function saveAndCheckKey()
+	local apiKey = keyBox.Text:match("^%s*(.-)%s*$") or ""
+	if #apiKey < 8 then
+		setStatus("Paste your API key first.")
+		setBalance("Offline — missing API key.", false)
+		return false
+	end
+	plugin:SetSetting(SETTING_KEY, apiKey)
+	setStatus("Checking KingDavez connection…")
+	local ok, message = checkConnection(apiKey)
+	setBalance(message, ok)
+	if ok then
+		setStatus("Connected.")
+	else
+		setStatus("Connection failed: " .. tostring(message))
+	end
+	return ok
+end
+
+local function pollJob(apiKey, generationId)
 	local ok, resp = pcall(function()
 		return HttpService:RequestAsync({
-			Url = API_BASE .. "/generations?limit=1",
+			Url = API_BASE .. "/generations/" .. tostring(generationId),
 			Method = "GET",
 			Headers = { ["Authorization"] = "Bearer " .. apiKey },
 		})
 	end)
 	if not ok or not resp.Success then return nil end
 	local data = HttpService:JSONDecode(resp.Body)
-	return data.generations and data.generations[1] or nil
+	if data and data.id then
+		data.result_data = data.result_data or {}
+		if data.model_url and not data.result_data.model_url then data.result_data.model_url = data.model_url end
+		if data.preview_url and not data.result_data.image_url then data.result_data.image_url = data.preview_url end
+		return data
+	end
+	return nil
 end
 
-local function spawnFromResult(gen, prompt)
+local AssetService = game:GetService("AssetService")
+
+local function tryImportMesh(modelUrl)
+	-- Requires Roblox Studio Content API (rolled out 2024).
+	-- AssetService:CreateMeshPartAsync(Content.fromUri(url)) downloads the
+	-- mesh file (.glb / .obj / .fbx) and returns a real MeshPart.
+	if typeof(Content) ~= "table" and typeof(Content) ~= "userdata" then
+		return nil, "Studio is too old — update Roblox Studio to import meshes directly."
+	end
+	local ok, contentOrErr = pcall(function()
+		return Content.fromUri(modelUrl)
+	end)
+	if not ok then return nil, "Content.fromUri failed: " .. tostring(contentOrErr) end
+
+	local ok2, meshPartOrErr = pcall(function()
+		return AssetService:CreateMeshPartAsync(contentOrErr)
+	end)
+	if not ok2 then return nil, "CreateMeshPartAsync failed: " .. tostring(meshPartOrErr) end
+	return meshPartOrErr, nil
+end
+
+local function openUrl(url)
+	local ok, err = pcall(function()
+		plugin:OpenWikiPage(url)
+	end)
+	if ok then
+		return true, nil
+	end
+	return false, tostring(err)
+end
+
+local function safeCopy(url)
+	local ok, err = pcall(function()
+		StudioService:CopyToClipboard(url)
+	end)
+	return ok, err
+end
+
+local function setDownloadButtons(glbUrl, fbxUrl, objUrl)
+	linkBtn.Text = "Download GLB"
+	linkBtn.Visible = true
+	formatRow.Visible = true
+
+	linkBtn.MouseButton1Click:Connect(function()
+		local ok, err = openUrl(glbUrl)
+		setStatus(ok and "Opening GLB download…" or ("Could not open browser: " .. tostring(err)))
+	end)
+	fbxBtn.MouseButton1Click:Connect(function()
+		local ok, err = openUrl(fbxUrl)
+		setStatus(ok and "Opening FBX download…" or ("FBX is not available or browser was blocked: " .. tostring(err)))
+	end)
+	objBtn.MouseButton1Click:Connect(function()
+		local ok, err = openUrl(objUrl)
+		setStatus(ok and "Opening OBJ download…" or ("OBJ is not available or browser was blocked: " .. tostring(err)))
+	end)
+	copyBtn.MouseButton1Click:Connect(function()
+		local ok = safeCopy(glbUrl)
+		setStatus(ok and "Model URL copied." or "Clipboard blocked — use Download GLB or read kd_model_url on the selected asset.")
+	end)
+end
+
+local function spawnFromResult(gen, prompt, apiKey)
 	local r = gen.result_data or {}
-	local modelUrl = r.model_url
+	local rawModelUrl = r.model_url
 	local imageUrl = r.image_url
 
-	local part = Instance.new("MeshPart")
-	part.Name = "KingDavez_" .. string.sub(prompt, 1, 24)
-	part.Size = Vector3.new(4, 4, 4)
-	part.Anchored = true
-	part.Material = Enum.Material.SmoothPlastic
-	part.Color = Color3.fromRGB(160, 130, 255)
-	part.CFrame = CFrame.new(0, 5, 0)
+	if not rawModelUrl then
+		setStatus("No model_url in result — cannot import.")
+		return
+	end
+
+	-- Roblox MeshContentProvider fails on long signed Supabase URLs (tokens
+	-- + query string trip its fetcher). Use the short proxy endpoint that
+	-- streams the GLB with the correct Content-Type.
+	local modelUrl = rawModelUrl
+	if gen.id and apiKey and #apiKey > 0 then
+		local encodedKey = HttpService:UrlEncode(apiKey)
+		modelUrl = API_BASE .. "/generations/" .. gen.id .. "/model.glb?api_key=" .. encodedKey
+	end
+	local encodedKey = HttpService:UrlEncode(apiKey or "")
+	local fbxUrl = API_BASE .. "/generations/" .. tostring(gen.id or "") .. "/model.fbx?api_key=" .. encodedKey
+	local objUrl = API_BASE .. "/generations/" .. tostring(gen.id or "") .. "/model.obj?api_key=" .. encodedKey
+	setDownloadButtons(modelUrl, fbxUrl, objUrl)
+
+	setStatus("Downloading mesh into Studio…")
+	local mesh, importErr = tryImportMesh(modelUrl)
+
+	local part
+	if mesh then
+		part = mesh
+		part.Name = "KingDavez_" .. string.sub(prompt, 1, 24)
+		part.Anchored = true
+		-- Scale to a sensible size (~6 studs on largest axis)
+		local s = part.Size
+		local maxAxis = math.max(s.X, s.Y, s.Z)
+		if maxAxis > 0 then
+			local scale = 6 / maxAxis
+			part.Size = s * scale
+		end
+		part.CFrame = CFrame.new(0, part.Size.Y / 2 + 1, 0)
+		part.Parent = workspace
+		setStatus("Mesh imported successfully.")
+	else
+		setStatus("Mesh import failed: " .. tostring(importErr) .. " — no placeholder was spawned. Use Download GLB/FBX/OBJ, then import with Studio's 3D Importer.")
+		warn("[KingDavez] Real mesh import failed for " .. tostring(modelUrl) .. ": " .. tostring(importErr))
+		return
+	end
+
 	part:SetAttribute("kd_prompt", prompt)
 	part:SetAttribute("kd_generation_id", gen.id or "")
 	part:SetAttribute("kd_model_url", tostring(modelUrl or ""))
+	part:SetAttribute("kd_source_url", tostring(rawModelUrl or ""))
 	part:SetAttribute("kd_image_url", tostring(imageUrl or ""))
-	part.Parent = workspace
 	Selection:Set({ part })
 
 	local hint = Instance.new("BillboardGui", part)
@@ -214,16 +404,9 @@ local function spawnFromResult(gen, prompt)
 	t.TextColor3 = Color3.fromRGB(220, 220, 240)
 	t.Font = Enum.Font.GothamBold
 	t.TextSize = 12
-	t.Text = "KingDavez asset ready — see Attributes"
+	t.Text = mesh and ("KingDavez: " .. string.sub(prompt, 1, 24)) or "KingDavez asset — see Attributes"
+	t.Parent = hint
 
-	if modelUrl then
-		linkBtn.Text = "Copy .glb URL to clipboard"
-		linkBtn.Visible = true
-		linkBtn.MouseButton1Click:Connect(function()
-			StudioService:CopyToClipboard(modelUrl)
-			setStatus("Model URL copied — paste into browser to download .glb")
-		end)
-	end
 end
 
 btn.MouseButton1Click:Connect(function()
@@ -231,10 +414,11 @@ btn.MouseButton1Click:Connect(function()
 	local prompt = promptBox.Text:match("^%s*(.-)%s*$") or ""
 	local gType  = (typeBox.Text:match("^%s*(.-)%s*$") or "text-to-3d")
 
-	if #apiKey < 8 then setStatus("Paste your API key first.") return end
+	if #apiKey < 8 then setStatus("Paste your API key first."); setBalance("Offline — missing API key.", false); return end
 	if #prompt < 3 then setStatus("Prompt is too short.") return end
 
 	plugin:SetSetting(SETTING_KEY, apiKey)
+	setBalance("Checking connection before generating…", false)
 	btn.Active = false
 	btn.AutoButtonColor = false
 	btn.Text = "Generating…"
@@ -242,6 +426,13 @@ btn.MouseButton1Click:Connect(function()
 	linkBtn.Visible = false
 
 	task.spawn(function()
+		local connected, connectionMessage = checkConnection(apiKey)
+		setBalance(connectionMessage, connected)
+		if not connected then
+			setStatus("Connection failed: " .. tostring(connectionMessage))
+			btn.Active = true; btn.AutoButtonColor = true; btn.Text = "✨ Generate"
+			return
+		end
 		local gen, err = startJob(apiKey, prompt, gType)
 		if not gen then
 			setStatus("Failed: " .. tostring(err))
@@ -250,12 +441,16 @@ btn.MouseButton1Click:Connect(function()
 		end
 		setStatus("Job " .. (gen.id or "?") .. " queued — polling…")
 
+		-- Tripo text-to-3d can take 3-10 minutes. Poll up to 15 min.
 		local final
-		for i = 1, 60 do
+		local MAX_POLLS = 225  -- 225 * 4s = 15 min
+		for i = 1, MAX_POLLS do
 			task.wait(4)
-			local latest = pollJob(apiKey)
+			local latest = pollJob(apiKey, gen.id)
 			if latest and latest.id == gen.id then
-				setStatus("Status: " .. tostring(latest.status) .. "  (" .. i .. "/60)")
+				local mins = math.floor(i * 4 / 60)
+				local secs = (i * 4) % 60
+				setStatus(string.format("Status: %s  (%dm%02ds elapsed, %s)", tostring(latest.status), mins, secs, gType))
 				if latest.status == "completed" then final = latest; break end
 				if latest.status == "failed" then setStatus("Job failed."); break end
 			end
@@ -263,14 +458,29 @@ btn.MouseButton1Click:Connect(function()
 
 		if final then
 			setStatus("Done! MeshPart spawned in Workspace.")
-			spawnFromResult(final, prompt)
+			spawnFromResult(final, prompt, apiKey)
 		elseif not final then
-			setStatus("Timed out after 4 min. Check kingdavez.click/dashboard.")
+			setStatus("Still rendering after 15 min. It will finish — check kingdavez.click/dashboard.")
 		end
 
 		btn.Active = true; btn.AutoButtonColor = true; btn.Text = "✨ Generate"
 	end)
 end)
+
+keyBox.FocusLost:Connect(function()
+	local apiKey = keyBox.Text:match("^%s*(.-)%s*$") or ""
+	if #apiKey >= 8 then
+		task.spawn(saveAndCheckKey)
+	end
+end)
+
+checkBtn.MouseButton1Click:Connect(function()
+	task.spawn(saveAndCheckKey)
+end)
+
+if (keyBox.Text:match("^%s*(.-)%s*$") or "") ~= "" then
+	task.spawn(saveAndCheckKey)
+end
 
 button.Click:Connect(function()
 	widget.Enabled = not widget.Enabled
